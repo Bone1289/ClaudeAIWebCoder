@@ -2,13 +2,14 @@ package com.example.demo.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Account domain entity for the virtual bank
  * Represents a bank account with balance and transaction capabilities
  */
 public class Account {
-    private final Long id;
+    private final UUID id;
     private final String accountNumber;
     private final String firstName;
     private final String lastName;
@@ -23,7 +24,7 @@ public class Account {
         ACTIVE, SUSPENDED, CLOSED
     }
 
-    private Account(Long id, String accountNumber, String firstName, String lastName, String nationality,
+    private Account(UUID id, String accountNumber, String firstName, String lastName, String nationality,
                    String accountType, BigDecimal balance, AccountStatus status,
                    LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
@@ -65,7 +66,7 @@ public class Account {
     /**
      * Reconstitute account from persistence
      */
-    public static Account of(Long id, String accountNumber, String firstName, String lastName,
+    public static Account of(UUID id, String accountNumber, String firstName, String lastName,
                             String nationality, String accountType, BigDecimal balance,
                             AccountStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         if (id == null) {
@@ -186,7 +187,7 @@ public class Account {
     }
 
     // Getters
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
