@@ -5,10 +5,10 @@ import com.example.demo.domain.Transaction;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Output port for transaction persistence
+ * Updated to use category entity references
  */
 public interface TransactionRepository {
     Transaction save(Transaction transaction);
@@ -21,12 +21,13 @@ public interface TransactionRepository {
     List<Transaction> findByAccountIdAndDateRange(Long accountId, LocalDateTime startDate, LocalDateTime endDate);
 
     /**
-     * Find transactions by account and category
+     * Find transactions by account and category ID
      */
-    List<Transaction> findByAccountIdAndCategory(Long accountId, Transaction.TransactionCategory category);
+    List<Transaction> findByAccountIdAndCategoryId(Long accountId, Long categoryId);
 
     /**
      * Get category summary (category -> total amount, count)
+     * Returns full category entities with aggregated data
      */
     List<CategoryReport.CategorySummary> getCategorySummary(Long accountId, Transaction.TransactionType type);
 }

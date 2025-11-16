@@ -92,9 +92,8 @@ public class BankingController {
     public ResponseEntity<ApiResponse<AccountResponse>> deposit(@PathVariable Long id, @RequestBody TransactionRequest request) {
         try {
             Account account;
-            if (request.getCategory() != null && !request.getCategory().isEmpty()) {
-                Transaction.TransactionCategory category = Transaction.TransactionCategory.valueOf(request.getCategory());
-                account = depositUseCase.deposit(id, request.getAmount(), request.getDescription(), category);
+            if (request.getCategoryId() != null) {
+                account = depositUseCase.deposit(id, request.getAmount(), request.getDescription(), request.getCategoryId());
             } else {
                 account = depositUseCase.deposit(id, request.getAmount(), request.getDescription());
             }
@@ -108,9 +107,8 @@ public class BankingController {
     public ResponseEntity<ApiResponse<AccountResponse>> withdraw(@PathVariable Long id, @RequestBody TransactionRequest request) {
         try {
             Account account;
-            if (request.getCategory() != null && !request.getCategory().isEmpty()) {
-                Transaction.TransactionCategory category = Transaction.TransactionCategory.valueOf(request.getCategory());
-                account = withdrawUseCase.withdraw(id, request.getAmount(), request.getDescription(), category);
+            if (request.getCategoryId() != null) {
+                account = withdrawUseCase.withdraw(id, request.getAmount(), request.getDescription(), request.getCategoryId());
             } else {
                 account = withdrawUseCase.withdraw(id, request.getAmount(), request.getDescription());
             }

@@ -12,15 +12,19 @@ import java.util.List;
 /**
  * Spring Data JPA Repository for Transaction persistence
  * Uses standard JPA repository - database agnostic
+ * Now works with category entity relationships
  */
 @Repository
 public interface TransactionJpaRepository extends JpaRepository<TransactionJpaEntity, Long> {
 
     List<TransactionJpaEntity> findByAccountIdOrderByCreatedAtDesc(Long accountId);
 
-    List<TransactionJpaEntity> findByAccountIdAndCategoryOrderByCreatedAtDesc(
-            Long accountId,
-            TransactionJpaEntity.TransactionCategory category
+    @Query("SELECT t FROM TransactionJpaEntity t WHERE t.accountId = :accountId " +
+           "AND t.category.id = :categoryId " +
+           "ORDER BY t.createdAt DESC")
+    List<TransactionJpaEntity> findByAccountIdAndCategoryId(
+            @Param("accountId") Long accountId,
+            @Param("categoryId") Long categoryId
     );
 
     List<TransactionJpaEntity> findByAccountIdAndCreatedAtBetweenOrderByCreatedAtDesc(
@@ -38,11 +42,11 @@ public interface TransactionJpaRepository extends JpaRepository<TransactionJpaEn
             @Param("endDate") LocalDateTime endDate
     );
 
-    @Query("SELECT t.category, COUNT(t), SUM(t.amount) FROM TransactionJpaEntity t " +
+    @Query("SELECT t.category.id, COUNT(t), SUM(t.amount) FROM TransactionJpaEntity t " +
            "WHERE t.accountId = :accountId " +
            "AND t.type = :type " +
-           "GROUP BY t.category")
-    List<Object[]> findCategorySummary(
+           "GROUP BY t.category.id")
+    List<Object[]> findCategorySummaryByType(
             @Param("accountId") Long accountId,
             @Param("type") TransactionJpaEntity.TransactionType type
     );

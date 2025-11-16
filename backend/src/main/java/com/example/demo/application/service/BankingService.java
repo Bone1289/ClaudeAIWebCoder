@@ -2,9 +2,11 @@ package com.example.demo.application.service;
 
 import com.example.demo.application.ports.in.*;
 import com.example.demo.application.ports.out.AccountRepository;
+import com.example.demo.application.ports.out.CategoryRepository;
 import com.example.demo.application.ports.out.TransactionRepository;
 import com.example.demo.domain.Account;
 import com.example.demo.domain.Transaction;
+import com.example.demo.domain.TransactionCategory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ import java.util.Optional;
 /**
  * Banking service implementing all banking use cases
  * This is the core application service containing the business logic
+ * Now fetches categories from database instead of using enums
  */
 @Service
 @Transactional
@@ -28,10 +31,14 @@ public class BankingService implements
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+    private final CategoryRepository categoryRepository;
 
-    public BankingService(AccountRepository accountRepository, TransactionRepository transactionRepository) {
+    public BankingService(AccountRepository accountRepository,
+                         TransactionRepository transactionRepository,
+                         CategoryRepository categoryRepository) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -68,11 +75,13 @@ public class BankingService implements
 
     @Override
     public Account deposit(Long accountId, BigDecimal amount, String description) {
-        return deposit(accountId, amount, description, Transaction.TransactionCategory.OTHER);
+        // Get "OTHER" category as default
+        Long categoryId = getDefaultCategoryId();
+        return deposit(accountId, amount, description, categoryId);
     }
 
     @Override
-    public Account deposit(Long accountId, BigDecimal amount, String description, Transaction.TransactionCategory category) {
+    public Account deposit(Long accountId, BigDecimal amount, String description, Long categoryId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
 
@@ -88,7 +97,7 @@ public class BankingService implements
                 amount,
                 savedAccount.getBalance(),
                 description,
-                category
+                categoryId
         );
         transactionRepository.save(transaction);
 
@@ -97,11 +106,13 @@ public class BankingService implements
 
     @Override
     public Account withdraw(Long accountId, BigDecimal amount, String description) {
-        return withdraw(accountId, amount, description, Transaction.TransactionCategory.OTHER);
+        // Get "OTHER" category as default
+        Long categoryId = getDefaultCategoryId();
+        return withdraw(accountId, amount, description, categoryId);
     }
 
     @Override
-    public Account withdraw(Long accountId, BigDecimal amount, String description, Transaction.TransactionCategory category) {
+    public Account withdraw(Long accountId, BigDecimal amount, String description, Long categoryId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
 
@@ -117,7 +128,7 @@ public class BankingService implements
                 amount,
                 savedAccount.getBalance(),
                 description,
-                category
+                categoryId
         );
         transactionRepository.save(transaction);
 
@@ -137,6 +148,9 @@ public class BankingService implements
         Account toAccount = accountRepository.findById(toAccountId)
                 .orElseThrow(() -> new IllegalArgumentException("Destination account not found with id: " + toAccountId));
 
+        // Get "TRANSFER" category
+        Long transferCategoryId = getTransferCategoryId();
+
         // Perform transfer (withdraw from source)
         Account updatedFromAccount = fromAccount.withdraw(amount);
         Account savedFromAccount = accountRepository.update(updatedFromAccount);
@@ -151,7 +165,8 @@ public class BankingService implements
                 amount,
                 savedFromAccount.getBalance(),
                 toAccountId,
-                description
+                description,
+                transferCategoryId
         );
         transactionRepository.save(transferOut);
 
@@ -160,7 +175,8 @@ public class BankingService implements
                 amount,
                 savedToAccount.getBalance(),
                 fromAccountId,
-                description
+                description,
+                transferCategoryId
         );
         transactionRepository.save(transferIn);
     }
@@ -173,5 +189,23 @@ public class BankingService implements
     @Override
     public List<Transaction> getAllTransactions() {
         return transactionRepository.findAll();
+    }
+
+    /**
+     * Get default "OTHER" category ID
+     */
+    private Long getDefaultCategoryId() {
+        return categoryRepository.findByName("OTHER")
+                .map(TransactionCategory::getId)
+                .orElseThrow(() -> new IllegalStateException("Default 'OTHER' category not found"));
+    }
+
+    /**
+     * Get "TRANSFER" category ID
+     */
+    private Long getTransferCategoryId() {
+        return categoryRepository.findByName("TRANSFER")
+                .map(TransactionCategory::getId)
+                .orElseThrow(() -> new IllegalStateException("'TRANSFER' category not found"));
     }
 }

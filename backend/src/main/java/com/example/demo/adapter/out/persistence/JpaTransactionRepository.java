@@ -1,11 +1,15 @@
 package com.example.demo.adapter.out.persistence;
 
+import com.example.demo.adapter.out.persistence.entity.TransactionCategoryJpaEntity;
 import com.example.demo.adapter.out.persistence.entity.TransactionJpaEntity;
+import com.example.demo.adapter.out.persistence.mapper.CategoryMapper;
 import com.example.demo.adapter.out.persistence.mapper.TransactionMapper;
+import com.example.demo.adapter.out.persistence.repository.TransactionCategoryJpaRepository;
 import com.example.demo.adapter.out.persistence.repository.TransactionJpaRepository;
 import com.example.demo.application.ports.out.TransactionRepository;
 import com.example.demo.domain.CategoryReport;
 import com.example.demo.domain.Transaction;
+import com.example.demo.domain.TransactionCategory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -21,22 +25,38 @@ import java.util.stream.Collectors;
  * This is a persistence adapter in the hexagonal architecture
  * Uses MapStruct for domain ↔ entity conversion
  * Database-agnostic using standard JPA
+ * Now handles category entity relationships
  */
 @Repository
 @Primary  // This makes it the default implementation
 public class JpaTransactionRepository implements TransactionRepository {
 
     private final TransactionJpaRepository jpaRepository;
+    private final TransactionCategoryJpaRepository categoryJpaRepository;
     private final TransactionMapper mapper;
+    private final CategoryMapper categoryMapper;
 
-    public JpaTransactionRepository(TransactionJpaRepository jpaRepository, TransactionMapper mapper) {
+    public JpaTransactionRepository(TransactionJpaRepository jpaRepository,
+                                   TransactionCategoryJpaRepository categoryJpaRepository,
+                                   TransactionMapper mapper,
+                                   CategoryMapper categoryMapper) {
         this.jpaRepository = jpaRepository;
+        this.categoryJpaRepository = categoryJpaRepository;
         this.mapper = mapper;
+        this.categoryMapper = categoryMapper;
     }
 
     @Override
     public Transaction save(Transaction transaction) {
         TransactionJpaEntity entity = mapper.toEntity(transaction);
+
+        // Set category relationship if categoryId is present
+        if (transaction.getCategoryId() != null) {
+            TransactionCategoryJpaEntity category = categoryJpaRepository.findById(transaction.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Category not found with ID: " + transaction.getCategoryId()));
+            entity.setCategory(category);
+        }
+
         TransactionJpaEntity saved = jpaRepository.save(entity);
         return mapper.toDomain(saved);
     }
@@ -64,10 +84,8 @@ public class JpaTransactionRepository implements TransactionRepository {
     }
 
     @Override
-    public List<Transaction> findByAccountIdAndCategory(Long accountId, Transaction.TransactionCategory category) {
-        TransactionJpaEntity.TransactionCategory entityCategory =
-                TransactionJpaEntity.TransactionCategory.valueOf(category.name());
-        return jpaRepository.findByAccountIdAndCategoryOrderByCreatedAtDesc(accountId, entityCategory).stream()
+    public List<Transaction> findByAccountIdAndCategoryId(Long accountId, Long categoryId) {
+        return jpaRepository.findByAccountIdAndCategoryId(accountId, categoryId).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
@@ -77,7 +95,8 @@ public class JpaTransactionRepository implements TransactionRepository {
         TransactionJpaEntity.TransactionType entityType =
                 TransactionJpaEntity.TransactionType.valueOf(type.name());
 
-        List<Object[]> results = jpaRepository.findCategorySummary(accountId, entityType);
+        // Query returns: [category_id, count, sum]
+        List<Object[]> results = jpaRepository.findCategorySummaryByType(accountId, entityType);
 
         // Calculate total for percentages
         BigDecimal total = results.stream()
@@ -87,23 +106,27 @@ public class JpaTransactionRepository implements TransactionRepository {
         // Convert to CategorySummary
         List<CategoryReport.CategorySummary> summaries = new ArrayList<>();
         for (Object[] row : results) {
-            TransactionJpaEntity.TransactionCategory entityCategory = (TransactionJpaEntity.TransactionCategory) row[0];
-            Long count = (Long) row[1];
+            Long categoryId = ((Number) row[0]).longValue();
+            Long count = ((Number) row[1]).longValue();
             BigDecimal amount = (BigDecimal) row[2];
 
             BigDecimal percentage = total.compareTo(BigDecimal.ZERO) > 0
                     ? amount.multiply(BigDecimal.valueOf(100)).divide(total, 2, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
 
-            Transaction.TransactionCategory domainCategory =
-                    Transaction.TransactionCategory.valueOf(entityCategory.name());
+            // Fetch the category entity
+            TransactionCategoryJpaEntity categoryEntity = categoryJpaRepository.findById(categoryId)
+                .orElse(null);
 
-            summaries.add(new CategoryReport.CategorySummary(
-                    domainCategory,
-                    amount,
-                    count.intValue(),
-                    percentage
-            ));
+            if (categoryEntity != null) {
+                TransactionCategory category = categoryMapper.toDomain(categoryEntity);
+                summaries.add(new CategoryReport.CategorySummary(
+                        category,
+                        amount,
+                        count.intValue(),
+                        percentage
+                ));
+            }
         }
 
         return summaries;

@@ -2,11 +2,11 @@ package com.example.demo.domain;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Category Report domain object
  * Aggregates transaction data by category for analysis
+ * Now uses TransactionCategory entity instead of enum
  */
 public record CategoryReport(
     Long accountId,
@@ -26,9 +26,10 @@ public record CategoryReport(
 
     /**
      * Summary for a single category
+     * Now includes full category entity information
      */
     public record CategorySummary(
-        Transaction.TransactionCategory category,
+        TransactionCategory category,
         BigDecimal amount,
         int count,
         BigDecimal percentage
@@ -47,12 +48,12 @@ public record CategoryReport(
     }
 
     /**
-     * Get summary for a specific category
+     * Get summary for a specific category by ID
      */
-    public CategorySummary getSummaryFor(Transaction.TransactionCategory category) {
+    public CategorySummary getSummaryForCategoryId(Long categoryId) {
         return categories.stream()
-                .filter(s -> s.category() == category)
+                .filter(s -> s.category().getId().equals(categoryId))
                 .findFirst()
-                .orElse(new CategorySummary(category, BigDecimal.ZERO, 0, BigDecimal.ZERO));
+                .orElse(null);
     }
 }

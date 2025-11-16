@@ -9,7 +9,7 @@ public class TransactionResponse {
     private Long id;
     private Long accountId;
     private String type;
-    private String category;
+    private Long categoryId;  // Now just the ID, frontend will fetch full details
     private BigDecimal amount;
     private BigDecimal balanceAfter;
     private String description;
@@ -21,7 +21,7 @@ public class TransactionResponse {
         response.id = transaction.getId();
         response.accountId = transaction.getAccountId();
         response.type = transaction.getType().name();
-        response.category = transaction.getCategory() != null ? transaction.getCategory().name() : null;
+        response.categoryId = transaction.getCategoryId();
         response.amount = transaction.getAmount();
         response.balanceAfter = transaction.getBalanceAfter();
         response.description = transaction.getDescription();
@@ -37,8 +37,8 @@ public class TransactionResponse {
     public void setAccountId(Long accountId) { this.accountId = accountId; }
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
     public BigDecimal getBalanceAfter() { return balanceAfter; }
