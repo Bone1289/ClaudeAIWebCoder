@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +44,7 @@ public class JpaCategoryRepository implements CategoryRepository {
     }
 
     @Override
-    public Optional<TransactionCategory> findById(Long id) {
+    public Optional<TransactionCategory> findById(UUID id) {
         return jpaRepository.findById(id)
             .map(mapper::toDomain);
     }
@@ -94,7 +95,7 @@ public class JpaCategoryRepository implements CategoryRepository {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(UUID id) {
         jpaRepository.deleteById(id);
     }
 }
