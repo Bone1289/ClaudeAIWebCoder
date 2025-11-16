@@ -60,7 +60,7 @@ services:
       dockerfile: Dockerfile
     container_name: virtualbank-frontend
     ports:
-      - "80:80"
+      - "4200:80"
     depends_on:
       backend:
         condition: service_healthy
