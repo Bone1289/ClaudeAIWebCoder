@@ -13,7 +13,6 @@ public interface AccountRepository {
     Optional<Account> findById(Long id);
     Optional<Account> findByAccountNumber(String accountNumber);
     List<Account> findAll();
-    List<Account> findByCustomerId(Long customerId);
     Account update(Account account);
     boolean deleteById(Long id);
     String generateAccountNumber();

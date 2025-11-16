@@ -30,7 +30,9 @@ public class InMemoryAccountRepository implements AccountRepository {
         Account account1 = Account.of(
                 idCounter.getAndIncrement(),
                 "ACC100000001",
-                1L, // Customer ID
+                "John",
+                "Doe",
+                "American",
                 "CHECKING",
                 new BigDecimal("1000.00"),
                 Account.AccountStatus.ACTIVE,
@@ -41,7 +43,9 @@ public class InMemoryAccountRepository implements AccountRepository {
         Account account2 = Account.of(
                 idCounter.getAndIncrement(),
                 "ACC100000002",
-                1L, // Customer ID
+                "John",
+                "Doe",
+                "American",
                 "SAVINGS",
                 new BigDecimal("5000.00"),
                 Account.AccountStatus.ACTIVE,
@@ -52,7 +56,9 @@ public class InMemoryAccountRepository implements AccountRepository {
         Account account3 = Account.of(
                 idCounter.getAndIncrement(),
                 "ACC100000003",
-                2L, // Different customer
+                "Jane",
+                "Smith",
+                "British",
                 "CHECKING",
                 new BigDecimal("750.50"),
                 Account.AccountStatus.ACTIVE,
@@ -73,7 +79,9 @@ public class InMemoryAccountRepository implements AccountRepository {
         Account savedAccount = Account.of(
                 id,
                 account.getAccountNumber(),
-                account.getCustomerId(),
+                account.getFirstName(),
+                account.getLastName(),
+                account.getNationality(),
                 account.getAccountType(),
                 account.getBalance(),
                 account.getStatus(),
@@ -99,13 +107,6 @@ public class InMemoryAccountRepository implements AccountRepository {
     @Override
     public List<Account> findAll() {
         return new ArrayList<>(accounts.values());
-    }
-
-    @Override
-    public List<Account> findByCustomerId(Long customerId) {
-        return accounts.values().stream()
-                .filter(account -> account.getCustomerId().equals(customerId))
-                .collect(Collectors.toList());
     }
 
     @Override
