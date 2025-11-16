@@ -4,6 +4,7 @@ import com.example.demo.domain.TransactionCategory;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Input port for managing transaction categories
@@ -19,27 +20,27 @@ public interface ManageCategoryUseCase {
     /**
      * Update an existing category
      */
-    TransactionCategory updateCategory(Long id, String name, String description, String color);
+    TransactionCategory updateCategory(UUID id, String name, String description, String color);
 
     /**
      * Deactivate a category (soft delete)
      */
-    TransactionCategory deactivateCategory(Long id);
+    TransactionCategory deactivateCategory(UUID id);
 
     /**
      * Reactivate a category
      */
-    TransactionCategory activateCategory(Long id);
+    TransactionCategory activateCategory(UUID id);
 
     /**
      * Delete a category permanently
      */
-    void deleteCategory(Long id);
+    void deleteCategory(UUID id);
 
     /**
      * Get category by ID
      */
-    Optional<TransactionCategory> getCategoryById(Long id);
+    Optional<TransactionCategory> getCategoryById(UUID id);
 
     /**
      * Get all categories
