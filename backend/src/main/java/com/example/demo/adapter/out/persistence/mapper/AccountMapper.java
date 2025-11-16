@@ -14,9 +14,23 @@ public interface AccountMapper {
 
     /**
      * Map JPA Entity to Domain
+     * Uses Account.of() factory method due to private constructor
      */
-    @Mapping(target = "status", source = "status")
-    Account toDomain(AccountJpaEntity entity);
+    default Account toDomain(AccountJpaEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        return Account.of(
+            entity.getId(),
+            entity.getAccountNumber(),
+            entity.getCustomerId(),
+            entity.getAccountType(),
+            entity.getBalance(),
+            mapStatus(entity.getStatus()),
+            entity.getCreatedAt(),
+            entity.getUpdatedAt()
+        );
+    }
 
     /**
      * Map Domain to JPA Entity

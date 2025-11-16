@@ -13,8 +13,19 @@ public interface UserMapper {
 
     /**
      * Map JPA Entity to Domain
+     * Uses User.of() factory method due to private constructor
      */
-    User toDomain(UserJpaEntity entity);
+    default User toDomain(UserJpaEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        return User.of(
+            entity.getId(),
+            entity.getName(),
+            entity.getEmail(),
+            entity.getRole()
+        );
+    }
 
     /**
      * Map Domain to JPA Entity
