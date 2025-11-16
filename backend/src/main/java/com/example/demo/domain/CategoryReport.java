@@ -2,6 +2,7 @@ package com.example.demo.domain;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Category Report domain object
@@ -9,7 +10,7 @@ import java.util.List;
  * Now uses TransactionCategory entity instead of enum
  */
 public record CategoryReport(
-    Long accountId,
+    UUID accountId,
     Transaction.TransactionType transactionType,
     List<CategorySummary> categories,
     BigDecimal totalAmount,
@@ -50,7 +51,7 @@ public record CategoryReport(
     /**
      * Get summary for a specific category by ID
      */
-    public CategorySummary getSummaryForCategoryId(Long categoryId) {
+    public CategorySummary getSummaryForCategoryId(UUID categoryId) {
         return categories.stream()
                 .filter(s -> s.category().getId().equals(categoryId))
                 .findFirst()
