@@ -146,6 +146,13 @@ export class UsersComponent implements OnInit {
       return false;
     }
 
+    // Email format validation
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailPattern.test(this.currentUser.email.trim())) {
+      this.error = 'Please enter a valid email address (e.g., user@example.com)';
+      return false;
+    }
+
     if (!this.currentUser.role || this.currentUser.role.trim() === '') {
       this.error = 'Role is required';
       return false;
