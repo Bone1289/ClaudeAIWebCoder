@@ -11,7 +11,7 @@ import { ApiResponse } from '../../../models/api-response.model';
 })
 export class AccountStatementComponent implements OnInit {
   statement: AccountStatement | null = null;
-  accountId: number | null = null;
+  accountId: string | null = null;
 
   // Date range
   startDate: string = '';
@@ -29,7 +29,7 @@ export class AccountStatementComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
-      this.accountId = +params['id'];
+      this.accountId = params['id'];
       this.setDefaultDateRange();
     });
   }

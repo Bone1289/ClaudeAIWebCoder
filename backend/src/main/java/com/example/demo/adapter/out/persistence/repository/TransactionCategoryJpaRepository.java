@@ -6,12 +6,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Spring Data JPA Repository for Transaction Category persistence
  */
 @Repository
-public interface TransactionCategoryJpaRepository extends JpaRepository<TransactionCategoryJpaEntity, Long> {
+public interface TransactionCategoryJpaRepository extends JpaRepository<TransactionCategoryJpaEntity, UUID> {
 
     Optional<TransactionCategoryJpaEntity> findByName(String name);
 

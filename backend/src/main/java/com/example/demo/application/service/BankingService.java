@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Banking service implementing all banking use cases
@@ -24,6 +25,8 @@ import java.util.Optional;
 public class BankingService implements
         CreateAccountUseCase,
         GetAccountUseCase,
+        UpdateAccountUseCase,
+        DeleteAccountUseCase,
         DepositUseCase,
         WithdrawUseCase,
         TransferUseCase,
@@ -42,13 +45,9 @@ public class BankingService implements
     }
 
     @Override
-    public Account createAccount(Long customerId, String accountType) {
-        if (customerId == null) {
-            throw new IllegalArgumentException("Customer ID is required");
-        }
-
+    public Account createAccount(String firstName, String lastName, String nationality, String accountType) {
         String accountNumber = accountRepository.generateAccountNumber();
-        Account account = Account.create(accountNumber, customerId, accountType);
+        Account account = Account.create(accountNumber, firstName, lastName, nationality, accountType);
 
         return accountRepository.save(account);
     }
@@ -59,7 +58,7 @@ public class BankingService implements
     }
 
     @Override
-    public Optional<Account> getAccountById(Long id) {
+    public Optional<Account> getAccountById(UUID id) {
         return accountRepository.findById(id);
     }
 
@@ -69,19 +68,44 @@ public class BankingService implements
     }
 
     @Override
-    public List<Account> getAccountsByCustomerId(Long customerId) {
-        return accountRepository.findByCustomerId(customerId);
+    public Optional<Account> updateAccount(UUID id, String accountType) {
+        Optional<Account> accountOpt = accountRepository.findById(id);
+        if (accountOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Account account = accountOpt.get();
+        Account updatedAccount = account.updateAccountType(accountType);
+        Account savedAccount = accountRepository.update(updatedAccount);
+        return Optional.of(savedAccount);
     }
 
     @Override
-    public Account deposit(Long accountId, BigDecimal amount, String description) {
+    public boolean deleteAccount(UUID id) {
+        Optional<Account> accountOpt = accountRepository.findById(id);
+        if (accountOpt.isEmpty()) {
+            return false;
+        }
+
+        Account account = accountOpt.get();
+
+        // Only allow deletion if balance is zero (business rule)
+        if (account.getBalance().compareTo(BigDecimal.ZERO) != 0) {
+            throw new IllegalStateException("Cannot delete account with non-zero balance. Please transfer or withdraw all funds first.");
+        }
+
+        return accountRepository.deleteById(id);
+    }
+
+    @Override
+    public Account deposit(UUID accountId, BigDecimal amount, String description) {
         // Get "OTHER" category as default
-        Long categoryId = getDefaultCategoryId();
+        UUID categoryId = getDefaultCategoryId();
         return deposit(accountId, amount, description, categoryId);
     }
 
     @Override
-    public Account deposit(Long accountId, BigDecimal amount, String description, Long categoryId) {
+    public Account deposit(UUID accountId, BigDecimal amount, String description, UUID categoryId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
 
@@ -105,14 +129,14 @@ public class BankingService implements
     }
 
     @Override
-    public Account withdraw(Long accountId, BigDecimal amount, String description) {
+    public Account withdraw(UUID accountId, BigDecimal amount, String description) {
         // Get "OTHER" category as default
-        Long categoryId = getDefaultCategoryId();
+        UUID categoryId = getDefaultCategoryId();
         return withdraw(accountId, amount, description, categoryId);
     }
 
     @Override
-    public Account withdraw(Long accountId, BigDecimal amount, String description, Long categoryId) {
+    public Account withdraw(UUID accountId, BigDecimal amount, String description, UUID categoryId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
 
@@ -136,7 +160,7 @@ public class BankingService implements
     }
 
     @Override
-    public void transfer(Long fromAccountId, Long toAccountId, BigDecimal amount, String description) {
+    public void transfer(UUID fromAccountId, UUID toAccountId, BigDecimal amount, String description) {
         if (fromAccountId.equals(toAccountId)) {
             throw new IllegalArgumentException("Cannot transfer to the same account");
         }
@@ -149,7 +173,7 @@ public class BankingService implements
                 .orElseThrow(() -> new IllegalArgumentException("Destination account not found with id: " + toAccountId));
 
         // Get "TRANSFER" category
-        Long transferCategoryId = getTransferCategoryId();
+        UUID transferCategoryId = getTransferCategoryId();
 
         // Perform transfer (withdraw from source)
         Account updatedFromAccount = fromAccount.withdraw(amount);
@@ -182,7 +206,7 @@ public class BankingService implements
     }
 
     @Override
-    public List<Transaction> getTransactionHistory(Long accountId) {
+    public List<Transaction> getTransactionHistory(UUID accountId) {
         return transactionRepository.findByAccountId(accountId);
     }
 
@@ -194,7 +218,7 @@ public class BankingService implements
     /**
      * Get default "OTHER" category ID
      */
-    private Long getDefaultCategoryId() {
+    private UUID getDefaultCategoryId() {
         return categoryRepository.findByName("OTHER")
                 .map(TransactionCategory::getId)
                 .orElseThrow(() -> new IllegalStateException("Default 'OTHER' category not found"));
@@ -203,7 +227,7 @@ public class BankingService implements
     /**
      * Get "TRANSFER" category ID
      */
-    private Long getTransferCategoryId() {
+    private UUID getTransferCategoryId() {
         return categoryRepository.findByName("TRANSFER")
                 .map(TransactionCategory::getId)
                 .orElseThrow(() -> new IllegalStateException("'TRANSFER' category not found"));

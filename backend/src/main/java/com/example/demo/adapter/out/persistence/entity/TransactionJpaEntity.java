@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * JPA Entity for Transaction persistence
@@ -24,11 +25,12 @@ import java.time.LocalDateTime;
 public class TransactionJpaEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "BINARY(16)")
+    private UUID id;
 
-    @Column(name = "account_id", nullable = false)
-    private Long accountId;
+    @Column(name = "account_id", nullable = false, columnDefinition = "BINARY(16)")
+    private UUID accountId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 20)
@@ -47,8 +49,8 @@ public class TransactionJpaEntity {
     @Column(name = "description", length = 500)
     private String description;
 
-    @Column(name = "related_account_id")
-    private Long relatedAccountId;
+    @Column(name = "related_account_id", columnDefinition = "BINARY(16)")
+    private UUID relatedAccountId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

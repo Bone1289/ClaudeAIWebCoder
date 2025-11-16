@@ -4,6 +4,7 @@ import com.example.demo.domain.TransactionCategory;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Output port for category persistence
@@ -23,7 +24,7 @@ public interface CategoryRepository {
     /**
      * Find category by ID
      */
-    Optional<TransactionCategory> findById(Long id);
+    Optional<TransactionCategory> findById(UUID id);
 
     /**
      * Find category by name
@@ -58,5 +59,5 @@ public interface CategoryRepository {
     /**
      * Delete category
      */
-    void delete(Long id);
+    void delete(UUID id);
 }

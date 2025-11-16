@@ -2,6 +2,7 @@ package com.example.demo.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Transaction domain entity
@@ -9,23 +10,23 @@ import java.time.LocalDateTime;
  * Now uses TransactionCategory entity reference instead of enum
  */
 public class Transaction {
-    private final Long id;
-    private final Long accountId;
+    private final UUID id;
+    private final UUID accountId;
     private final TransactionType type;
-    private final Long categoryId;  // Reference to TransactionCategory entity
+    private final UUID categoryId;  // Reference to TransactionCategory entity
     private final BigDecimal amount;
     private final BigDecimal balanceAfter;
     private final String description;
-    private final Long relatedAccountId; // For transfers
+    private final UUID relatedAccountId; // For transfers
     private final LocalDateTime createdAt;
 
     public enum TransactionType {
         DEPOSIT, WITHDRAWAL, TRANSFER_IN, TRANSFER_OUT
     }
 
-    private Transaction(Long id, Long accountId, TransactionType type, Long categoryId,
+    private Transaction(UUID id, UUID accountId, TransactionType type, UUID categoryId,
                        BigDecimal amount, BigDecimal balanceAfter, String description,
-                       Long relatedAccountId, LocalDateTime createdAt) {
+                       UUID relatedAccountId, LocalDateTime createdAt) {
         this.id = id;
         this.accountId = accountId;
         this.type = type;
@@ -40,8 +41,8 @@ public class Transaction {
     /**
      * Create a deposit transaction
      */
-    public static Transaction createDeposit(Long accountId, BigDecimal amount, BigDecimal balanceAfter,
-                                           String description, Long categoryId) {
+    public static Transaction createDeposit(UUID accountId, BigDecimal amount, BigDecimal balanceAfter,
+                                           String description, UUID categoryId) {
         validateAmount(amount);
         validateAccountId(accountId);
 
@@ -61,8 +62,8 @@ public class Transaction {
     /**
      * Create a withdrawal transaction
      */
-    public static Transaction createWithdrawal(Long accountId, BigDecimal amount, BigDecimal balanceAfter,
-                                              String description, Long categoryId) {
+    public static Transaction createWithdrawal(UUID accountId, BigDecimal amount, BigDecimal balanceAfter,
+                                              String description, UUID categoryId) {
         validateAmount(amount);
         validateAccountId(accountId);
 
@@ -82,8 +83,8 @@ public class Transaction {
     /**
      * Create a transfer-out transaction
      */
-    public static Transaction createTransferOut(Long accountId, BigDecimal amount, BigDecimal balanceAfter,
-                                                Long toAccountId, String description, Long transferCategoryId) {
+    public static Transaction createTransferOut(UUID accountId, BigDecimal amount, BigDecimal balanceAfter,
+                                                UUID toAccountId, String description, UUID transferCategoryId) {
         validateAmount(amount);
         validateAccountId(accountId);
         validateAccountId(toAccountId);
@@ -104,8 +105,8 @@ public class Transaction {
     /**
      * Create a transfer-in transaction
      */
-    public static Transaction createTransferIn(Long accountId, BigDecimal amount, BigDecimal balanceAfter,
-                                               Long fromAccountId, String description, Long transferCategoryId) {
+    public static Transaction createTransferIn(UUID accountId, BigDecimal amount, BigDecimal balanceAfter,
+                                               UUID fromAccountId, String description, UUID transferCategoryId) {
         validateAmount(amount);
         validateAccountId(accountId);
         validateAccountId(fromAccountId);
@@ -126,9 +127,9 @@ public class Transaction {
     /**
      * Reconstitute transaction from persistence
      */
-    public static Transaction of(Long id, Long accountId, TransactionType type, Long categoryId,
+    public static Transaction of(UUID id, UUID accountId, TransactionType type, UUID categoryId,
                                  BigDecimal amount, BigDecimal balanceAfter, String description,
-                                 Long relatedAccountId, LocalDateTime createdAt) {
+                                 UUID relatedAccountId, LocalDateTime createdAt) {
         if (id == null) {
             throw new IllegalArgumentException("Transaction ID cannot be null");
         }
@@ -144,18 +145,18 @@ public class Transaction {
         }
     }
 
-    private static void validateAccountId(Long accountId) {
+    private static void validateAccountId(UUID accountId) {
         if (accountId == null) {
             throw new IllegalArgumentException("Account ID cannot be null");
         }
     }
 
     // Getters
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public Long getAccountId() {
+    public UUID getAccountId() {
         return accountId;
     }
 
@@ -163,7 +164,7 @@ public class Transaction {
         return type;
     }
 
-    public Long getCategoryId() {
+    public UUID getCategoryId() {
         return categoryId;
     }
 
@@ -179,7 +180,7 @@ public class Transaction {
         return description;
     }
 
-    public Long getRelatedAccountId() {
+    public UUID getRelatedAccountId() {
         return relatedAccountId;
     }
 

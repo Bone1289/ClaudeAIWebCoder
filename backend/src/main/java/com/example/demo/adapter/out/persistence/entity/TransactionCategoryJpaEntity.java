@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * JPA Entity for Transaction Category
@@ -24,8 +25,9 @@ import java.time.LocalDateTime;
 public class TransactionCategoryJpaEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "BINARY(16)")
+    private UUID id;
 
     @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;

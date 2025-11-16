@@ -18,6 +18,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -62,7 +63,7 @@ public class JpaTransactionRepository implements TransactionRepository {
     }
 
     @Override
-    public List<Transaction> findByAccountId(Long accountId) {
+    public List<Transaction> findByAccountId(UUID accountId) {
         return jpaRepository.findByAccountIdOrderByCreatedAtDesc(accountId).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
@@ -77,21 +78,21 @@ public class JpaTransactionRepository implements TransactionRepository {
     }
 
     @Override
-    public List<Transaction> findByAccountIdAndDateRange(Long accountId, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<Transaction> findByAccountIdAndDateRange(UUID accountId, LocalDateTime startDate, LocalDateTime endDate) {
         return jpaRepository.findByAccountIdAndDateRange(accountId, startDate, endDate).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<Transaction> findByAccountIdAndCategoryId(Long accountId, Long categoryId) {
+    public List<Transaction> findByAccountIdAndCategoryId(UUID accountId, UUID categoryId) {
         return jpaRepository.findByAccountIdAndCategoryId(accountId, categoryId).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<CategoryReport.CategorySummary> getCategorySummary(Long accountId, Transaction.TransactionType type) {
+    public List<CategoryReport.CategorySummary> getCategorySummary(UUID accountId, Transaction.TransactionType type) {
         TransactionJpaEntity.TransactionType entityType =
                 TransactionJpaEntity.TransactionType.valueOf(type.name());
 
@@ -106,7 +107,7 @@ public class JpaTransactionRepository implements TransactionRepository {
         // Convert to CategorySummary
         List<CategoryReport.CategorySummary> summaries = new ArrayList<>();
         for (Object[] row : results) {
-            Long categoryId = ((Number) row[0]).longValue();
+            UUID categoryId = (UUID) row[0];
             Long count = ((Number) row[1]).longValue();
             BigDecimal amount = (BigDecimal) row[2];
 

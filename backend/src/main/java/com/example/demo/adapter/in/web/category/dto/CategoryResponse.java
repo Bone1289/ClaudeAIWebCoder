@@ -5,7 +5,7 @@ import com.example.demo.domain.TransactionCategory;
 import java.time.LocalDateTime;
 
 public class CategoryResponse {
-    private Long id;
+    private String id;
     private String name;
     private String description;
     private String type;
@@ -15,7 +15,7 @@ public class CategoryResponse {
 
     public static CategoryResponse fromDomain(TransactionCategory category) {
         CategoryResponse response = new CategoryResponse();
-        response.id = category.getId();
+        response.id = category.getId().toString();
         response.name = category.getName();
         response.description = category.getDescription();
         response.type = category.getType().name();
@@ -26,11 +26,11 @@ public class CategoryResponse {
     }
 
     // Getters and Setters
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

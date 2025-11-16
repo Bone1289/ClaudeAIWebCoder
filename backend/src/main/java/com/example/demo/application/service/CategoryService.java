@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Application service for managing transaction categories
@@ -35,7 +36,7 @@ public class CategoryService implements ManageCategoryUseCase {
     }
 
     @Override
-    public TransactionCategory updateCategory(Long id, String name, String description, String color) {
+    public TransactionCategory updateCategory(UUID id, String name, String description, String color) {
         TransactionCategory category = categoryRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Category not found with ID: " + id));
 
@@ -51,7 +52,7 @@ public class CategoryService implements ManageCategoryUseCase {
     }
 
     @Override
-    public TransactionCategory deactivateCategory(Long id) {
+    public TransactionCategory deactivateCategory(UUID id) {
         TransactionCategory category = categoryRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Category not found with ID: " + id));
 
@@ -60,7 +61,7 @@ public class CategoryService implements ManageCategoryUseCase {
     }
 
     @Override
-    public TransactionCategory activateCategory(Long id) {
+    public TransactionCategory activateCategory(UUID id) {
         TransactionCategory category = categoryRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Category not found with ID: " + id));
 
@@ -69,7 +70,7 @@ public class CategoryService implements ManageCategoryUseCase {
     }
 
     @Override
-    public void deleteCategory(Long id) {
+    public void deleteCategory(UUID id) {
         if (!categoryRepository.findById(id).isPresent()) {
             throw new IllegalArgumentException("Category not found with ID: " + id);
         }
@@ -77,7 +78,7 @@ public class CategoryService implements ManageCategoryUseCase {
     }
 
     @Override
-    public Optional<TransactionCategory> getCategoryById(Long id) {
+    public Optional<TransactionCategory> getCategoryById(UUID id) {
         return categoryRepository.findById(id);
     }
 

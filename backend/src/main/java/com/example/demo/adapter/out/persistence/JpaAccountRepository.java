@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -40,7 +41,7 @@ public class JpaAccountRepository implements AccountRepository {
     }
 
     @Override
-    public Optional<Account> findById(Long id) {
+    public Optional<Account> findById(UUID id) {
         return jpaRepository.findById(id)
                 .map(mapper::toDomain);
     }
@@ -59,13 +60,6 @@ public class JpaAccountRepository implements AccountRepository {
     }
 
     @Override
-    public List<Account> findByCustomerId(Long customerId) {
-        return jpaRepository.findByCustomerId(customerId).stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public Account update(Account account) {
         if (account.getId() == null || !jpaRepository.existsById(account.getId())) {
             throw new IllegalArgumentException("Cannot update account: account not found");
@@ -76,7 +70,7 @@ public class JpaAccountRepository implements AccountRepository {
     }
 
     @Override
-    public boolean deleteById(Long id) {
+    public boolean deleteById(UUID id) {
         if (jpaRepository.existsById(id)) {
             jpaRepository.deleteById(id);
             return true;

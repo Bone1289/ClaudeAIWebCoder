@@ -244,3 +244,254 @@
   color: #7f8c8d;
   font-size: 1.1rem;
 }
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Success Message */
+.success-message {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  color: #155724;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.success-icon {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Account Customer */
+.account-customer {
+  color: #95a5a6;
+  font-size: 0.85rem;
+  margin: 8px 0 0 0;
+}
+
+/* Account Management Buttons */
+.account-management {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-edit {
+  background-color: #f39c12;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex: 1;
+  transition: all 0.2s;
+}
+
+.btn-edit:hover {
+  background-color: #e67e22;
+}
+
+.btn-delete {
+  background-color: #e74c3c;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex: 1;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
+  background-color: #c0392b;
+}
+
+.btn-danger {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #95a5a6;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background-color: #f0f0f0;
+  color: #2c3e50;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.readonly-field {
+  padding: 10px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.error-message-inline {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+  padding: 12px;
+  color: #c00;
+  font-size: 0.9rem;
+  margin-top: 12px;
+}
+
+/* Delete Modal Specific Styles */
+.warning-text {
+  color: #e74c3c;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.account-summary {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.account-summary p {
+  margin: 8px 0;
+  color: #2c3e50;
+}
+
+.info-text {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  font-style: italic;
+}

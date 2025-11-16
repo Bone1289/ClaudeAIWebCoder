@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Application service for generating reports and statements
@@ -30,7 +31,7 @@ public class ReportingService implements GenerateAccountStatementUseCase, Genera
     }
 
     @Override
-    public AccountStatement generateStatement(Long accountId, LocalDateTime startDate, LocalDateTime endDate) {
+    public AccountStatement generateStatement(UUID accountId, LocalDateTime startDate, LocalDateTime endDate) {
         // Get account
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found with ID: " + accountId));
@@ -70,7 +71,7 @@ public class ReportingService implements GenerateAccountStatementUseCase, Genera
     }
 
     @Override
-    public CategoryReport generateCategoryReport(Long accountId, Transaction.TransactionType transactionType) {
+    public CategoryReport generateCategoryReport(UUID accountId, Transaction.TransactionType transactionType) {
         // Verify account exists
         accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found with ID: " + accountId));
@@ -101,7 +102,7 @@ public class ReportingService implements GenerateAccountStatementUseCase, Genera
      * Calculate account balance at a specific date
      * by summing all transactions before that date
      */
-    private BigDecimal calculateBalanceAtDate(Long accountId, LocalDateTime date) {
+    private BigDecimal calculateBalanceAtDate(UUID accountId, LocalDateTime date) {
         List<Transaction> allTransactions = transactionRepository.findByAccountId(accountId);
 
         BigDecimal balance = BigDecimal.ZERO;

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -75,7 +76,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryById(@PathVariable UUID id) {
         return manageCategoryUseCase.getCategoryById(id)
             .map(category -> ResponseEntity.ok(
                 ApiResponse.success("Category found", CategoryResponse.fromDomain(category))))
@@ -85,7 +86,7 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody CategoryRequest request) {
         try {
             TransactionCategory category = manageCategoryUseCase.updateCategory(
@@ -104,7 +105,7 @@ public class CategoryController {
     }
 
     @PatchMapping("/{id}/deactivate")
-    public ResponseEntity<ApiResponse<CategoryResponse>> deactivateCategory(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CategoryResponse>> deactivateCategory(@PathVariable UUID id) {
         try {
             TransactionCategory category = manageCategoryUseCase.deactivateCategory(id);
             return ResponseEntity.ok(
@@ -116,7 +117,7 @@ public class CategoryController {
     }
 
     @PatchMapping("/{id}/activate")
-    public ResponseEntity<ApiResponse<CategoryResponse>> activateCategory(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CategoryResponse>> activateCategory(@PathVariable UUID id) {
         try {
             TransactionCategory category = manageCategoryUseCase.activateCategory(id);
             return ResponseEntity.ok(
@@ -128,7 +129,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable UUID id) {
         try {
             manageCategoryUseCase.deleteCategory(id);
             return ResponseEntity.ok(ApiResponse.success("Category deleted successfully", null));

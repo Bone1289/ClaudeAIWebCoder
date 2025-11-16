@@ -35,15 +35,44 @@ echo ""
 
 # Ask user what to do
 echo "Select an option:"
-echo "1) Start all services (MySQL + Backend + Frontend)"
-echo "2) Stop all services"
-echo "3) Restart all services"
-echo "4) View logs"
-echo "5) Clean up (remove containers and volumes)"
-read -p "Enter choice [1-5]: " choice
+echo "1) Clean up and start fresh (remove containers, volumes, and rebuild) [DEFAULT]"
+echo "2) Start all services (MySQL + Backend + Frontend)"
+echo "3) Stop all services"
+echo "4) Restart all services"
+echo "5) View logs"
+echo "6) Rebuild backend only"
+echo "7) Rebuild frontend only"
+echo "8) Rebuild all services"
+read -p "Enter choice [1-8] (default: 1): " choice
+
+# Set default to option 1 if no input
+choice=${choice:-1}
 
 case $choice in
     1)
+        echo ""
+        echo "🧹 Cleaning up existing containers and volumes..."
+        docker compose down -v
+        echo ""
+        echo "🚀 Starting fresh with full rebuild..."
+        echo "This may take a few minutes (building images)..."
+        echo ""
+        docker compose up -d --build
+        echo ""
+        echo "✅ Services started successfully!"
+        echo ""
+        echo "📊 Service Status:"
+        docker compose ps
+        echo ""
+        echo "🌐 Access the application:"
+        echo "   Frontend:  http://localhost"
+        echo "   Backend:   http://localhost:8080/api"
+        echo "   Health:    http://localhost:8080/actuator/health"
+        echo "   MySQL:     localhost:3306 (user: root, password: root)"
+        echo ""
+        echo "📝 View logs with: docker compose logs -f"
+        ;;
+    2)
         echo ""
         echo "🚀 Starting all services..."
         echo "This may take a few minutes on first run (building images)..."
@@ -64,38 +93,79 @@ case $choice in
         echo "📝 View logs with: docker compose logs -f"
         echo "🛑 Stop services with: docker compose down"
         ;;
-    2)
+    3)
         echo ""
         echo "🛑 Stopping all services..."
         docker compose down
         echo ""
         echo "✅ All services stopped"
         ;;
-    3)
+    4)
         echo ""
         echo "♻️  Restarting all services..."
         docker compose restart
         echo ""
         echo "✅ All services restarted"
+        echo ""
+        echo "📊 Service Status:"
+        docker compose ps
         ;;
-    4)
+    5)
         echo ""
         echo "📝 Showing logs (Ctrl+C to exit)..."
         echo ""
         docker compose logs -f
         ;;
-    5)
+    6)
         echo ""
-        read -p "⚠️  This will remove all containers and data. Continue? (y/N): " confirm
-        if [[ $confirm == [yY] ]]; then
-            echo ""
-            echo "🧹 Cleaning up..."
-            docker compose down -v
-            echo ""
-            echo "✅ Cleanup complete"
-        else
-            echo "Cancelled"
-        fi
+        echo "🔨 Rebuilding backend only..."
+        echo "Stopping backend service..."
+        docker compose stop backend
+        echo ""
+        echo "Building new backend image..."
+        docker compose build backend
+        echo ""
+        echo "Starting backend service..."
+        docker compose up -d backend
+        echo ""
+        echo "✅ Backend rebuilt and restarted!"
+        echo ""
+        echo "📊 Backend Status:"
+        docker compose ps backend
+        echo ""
+        echo "📝 View backend logs with: docker compose logs -f backend"
+        ;;
+    7)
+        echo ""
+        echo "🔨 Rebuilding frontend only..."
+        echo "Stopping frontend service..."
+        docker compose stop frontend
+        echo ""
+        echo "Building new frontend image..."
+        docker compose build frontend
+        echo ""
+        echo "Starting frontend service..."
+        docker compose up -d frontend
+        echo ""
+        echo "✅ Frontend rebuilt and restarted!"
+        echo ""
+        echo "📊 Frontend Status:"
+        docker compose ps frontend
+        echo ""
+        echo "📝 View frontend logs with: docker compose logs -f frontend"
+        ;;
+    8)
+        echo ""
+        echo "🔨 Rebuilding all services..."
+        echo ""
+        docker compose up -d --build --force-recreate
+        echo ""
+        echo "✅ All services rebuilt and restarted!"
+        echo ""
+        echo "📊 Service Status:"
+        docker compose ps
+        echo ""
+        echo "📝 View logs with: docker compose logs -f"
         ;;
     *)
         echo "Invalid choice"
