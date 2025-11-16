@@ -1,0 +1,26 @@
+<div class="home">
+  <div class="hero card">
+    <h1>Welcome to Spring Boot + Angular Demo</h1>
+    <p>A full-stack application showcasing Spring Boot backend with Angular frontend</p>
+  </div>
+
+  <div class="features">
+    <h2>Features</h2>
+    <div class="features-grid">
+      <div class="feature-card card" *ngFor="let feature of features">
+        <div class="feature-icon">{{ feature.icon }}</div>
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.description }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="getting-started card">
+    <h2>Getting Started</h2>
+    <ol>
+      <li>Start the Spring Boot backend on port 8080</li>
+      <li>Run the Angular frontend on port 4200</li>
+      <li>Navigate to the <a routerLink="/demo">API Demo</a> page to test the integration</li>
+    </ol>
+  </div>
+</div>

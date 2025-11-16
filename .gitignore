@@ -27,3 +27,8 @@ logs/
 *.class
 out/
 target/
+
+# Frontend (Angular)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/

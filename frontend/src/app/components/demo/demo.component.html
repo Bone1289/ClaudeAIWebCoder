@@ -1,0 +1,64 @@
+<div class="demo">
+  <h2>API Demo</h2>
+  <p>Test the integration between Angular frontend and Spring Boot backend</p>
+
+  <div class="demo-section card">
+    <h3>Health Check</h3>
+    <p>Check if the backend is running</p>
+
+    <div class="status-indicator">
+      <span class="status-label">Backend Status:</span>
+      <span [class]="healthResponse.includes('running') ? 'status-online' : 'status-offline'">
+        {{ healthResponse || 'Unknown' }}
+      </span>
+    </div>
+
+    <button (click)="checkHealth()" [disabled]="loading">
+      {{ loading ? 'Checking...' : 'Check Health' }}
+    </button>
+  </div>
+
+  <div class="demo-section card">
+    <h3>Hello API</h3>
+    <p>Send a personalized greeting request to the backend</p>
+
+    <div class="input-group">
+      <label for="name">Your Name:</label>
+      <input
+        type="text"
+        id="name"
+        [(ngModel)]="name"
+        placeholder="Enter your name"
+        (keyup.enter)="sayHello()"
+      />
+    </div>
+
+    <div class="button-group">
+      <button (click)="sayHello()" [disabled]="loading || !name.trim()">
+        {{ loading ? 'Loading...' : 'Say Hello' }}
+      </button>
+      <button (click)="clearResponse()" class="secondary">
+        Clear
+      </button>
+    </div>
+
+    <div *ngIf="helloResponse" class="response success">
+      <strong>Response:</strong> {{ helloResponse }}
+    </div>
+  </div>
+
+  <div *ngIf="error" class="error">
+    {{ error }}
+  </div>
+
+  <div class="info card">
+    <h3>How it works</h3>
+    <ul>
+      <li>The frontend runs on <code>http://localhost:4200</code></li>
+      <li>The backend runs on <code>http://localhost:8080</code></li>
+      <li>API requests are proxied to the backend using <code>proxy.conf.json</code></li>
+      <li>Health endpoint: <code>GET /api/health</code></li>
+      <li>Hello endpoint: <code>GET /api/hello?name=YourName</code></li>
+    </ul>
+  </div>
+</div>
