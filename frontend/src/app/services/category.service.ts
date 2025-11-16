@@ -61,7 +61,7 @@ export class CategoryService {
   /**
    * Get a specific category by ID
    */
-  getCategoryById(id: number): Observable<ApiResponse<Category>> {
+  getCategoryById(id: string): Observable<ApiResponse<Category>> {
     return this.http.get<ApiResponse<Category>>(`${this.apiUrl}/${id}`);
   }
 
@@ -77,7 +77,7 @@ export class CategoryService {
   /**
    * Update an existing category
    */
-  updateCategory(id: number, request: Partial<CategoryRequest>): Observable<ApiResponse<Category>> {
+  updateCategory(id: string, request: Partial<CategoryRequest>): Observable<ApiResponse<Category>> {
     return this.http.put<ApiResponse<Category>>(`${this.apiUrl}/${id}`, request).pipe(
       tap(() => this.loadCategories()) // Refresh cache
     );
@@ -86,7 +86,7 @@ export class CategoryService {
   /**
    * Deactivate a category (soft delete)
    */
-  deactivateCategory(id: number): Observable<ApiResponse<Category>> {
+  deactivateCategory(id: string): Observable<ApiResponse<Category>> {
     return this.http.patch<ApiResponse<Category>>(`${this.apiUrl}/${id}/deactivate`, {}).pipe(
       tap(() => this.loadCategories()) // Refresh cache
     );
@@ -95,7 +95,7 @@ export class CategoryService {
   /**
    * Delete a category
    */
-  deleteCategory(id: number): Observable<ApiResponse<void>> {
+  deleteCategory(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`).pipe(
       tap(() => this.loadCategories()) // Refresh cache
     );
@@ -104,7 +104,7 @@ export class CategoryService {
   /**
    * Get category from cache by ID
    */
-  getCategoryFromCache(id: number): Category | undefined {
+  getCategoryFromCache(id: string): Category | undefined {
     return this.categoriesCache$.value.find((cat: Category) => cat.id === id);
   }
 
