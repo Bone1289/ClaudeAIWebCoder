@@ -1,0 +1,119 @@
+<div class="users-container">
+  <h2>User Management - REST API Demo</h2>
+  <p class="subtitle">Full CRUD operations: Create, Read, Update, Delete</p>
+
+  <!-- Messages -->
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="successMessage" class="success">{{ successMessage }}</div>
+
+  <!-- User Form -->
+  <div class="card form-card">
+    <h3>{{ isEditing ? 'Edit User' : 'Create New User' }}</h3>
+    <form (ngSubmit)="saveUser()">
+      <div class="form-group">
+        <label for="name">Name *</label>
+        <input
+          type="text"
+          id="name"
+          [(ngModel)]="currentUser.name"
+          name="name"
+          placeholder="Enter name"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="currentUser.email"
+          name="email"
+          placeholder="Enter email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="role">Role *</label>
+        <select id="role" [(ngModel)]="currentUser.role" name="role" required>
+          <option value="USER">User</option>
+          <option value="ADMIN">Admin</option>
+          <option value="MANAGER">Manager</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="loading">
+          {{ loading ? 'Saving...' : (isEditing ? 'Update User' : 'Create User') }}
+        </button>
+        <button type="button" (click)="resetForm()" class="secondary" [disabled]="loading">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Users List -->
+  <div class="card">
+    <div class="table-header">
+      <h3>Users List</h3>
+      <button (click)="loadUsers()" [disabled]="loading" class="refresh-btn">
+        {{ loading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+
+    <div *ngIf="loading && users.length === 0" class="loading">
+      Loading users...
+    </div>
+
+    <div *ngIf="!loading && users.length === 0" class="no-data">
+      No users found. Create one to get started!
+    </div>
+
+    <table *ngIf="users.length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span class="role-badge" [class.admin]="user.role === 'ADMIN'">
+              {{ user.role }}
+            </span>
+          </td>
+          <td>
+            <button (click)="editUser(user)" class="btn-edit" [disabled]="loading">
+              Edit
+            </button>
+            <button (click)="deleteUser(user.id)" class="btn-delete" [disabled]="loading">
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- API Information -->
+  <div class="info-card card">
+    <h3>REST API Endpoints</h3>
+    <ul>
+      <li><code>GET /api/users</code> - Get all users</li>
+      <li><code>GET /api/users/:id</code> - Get user by ID</li>
+      <li><code>POST /api/users</code> - Create new user</li>
+      <li><code>PUT /api/users/:id</code> - Update user</li>
+      <li><code>DELETE /api/users/:id</code> - Delete user</li>
+    </ul>
+    <p class="note">All operations use JSON format and return structured API responses.</p>
+  </div>
+</div>
