@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Spring Data JPA Repository for Transaction persistence
@@ -15,20 +16,20 @@ import java.util.List;
  * Now works with category entity relationships
  */
 @Repository
-public interface TransactionJpaRepository extends JpaRepository<TransactionJpaEntity, Long> {
+public interface TransactionJpaRepository extends JpaRepository<TransactionJpaEntity, UUID> {
 
-    List<TransactionJpaEntity> findByAccountIdOrderByCreatedAtDesc(Long accountId);
+    List<TransactionJpaEntity> findByAccountIdOrderByCreatedAtDesc(UUID accountId);
 
     @Query("SELECT t FROM TransactionJpaEntity t WHERE t.accountId = :accountId " +
            "AND t.category.id = :categoryId " +
            "ORDER BY t.createdAt DESC")
     List<TransactionJpaEntity> findByAccountIdAndCategoryId(
-            @Param("accountId") Long accountId,
-            @Param("categoryId") Long categoryId
+            @Param("accountId") UUID accountId,
+            @Param("categoryId") UUID categoryId
     );
 
     List<TransactionJpaEntity> findByAccountIdAndCreatedAtBetweenOrderByCreatedAtDesc(
-            Long accountId,
+            UUID accountId,
             LocalDateTime startDate,
             LocalDateTime endDate
     );
@@ -37,7 +38,7 @@ public interface TransactionJpaRepository extends JpaRepository<TransactionJpaEn
            "AND t.createdAt >= :startDate AND t.createdAt <= :endDate " +
            "ORDER BY t.createdAt DESC")
     List<TransactionJpaEntity> findByAccountIdAndDateRange(
-            @Param("accountId") Long accountId,
+            @Param("accountId") UUID accountId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
@@ -47,7 +48,7 @@ public interface TransactionJpaRepository extends JpaRepository<TransactionJpaEn
            "AND t.type = :type " +
            "GROUP BY t.category.id")
     List<Object[]> findCategorySummaryByType(
-            @Param("accountId") Long accountId,
+            @Param("accountId") UUID accountId,
             @Param("type") TransactionJpaEntity.TransactionType type
     );
 }
