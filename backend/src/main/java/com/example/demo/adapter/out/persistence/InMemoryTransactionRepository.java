@@ -28,6 +28,7 @@ public class InMemoryTransactionRepository implements TransactionRepository {
                 id,
                 transaction.getAccountId(),
                 transaction.getType(),
+                transaction.getCategoryId(),
                 transaction.getAmount(),
                 transaction.getBalanceAfter(),
                 transaction.getDescription(),

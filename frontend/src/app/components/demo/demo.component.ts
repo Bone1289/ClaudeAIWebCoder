@@ -29,11 +29,11 @@ export class DemoComponent implements OnInit {
     this.error = '';
 
     this.apiService.getHello(this.name).subscribe({
-      next: (response) => {
+      next: (response: string) => {
         this.helloResponse = response;
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = 'Failed to fetch hello message: ' + err.message;
         this.loading = false;
       }
@@ -45,11 +45,11 @@ export class DemoComponent implements OnInit {
     this.error = '';
 
     this.apiService.getHealth().subscribe({
-      next: (response) => {
+      next: (response: string) => {
         this.healthResponse = response;
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = 'Failed to fetch health status: ' + err.message;
         this.healthResponse = 'Backend is not available';
         this.loading = false;

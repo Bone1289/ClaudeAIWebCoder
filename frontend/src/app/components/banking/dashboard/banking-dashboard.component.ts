@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BankingService } from '../../../services/banking.service';
 import { Account } from '../../../models/banking.model';
+import { ApiResponse } from '../../../models/api-response.model';
 
 @Component({
   selector: 'app-banking-dashboard',
@@ -24,11 +25,11 @@ export class BankingDashboardComponent implements OnInit {
     this.error = null;
 
     this.bankingService.getAllAccounts().subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<Account[]>) => {
         this.accounts = response.data || [];
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = 'Failed to load accounts: ' + error.message;
         this.loading = false;
       }

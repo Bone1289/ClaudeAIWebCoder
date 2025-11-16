@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { BankingService } from '../../../services/banking.service';
 import { AccountStatement } from '../../../models/banking.model';
+import { ApiResponse } from '../../../models/api-response.model';
 
 @Component({
   selector: 'app-account-statement',
@@ -26,7 +27,7 @@ export class AccountStatementComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params: Params) => {
       this.accountId = +params['id'];
       this.setDefaultDateRange();
     });
@@ -54,11 +55,11 @@ export class AccountStatementComponent implements OnInit {
     const end = new Date(this.endDate + 'T23:59:59').toISOString();
 
     this.bankingService.getAccountStatement(this.accountId, start, end).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<AccountStatement>) => {
         this.statement = response.data;
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = 'Failed to load statement: ' + error.message;
         this.loading = false;
       }

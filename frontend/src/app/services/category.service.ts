@@ -37,7 +37,7 @@ export class CategoryService {
     }
 
     return this.http.get<ApiResponse<Category[]>>(this.apiUrl, { params }).pipe(
-      tap(response => {
+      tap((response: ApiResponse<Category[]>) => {
         if (response.success && response.data) {
           this.categoriesCache$.next(response.data);
         }
@@ -105,7 +105,7 @@ export class CategoryService {
    * Get category from cache by ID
    */
   getCategoryFromCache(id: number): Category | undefined {
-    return this.categoriesCache$.value.find(cat => cat.id === id);
+    return this.categoriesCache$.value.find((cat: Category) => cat.id === id);
   }
 
   /**
@@ -119,13 +119,13 @@ export class CategoryService {
    * Get income categories from cache
    */
   getIncomeCategoriesFromCache(): Category[] {
-    return this.categoriesCache$.value.filter(cat => cat.type === CategoryType.INCOME && cat.active);
+    return this.categoriesCache$.value.filter((cat: Category) => cat.type === CategoryType.INCOME && cat.active);
   }
 
   /**
    * Get expense categories from cache
    */
   getExpenseCategoriesFromCache(): Category[] {
-    return this.categoriesCache$.value.filter(cat => cat.type === CategoryType.EXPENSE && cat.active);
+    return this.categoriesCache$.value.filter((cat: Category) => cat.type === CategoryType.EXPENSE && cat.active);
   }
 }

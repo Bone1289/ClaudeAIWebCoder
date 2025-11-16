@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { BankingService } from '../../../services/banking.service';
 import { CategoryReport, TransactionType, Account } from '../../../models/banking.model';
+import { ApiResponse } from '../../../models/api-response.model';
 
 @Component({
   selector: 'app-category-reports',
@@ -28,7 +29,7 @@ export class CategoryReportsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params: Params) => {
       this.accountId = +params['id'];
       if (this.accountId) {
         this.loadAccount();
@@ -41,7 +42,7 @@ export class CategoryReportsComponent implements OnInit {
     if (!this.accountId) return;
 
     this.bankingService.getAccountById(this.accountId).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<Account>) => {
         this.account = response.data;
       },
       error: () => {
@@ -58,20 +59,20 @@ export class CategoryReportsComponent implements OnInit {
 
     // Load both reports
     this.bankingService.getCategoryReport(this.accountId, TransactionType.DEPOSIT).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<CategoryReport>) => {
         this.incomeReport = response.data;
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = 'Failed to load income report: ' + error.message;
       }
     });
 
     this.bankingService.getCategoryReport(this.accountId, TransactionType.WITHDRAWAL).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<CategoryReport>) => {
         this.expenseReport = response.data;
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = 'Failed to load expense report: ' + error.message;
         this.loading = false;
       }

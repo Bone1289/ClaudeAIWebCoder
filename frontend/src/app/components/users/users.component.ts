@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { User } from '../../models/user.model';
+import { ApiResponse } from '../../models/api-response.model';
 
 @Component({
   selector: 'app-users',
@@ -31,11 +32,11 @@ export class UsersComponent implements OnInit {
     this.error = '';
 
     this.apiService.getAllUsers().subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<User[]>) => {
         this.users = response.data;
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = 'Failed to load users: ' + err.message;
         this.loading = false;
       }
@@ -57,13 +58,13 @@ export class UsersComponent implements OnInit {
     if (this.isEditing && this.currentUser.id) {
       // Update existing user
       this.apiService.updateUser(this.currentUser.id, this.currentUser).subscribe({
-        next: (response) => {
+        next: (response: ApiResponse<User>) => {
           this.successMessage = response.message;
           this.loadUsers();
           this.resetForm();
           this.loading = false;
         },
-        error: (err) => {
+        error: (err: any) => {
           this.error = 'Failed to update user: ' + err.message;
           this.loading = false;
         }
@@ -71,13 +72,13 @@ export class UsersComponent implements OnInit {
     } else {
       // Create new user
       this.apiService.createUser(this.currentUser).subscribe({
-        next: (response) => {
+        next: (response: ApiResponse<User>) => {
           this.successMessage = response.message;
           this.loadUsers();
           this.resetForm();
           this.loading = false;
         },
-        error: (err) => {
+        error: (err: any) => {
           this.error = 'Failed to create user: ' + err.message;
           this.loading = false;
         }
@@ -110,12 +111,12 @@ export class UsersComponent implements OnInit {
     this.successMessage = '';
 
     this.apiService.deleteUser(id).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<void>) => {
         this.successMessage = response.message;
         this.loadUsers();
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = 'Failed to delete user: ' + err.message;
         this.loading = false;
       }

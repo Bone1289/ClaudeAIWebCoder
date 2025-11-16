@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { BankingService } from '../../../services/banking.service';
 import { CategoryService } from '../../../services/category.service';
 import { Account, Category, CategoryType, TransactionRequest, TransferRequest } from '../../../models/banking.model';
+import { ApiResponse } from '../../../models/api-response.model';
 
 @Component({
   selector: 'app-transaction-forms',
@@ -52,7 +53,7 @@ export class TransactionFormsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params: Params) => {
       this.accountId = +params['id'];
       if (this.accountId) {
         this.loadAccount();
@@ -64,16 +65,16 @@ export class TransactionFormsComponent implements OnInit {
     this.loadCategories();
 
     // Subscribe to category updates
-    this.categoryService.categories$.subscribe(categories => {
+    this.categoryService.categories$.subscribe((categories: Category[]) => {
       this.allCategories = categories;
-      this.incomeCategories = categories.filter(cat => cat.type === CategoryType.INCOME && cat.active);
-      this.expenseCategories = categories.filter(cat => cat.type === CategoryType.EXPENSE && cat.active);
+      this.incomeCategories = categories.filter((cat: Category) => cat.type === CategoryType.INCOME && cat.active);
+      this.expenseCategories = categories.filter((cat: Category) => cat.type === CategoryType.EXPENSE && cat.active);
     });
   }
 
   loadCategories(): void {
     this.categoryService.loadCategories().subscribe({
-      error: (error) => {
+      error: (error: any) => {
         console.error('Failed to load categories:', error);
       }
     });
@@ -83,10 +84,10 @@ export class TransactionFormsComponent implements OnInit {
     if (!this.accountId) return;
 
     this.bankingService.getAccountById(this.accountId).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<Account>) => {
         this.account = response.data;
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = 'Failed to load account: ' + error.message;
       }
     });
@@ -94,8 +95,8 @@ export class TransactionFormsComponent implements OnInit {
 
   loadAccounts(): void {
     this.bankingService.getAllAccounts().subscribe({
-      next: (response) => {
-        this.accounts = (response.data || []).filter(acc => acc.id !== this.accountId);
+      next: (response: ApiResponse<Account[]>) => {
+        this.accounts = (response.data || []).filter((acc: Account) => acc.id !== this.accountId);
       },
       error: () => {
         // Silently fail - not critical
@@ -121,13 +122,13 @@ export class TransactionFormsComponent implements OnInit {
     };
 
     this.bankingService.deposit(this.accountId, request).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<Account>) => {
         this.account = response.data;
         this.success = 'Deposit successful!';
         this.resetDepositForm();
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = error.message;
         this.loading = false;
       }
@@ -147,13 +148,13 @@ export class TransactionFormsComponent implements OnInit {
     };
 
     this.bankingService.withdraw(this.accountId, request).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<Account>) => {
         this.account = response.data;
         this.success = 'Withdrawal successful!';
         this.resetWithdrawForm();
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = error.message;
         this.loading = false;
       }
@@ -173,13 +174,13 @@ export class TransactionFormsComponent implements OnInit {
     };
 
     this.bankingService.transfer(this.accountId, request).subscribe({
-      next: () => {
+      next: (response: ApiResponse<void>) => {
         this.success = 'Transfer successful!';
         this.resetTransferForm();
         this.loadAccount(); // Reload account to get updated balance
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = error.message;
         this.loading = false;
       }
