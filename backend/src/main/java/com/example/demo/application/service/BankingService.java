@@ -68,6 +68,11 @@ public class BankingService implements
 
     @Override
     public Account deposit(Long accountId, BigDecimal amount, String description) {
+        return deposit(accountId, amount, description, Transaction.TransactionCategory.OTHER);
+    }
+
+    @Override
+    public Account deposit(Long accountId, BigDecimal amount, String description, Transaction.TransactionCategory category) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
 
@@ -77,12 +82,13 @@ public class BankingService implements
         // Save updated account
         Account savedAccount = accountRepository.update(updatedAccount);
 
-        // Record transaction
+        // Record transaction with category
         Transaction transaction = Transaction.createDeposit(
                 accountId,
                 amount,
                 savedAccount.getBalance(),
-                description
+                description,
+                category
         );
         transactionRepository.save(transaction);
 
@@ -91,6 +97,11 @@ public class BankingService implements
 
     @Override
     public Account withdraw(Long accountId, BigDecimal amount, String description) {
+        return withdraw(accountId, amount, description, Transaction.TransactionCategory.OTHER);
+    }
+
+    @Override
+    public Account withdraw(Long accountId, BigDecimal amount, String description, Transaction.TransactionCategory category) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
 
@@ -100,12 +111,13 @@ public class BankingService implements
         // Save updated account
         Account savedAccount = accountRepository.update(updatedAccount);
 
-        // Record transaction
+        // Record transaction with category
         Transaction transaction = Transaction.createWithdrawal(
                 accountId,
                 amount,
                 savedAccount.getBalance(),
-                description
+                description,
+                category
         );
         transactionRepository.save(transaction);
 

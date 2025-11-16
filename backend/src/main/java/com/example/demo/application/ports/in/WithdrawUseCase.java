@@ -1,6 +1,7 @@
 package com.example.demo.application.ports.in;
 
 import com.example.demo.domain.Account;
+import com.example.demo.domain.Transaction;
 
 import java.math.BigDecimal;
 
@@ -9,4 +10,6 @@ import java.math.BigDecimal;
  */
 public interface WithdrawUseCase {
     Account withdraw(Long accountId, BigDecimal amount, String description);
+
+    Account withdraw(Long accountId, BigDecimal amount, String description, Transaction.TransactionCategory category);
 }
