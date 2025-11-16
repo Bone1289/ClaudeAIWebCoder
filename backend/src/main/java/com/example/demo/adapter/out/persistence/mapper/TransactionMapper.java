@@ -16,10 +16,24 @@ public interface TransactionMapper {
 
     /**
      * Map JPA Entity to Domain
+     * Uses Transaction.of() factory method due to private constructor
      */
-    @Mapping(target = "type", source = "type")
-    @Mapping(target = "categoryId", source = "category.id")
-    Transaction toDomain(TransactionJpaEntity entity);
+    default Transaction toDomain(TransactionJpaEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        return Transaction.of(
+            entity.getId(),
+            entity.getAccountId(),
+            mapType(entity.getType()),
+            entity.getCategory() != null ? entity.getCategory().getId() : null,
+            entity.getAmount(),
+            entity.getBalanceAfter(),
+            entity.getDescription(),
+            entity.getRelatedAccountId(),
+            entity.getCreatedAt()
+        );
+    }
 
     /**
      * Map Domain to JPA Entity

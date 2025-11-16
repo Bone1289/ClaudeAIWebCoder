@@ -121,7 +121,7 @@
                 {{ transaction.type }}
               </span>
             </td>
-            <td>{{ transaction.category }}</td>
+            <td>{{ transaction.categoryId || '-' }}</td>
             <td>{{ transaction.description || '-' }}</td>
             <td class="amount-col" [class.positive]="transaction.type === 'DEPOSIT' || transaction.type === 'TRANSFER_IN'"
                 [class.negative]="transaction.type === 'WITHDRAWAL' || transaction.type === 'TRANSFER_OUT'">
@@ -139,7 +139,7 @@
 
     <!-- Footer -->
     <div class="statement-footer">
-      <p>Generated on {{ new Date() | date:'medium' }}</p>
+      <p>Generated on {{ currentDate | date:'medium' }}</p>
       <p class="disclaimer">This is a computer-generated statement and does not require a signature.</p>
     </div>
   </div>
