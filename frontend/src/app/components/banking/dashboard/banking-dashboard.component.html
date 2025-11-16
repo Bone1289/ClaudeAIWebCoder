@@ -151,7 +151,7 @@
         </div>
         <div class="form-group">
           <label>Current Balance:</label>
-          <p class="readonly-field">${{ editingAccount?.balance.toFixed(2) }}</p>
+          <p class="readonly-field">${{ (editingAccount?.balance || 0).toFixed(2) }}</p>
         </div>
         <div class="form-group">
           <label for="editAccountType">Account Type:</label>
@@ -184,7 +184,7 @@
         <div class="account-summary">
           <p><strong>Account Number:</strong> {{ accountToDelete?.accountNumber }}</p>
           <p><strong>Account Type:</strong> {{ accountToDelete?.accountType }}</p>
-          <p><strong>Balance:</strong> ${{ accountToDelete?.balance.toFixed(2) }}</p>
+          <p><strong>Balance:</strong> ${{ (accountToDelete?.balance || 0).toFixed(2) }}</p>
         </div>
         <p class="info-text">Note: You can only delete accounts with zero balance.</p>
         <div *ngIf="error" class="error-message-inline">
