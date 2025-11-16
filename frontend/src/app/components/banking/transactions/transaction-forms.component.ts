@@ -284,14 +284,14 @@ export class TransactionFormsComponent implements OnInit {
     };
 
     this.categoryService.createCategory(newCategory).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<Category>) => {
         if (response.success && response.data) {
           this.selectDepositCategory(response.data);
           this.success = `Category "${input}" created successfully!`;
           setTimeout(() => this.success = null, 3000);
         }
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = `Failed to create category: ${error.message}`;
       }
     });
@@ -353,14 +353,14 @@ export class TransactionFormsComponent implements OnInit {
     };
 
     this.categoryService.createCategory(newCategory).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<Category>) => {
         if (response.success && response.data) {
           this.selectWithdrawCategory(response.data);
           this.success = `Category "${input}" created successfully!`;
           setTimeout(() => this.success = null, 3000);
         }
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = `Failed to create category: ${error.message}`;
       }
     });
