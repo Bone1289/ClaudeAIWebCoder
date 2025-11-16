@@ -41,6 +41,14 @@ export class TransactionFormsComponent implements OnInit {
   expenseCategories: Category[] = [];
   allCategories: Category[] = [];
 
+  // Autocomplete state
+  depositCategoryInput: string = '';
+  withdrawCategoryInput: string = '';
+  showDepositSuggestions: boolean = false;
+  showWithdrawSuggestions: boolean = false;
+  filteredIncomeCategories: Category[] = [];
+  filteredExpenseCategories: Category[] = [];
+
   loading = false;
   error: string | null = null;
   success: string | null = null;
@@ -218,5 +226,153 @@ export class TransactionFormsComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/banking/dashboard']);
+  }
+
+  // Autocomplete methods for Deposit Category
+  onDepositCategoryInput(): void {
+    const input = this.depositCategoryInput.toLowerCase().trim();
+
+    if (!input) {
+      this.filteredIncomeCategories = this.incomeCategories;
+      this.showDepositSuggestions = false;
+      this.depositForm.categoryId = undefined;
+      return;
+    }
+
+    this.filteredIncomeCategories = this.incomeCategories.filter((cat: Category) =>
+      cat.name.toLowerCase().includes(input)
+    );
+    this.showDepositSuggestions = true;
+
+    // Check if exact match exists
+    const exactMatch = this.incomeCategories.find((cat: Category) =>
+      cat.name.toLowerCase() === input
+    );
+    if (exactMatch) {
+      this.depositForm.categoryId = exactMatch.id;
+    } else {
+      this.depositForm.categoryId = undefined;
+    }
+  }
+
+  selectDepositCategory(category: Category): void {
+    this.depositCategoryInput = category.name;
+    this.depositForm.categoryId = category.id;
+    this.showDepositSuggestions = false;
+  }
+
+  createDepositCategory(): void {
+    const input = this.depositCategoryInput.trim();
+    if (!input) return;
+
+    // Check if category already exists
+    const exists = this.incomeCategories.find((cat: Category) =>
+      cat.name.toLowerCase() === input.toLowerCase()
+    );
+
+    if (exists) {
+      this.selectDepositCategory(exists);
+      return;
+    }
+
+    // Create new category
+    const newCategory = {
+      name: input,
+      description: `${input} - Income category`,
+      type: CategoryType.INCOME,
+      color: this.generateRandomColor()
+    };
+
+    this.categoryService.createCategory(newCategory).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.selectDepositCategory(response.data);
+          this.success = `Category "${input}" created successfully!`;
+          setTimeout(() => this.success = null, 3000);
+        }
+      },
+      error: (error) => {
+        this.error = `Failed to create category: ${error.message}`;
+      }
+    });
+  }
+
+  // Autocomplete methods for Withdraw Category
+  onWithdrawCategoryInput(): void {
+    const input = this.withdrawCategoryInput.toLowerCase().trim();
+
+    if (!input) {
+      this.filteredExpenseCategories = this.expenseCategories;
+      this.showWithdrawSuggestions = false;
+      this.withdrawForm.categoryId = undefined;
+      return;
+    }
+
+    this.filteredExpenseCategories = this.expenseCategories.filter((cat: Category) =>
+      cat.name.toLowerCase().includes(input)
+    );
+    this.showWithdrawSuggestions = true;
+
+    // Check if exact match exists
+    const exactMatch = this.expenseCategories.find((cat: Category) =>
+      cat.name.toLowerCase() === input
+    );
+    if (exactMatch) {
+      this.withdrawForm.categoryId = exactMatch.id;
+    } else {
+      this.withdrawForm.categoryId = undefined;
+    }
+  }
+
+  selectWithdrawCategory(category: Category): void {
+    this.withdrawCategoryInput = category.name;
+    this.withdrawForm.categoryId = category.id;
+    this.showWithdrawSuggestions = false;
+  }
+
+  createWithdrawCategory(): void {
+    const input = this.withdrawCategoryInput.trim();
+    if (!input) return;
+
+    // Check if category already exists
+    const exists = this.expenseCategories.find((cat: Category) =>
+      cat.name.toLowerCase() === input.toLowerCase()
+    );
+
+    if (exists) {
+      this.selectWithdrawCategory(exists);
+      return;
+    }
+
+    // Create new category
+    const newCategory = {
+      name: input,
+      description: `${input} - Expense category`,
+      type: CategoryType.EXPENSE,
+      color: this.generateRandomColor()
+    };
+
+    this.categoryService.createCategory(newCategory).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.selectWithdrawCategory(response.data);
+          this.success = `Category "${input}" created successfully!`;
+          setTimeout(() => this.success = null, 3000);
+        }
+      },
+      error: (error) => {
+        this.error = `Failed to create category: ${error.message}`;
+      }
+    });
+  }
+
+  // Helper method to generate random colors for new categories
+  private generateRandomColor(): string {
+    const colors = [
+      '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
+      '#1abc9c', '#e67e22', '#34495e', '#16a085', '#27ae60',
+      '#2980b9', '#8e44ad', '#c0392b', '#d35400', '#7f8c8d'
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
   }
 }
