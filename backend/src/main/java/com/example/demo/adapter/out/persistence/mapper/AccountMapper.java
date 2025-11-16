@@ -23,7 +23,9 @@ public interface AccountMapper {
         return Account.of(
             entity.getId(),
             entity.getAccountNumber(),
-            entity.getCustomerId(),
+            entity.getFirstName(),
+            entity.getLastName(),
+            entity.getNationality(),
             entity.getAccountType(),
             entity.getBalance(),
             mapStatus(entity.getStatus()),

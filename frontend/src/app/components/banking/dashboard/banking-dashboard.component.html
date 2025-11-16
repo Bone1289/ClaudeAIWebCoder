@@ -74,7 +74,7 @@
           <div class="account-details">
             <p class="account-number">{{ account.accountNumber }}</p>
             <p class="account-balance">${{ account.balance.toFixed(2) }}</p>
-            <p class="account-customer">Customer ID: {{ account.customerId }}</p>
+            <p class="account-customer">{{ account.firstName }} {{ account.lastName }} ({{ account.nationality }})</p>
           </div>
           <div class="account-actions">
             <a [routerLink]="['/banking/transactions', account.id]" class="btn btn-small">
@@ -115,8 +115,16 @@
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label for="customerId">Customer ID:</label>
-          <input type="number" id="customerId" [(ngModel)]="newAccount.customerId" class="form-control">
+          <label for="firstName">First Name:</label>
+          <input type="text" id="firstName" [(ngModel)]="newAccount.firstName" class="form-control" placeholder="Enter first name" required>
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name:</label>
+          <input type="text" id="lastName" [(ngModel)]="newAccount.lastName" class="form-control" placeholder="Enter last name" required>
+        </div>
+        <div class="form-group">
+          <label for="nationality">Nationality:</label>
+          <input type="text" id="nationality" [(ngModel)]="newAccount.nationality" class="form-control" placeholder="Enter nationality" required>
         </div>
         <div class="form-group">
           <label for="accountType">Account Type:</label>

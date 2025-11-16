@@ -44,13 +44,9 @@ public class BankingService implements
     }
 
     @Override
-    public Account createAccount(Long customerId, String accountType) {
-        if (customerId == null) {
-            throw new IllegalArgumentException("Customer ID is required");
-        }
-
+    public Account createAccount(String firstName, String lastName, String nationality, String accountType) {
         String accountNumber = accountRepository.generateAccountNumber();
-        Account account = Account.create(accountNumber, customerId, accountType);
+        Account account = Account.create(accountNumber, firstName, lastName, nationality, accountType);
 
         return accountRepository.save(account);
     }

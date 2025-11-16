@@ -30,7 +30,9 @@ export interface Category {
 export interface Account {
   id: number;
   accountNumber: string;
-  customerId: number;
+  firstName: string;
+  lastName: string;
+  nationality: string;
   accountType: string;
   balance: number;
   status: AccountStatus;
@@ -90,7 +92,9 @@ export interface TransferRequest {
 }
 
 export interface CreateAccountRequest {
-  customerId: number;
+  firstName: string;
+  lastName: string;
+  nationality: string;
   accountType: string;
 }
 

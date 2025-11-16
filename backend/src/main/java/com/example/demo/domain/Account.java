@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 public class Account {
     private final Long id;
     private final String accountNumber;
-    private final Long customerId;
+    private final String firstName;
+    private final String lastName;
+    private final String nationality;
     private final String accountType;
     private final BigDecimal balance;
     private final AccountStatus status;
@@ -21,11 +23,14 @@ public class Account {
         ACTIVE, SUSPENDED, CLOSED
     }
 
-    private Account(Long id, String accountNumber, Long customerId, String accountType,
-                   BigDecimal balance, AccountStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    private Account(Long id, String accountNumber, String firstName, String lastName, String nationality,
+                   String accountType, BigDecimal balance, AccountStatus status,
+                   LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.accountNumber = accountNumber;
-        this.customerId = customerId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.nationality = nationality;
         this.accountType = accountType;
         this.balance = balance;
         this.status = status;
@@ -36,13 +41,19 @@ public class Account {
     /**
      * Create a new account
      */
-    public static Account create(String accountNumber, Long customerId, String accountType) {
+    public static Account create(String accountNumber, String firstName, String lastName,
+                                String nationality, String accountType) {
         validateAccountType(accountType);
+        validateName(firstName, "First name");
+        validateName(lastName, "Last name");
+        validateNationality(nationality);
 
         return new Account(
             null,
             accountNumber,
-            customerId,
+            firstName,
+            lastName,
+            nationality,
             accountType,
             BigDecimal.ZERO,
             AccountStatus.ACTIVE,
@@ -54,16 +65,20 @@ public class Account {
     /**
      * Reconstitute account from persistence
      */
-    public static Account of(Long id, String accountNumber, Long customerId, String accountType,
-                            BigDecimal balance, AccountStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public static Account of(Long id, String accountNumber, String firstName, String lastName,
+                            String nationality, String accountType, BigDecimal balance,
+                            AccountStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         if (id == null) {
             throw new IllegalArgumentException("Account ID cannot be null");
         }
         validateAccountNumber(accountNumber);
+        validateName(firstName, "First name");
+        validateName(lastName, "Last name");
+        validateNationality(nationality);
         validateAccountType(accountType);
         validateBalance(balance);
 
-        return new Account(id, accountNumber, customerId, accountType, balance, status, createdAt, updatedAt);
+        return new Account(id, accountNumber, firstName, lastName, nationality, accountType, balance, status, createdAt, updatedAt);
     }
 
     /**
@@ -76,7 +91,7 @@ public class Account {
         validatePositiveAmount(amount);
 
         BigDecimal newBalance = this.balance.add(amount);
-        return new Account(id, accountNumber, customerId, accountType, newBalance, status, createdAt, LocalDateTime.now());
+        return new Account(id, accountNumber, firstName, lastName, nationality, accountType, newBalance, status, createdAt, LocalDateTime.now());
     }
 
     /**
@@ -93,7 +108,7 @@ public class Account {
             throw new IllegalArgumentException("Insufficient funds. Current balance: " + this.balance);
         }
 
-        return new Account(id, accountNumber, customerId, accountType, newBalance, status, createdAt, LocalDateTime.now());
+        return new Account(id, accountNumber, firstName, lastName, nationality, accountType, newBalance, status, createdAt, LocalDateTime.now());
     }
 
     /**
@@ -103,7 +118,7 @@ public class Account {
         if (status == AccountStatus.CLOSED) {
             throw new IllegalStateException("Cannot suspend a closed account");
         }
-        return new Account(id, accountNumber, customerId, accountType, balance, AccountStatus.SUSPENDED, createdAt, LocalDateTime.now());
+        return new Account(id, accountNumber, firstName, lastName, nationality, accountType, balance, AccountStatus.SUSPENDED, createdAt, LocalDateTime.now());
     }
 
     /**
@@ -113,7 +128,7 @@ public class Account {
         if (balance.compareTo(BigDecimal.ZERO) != 0) {
             throw new IllegalStateException("Cannot close account with non-zero balance");
         }
-        return new Account(id, accountNumber, customerId, accountType, balance, AccountStatus.CLOSED, createdAt, LocalDateTime.now());
+        return new Account(id, accountNumber, firstName, lastName, nationality, accountType, balance, AccountStatus.CLOSED, createdAt, LocalDateTime.now());
     }
 
     /**
@@ -124,7 +139,7 @@ public class Account {
         if (status == AccountStatus.CLOSED) {
             throw new IllegalStateException("Cannot update a closed account");
         }
-        return new Account(id, accountNumber, customerId, newAccountType, balance, status, createdAt, LocalDateTime.now());
+        return new Account(id, accountNumber, firstName, lastName, nationality, newAccountType, balance, status, createdAt, LocalDateTime.now());
     }
 
     // Validation methods
@@ -158,6 +173,18 @@ public class Account {
         }
     }
 
+    private static void validateName(String name, String fieldName) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " cannot be null or empty");
+        }
+    }
+
+    private static void validateNationality(String nationality) {
+        if (nationality == null || nationality.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nationality cannot be null or empty");
+        }
+    }
+
     // Getters
     public Long getId() {
         return id;
@@ -167,8 +194,16 @@ public class Account {
         return accountNumber;
     }
 
-    public Long getCustomerId() {
-        return customerId;
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getNationality() {
+        return nationality;
     }
 
     public String getAccountType() {
@@ -209,7 +244,9 @@ public class Account {
         return "Account{" +
                 "id=" + id +
                 ", accountNumber='" + accountNumber + '\'' +
-                ", customerId=" + customerId +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", nationality='" + nationality + '\'' +
                 ", accountType='" + accountType + '\'' +
                 ", balance=" + balance +
                 ", status=" + status +

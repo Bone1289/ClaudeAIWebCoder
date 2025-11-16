@@ -22,7 +22,9 @@ export class BankingDashboardComponent implements OnInit {
 
   // Form data
   newAccount: CreateAccountRequest = {
-    customerId: 1, // Default customer ID
+    firstName: '',
+    lastName: '',
+    nationality: '',
     accountType: 'CHECKING'
   };
   editingAccount: Account | null = null;
@@ -69,7 +71,9 @@ export class BankingDashboardComponent implements OnInit {
 
   openAddModal(): void {
     this.newAccount = {
-      customerId: 1,
+      firstName: '',
+      lastName: '',
+      nationality: '',
       accountType: 'CHECKING'
     };
     this.showAddModal = true;

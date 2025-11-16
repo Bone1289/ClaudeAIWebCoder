@@ -26,8 +26,14 @@ public class AccountJpaEntity {
     @Column(name = "account_number", unique = true, nullable = false, length = 50)
     private String accountNumber;
 
-    @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+    @Column(name = "first_name", nullable = false, length = 100)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false, length = 100)
+    private String lastName;
+
+    @Column(name = "nationality", nullable = false, length = 100)
+    private String nationality;
 
     @Column(name = "account_type", nullable = false, length = 20)
     private String accountType;

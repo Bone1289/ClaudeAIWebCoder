@@ -60,7 +60,12 @@ public class BankingController {
     @PostMapping("/accounts")
     public ResponseEntity<ApiResponse<AccountResponse>> createAccount(@RequestBody CreateAccountRequest request) {
         try {
-            Account account = createAccountUseCase.createAccount(request.getCustomerId(), request.getAccountType());
+            Account account = createAccountUseCase.createAccount(
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getNationality(),
+                    request.getAccountType()
+            );
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("Account created successfully", AccountResponse.fromDomain(account)));
         } catch (IllegalArgumentException e) {
