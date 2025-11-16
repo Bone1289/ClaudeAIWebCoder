@@ -11,25 +11,20 @@ export enum TransactionType {
   TRANSFER_OUT = 'TRANSFER_OUT'
 }
 
-export enum TransactionCategory {
-  // Income categories
-  SALARY = 'SALARY',
-  INVESTMENT = 'INVESTMENT',
-  REFUND = 'REFUND',
-
-  // Expense categories
-  GROCERIES = 'GROCERIES',
-  UTILITIES = 'UTILITIES',
-  RENT = 'RENT',
-  ENTERTAINMENT = 'ENTERTAINMENT',
-  HEALTHCARE = 'HEALTHCARE',
-  TRANSPORTATION = 'TRANSPORTATION',
-  SHOPPING = 'SHOPPING',
-  DINING = 'DINING',
-
-  // Special
-  TRANSFER = 'TRANSFER',
+export enum CategoryType {
+  INCOME = 'INCOME',
+  EXPENSE = 'EXPENSE',
   OTHER = 'OTHER'
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  type: CategoryType;
+  color: string;
+  active: boolean;
+  createdAt: string;
 }
 
 export interface Account {
@@ -46,7 +41,7 @@ export interface Transaction {
   id: number;
   accountId: number;
   type: TransactionType;
-  category: TransactionCategory;
+  categoryId: number;
   amount: number;
   balanceAfter: number;
   description: string;
@@ -68,7 +63,7 @@ export interface AccountStatement {
 }
 
 export interface CategorySummary {
-  category: TransactionCategory;
+  category: Category;
   amount: number;
   count: number;
   percentage: number;
@@ -85,7 +80,7 @@ export interface CategoryReport {
 export interface TransactionRequest {
   amount: number;
   description: string;
-  category?: TransactionCategory;
+  categoryId?: number;
 }
 
 export interface TransferRequest {

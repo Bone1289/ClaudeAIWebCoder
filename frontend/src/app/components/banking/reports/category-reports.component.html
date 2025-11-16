@@ -122,12 +122,16 @@
         </thead>
         <tbody>
           <tr *ngFor="let category of getActiveReport()!.categories">
-            <td class="category-name">{{ category.category }}</td>
+            <td class="category-name">
+              <span class="category-badge" [style.background-color]="category.category.color">
+                {{ category.category.name }}
+              </span>
+            </td>
             <td class="amount">${{ category.amount.toFixed(2) }}</td>
             <td class="count">{{ category.count }}</td>
             <td class="percentage">
               <div class="percentage-bar">
-                <div class="percentage-fill" [style.width.%]="category.percentage"></div>
+                <div class="percentage-fill" [style.width.%]="category.percentage" [style.background-color]="category.category.color"></div>
                 <span class="percentage-text">{{ category.percentage.toFixed(1) }}%</span>
               </div>
             </td>
