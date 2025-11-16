@@ -1,0 +1,195 @@
+<div class="transaction-forms">
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">← Back</button>
+    <h1>Transactions</h1>
+  </div>
+
+  <!-- Account Info -->
+  <div *ngIf="account" class="account-info">
+    <div class="info-item">
+      <span class="label">Account:</span>
+      <span class="value">{{ account.accountNumber }}</span>
+    </div>
+    <div class="info-item">
+      <span class="label">Type:</span>
+      <span class="value">{{ account.accountType }}</span>
+    </div>
+    <div class="info-item">
+      <span class="label">Balance:</span>
+      <span class="value balance">${{ account.balance.toFixed(2) }}</span>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="success" class="message success-message">
+    <span class="message-icon">✓</span>
+    {{ success }}
+  </div>
+
+  <div *ngIf="error" class="message error-message">
+    <span class="message-icon">✗</span>
+    {{ error }}
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button
+      class="tab"
+      [class.active]="activeTab === 'deposit'"
+      (click)="setTab('deposit')">
+      💵 Deposit
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab === 'withdraw'"
+      (click)="setTab('withdraw')">
+      💸 Withdraw
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab === 'transfer'"
+      (click)="setTab('transfer')">
+      🔄 Transfer
+    </button>
+  </div>
+
+  <!-- Deposit Form -->
+  <div *ngIf="activeTab === 'deposit'" class="form-container">
+    <h2>Deposit Money</h2>
+    <form (ngSubmit)="onDeposit()">
+      <div class="form-group">
+        <label for="depositAmount">Amount ($)</label>
+        <input
+          id="depositAmount"
+          type="number"
+          [(ngModel)]="depositForm.amount"
+          name="depositAmount"
+          required
+          min="0.01"
+          step="0.01"
+          placeholder="0.00">
+      </div>
+
+      <div class="form-group">
+        <label for="depositCategory">Category</label>
+        <select
+          id="depositCategory"
+          [(ngModel)]="depositForm.category"
+          name="depositCategory"
+          required>
+          <option *ngFor="let category of incomeCategories" [value]="category">
+            {{ category }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="depositDescription">Description</label>
+        <textarea
+          id="depositDescription"
+          [(ngModel)]="depositForm.description"
+          name="depositDescription"
+          rows="3"
+          placeholder="Enter transaction description"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="loading || depositForm.amount <= 0">
+        {{ loading ? 'Processing...' : 'Deposit' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Withdraw Form -->
+  <div *ngIf="activeTab === 'withdraw'" class="form-container">
+    <h2>Withdraw Money</h2>
+    <form (ngSubmit)="onWithdraw()">
+      <div class="form-group">
+        <label for="withdrawAmount">Amount ($)</label>
+        <input
+          id="withdrawAmount"
+          type="number"
+          [(ngModel)]="withdrawForm.amount"
+          name="withdrawAmount"
+          required
+          min="0.01"
+          step="0.01"
+          placeholder="0.00">
+      </div>
+
+      <div class="form-group">
+        <label for="withdrawCategory">Category</label>
+        <select
+          id="withdrawCategory"
+          [(ngModel)]="withdrawForm.category"
+          name="withdrawCategory"
+          required>
+          <option *ngFor="let category of expenseCategories" [value]="category">
+            {{ category }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="withdrawDescription">Description</label>
+        <textarea
+          id="withdrawDescription"
+          [(ngModel)]="withdrawForm.description"
+          name="withdrawDescription"
+          rows="3"
+          placeholder="Enter transaction description"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="loading || withdrawForm.amount <= 0">
+        {{ loading ? 'Processing...' : 'Withdraw' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Transfer Form -->
+  <div *ngIf="activeTab === 'transfer'" class="form-container">
+    <h2>Transfer Money</h2>
+    <form (ngSubmit)="onTransfer()">
+      <div class="form-group">
+        <label for="transferTo">To Account</label>
+        <select
+          id="transferTo"
+          [(ngModel)]="transferForm.toAccountId"
+          name="transferTo"
+          required>
+          <option value="0" disabled>Select destination account</option>
+          <option *ngFor="let acc of accounts" [value]="acc.id">
+            {{ acc.accountNumber }} - {{ acc.accountType }} (${{ acc.balance.toFixed(2) }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="transferAmount">Amount ($)</label>
+        <input
+          id="transferAmount"
+          type="number"
+          [(ngModel)]="transferForm.amount"
+          name="transferAmount"
+          required
+          min="0.01"
+          step="0.01"
+          placeholder="0.00">
+      </div>
+
+      <div class="form-group">
+        <label for="transferDescription">Description</label>
+        <textarea
+          id="transferDescription"
+          [(ngModel)]="transferForm.description"
+          name="transferDescription"
+          rows="3"
+          placeholder="Enter transfer description"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary"
+              [disabled]="loading || transferForm.amount <= 0 || transferForm.toAccountId === 0">
+        {{ loading ? 'Processing...' : 'Transfer' }}
+      </button>
+    </form>
+  </div>
+</div>

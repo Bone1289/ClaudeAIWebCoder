@@ -1,0 +1,88 @@
+<div class="banking-dashboard">
+  <div class="dashboard-header">
+    <h1>Virtual Bank Dashboard</h1>
+    <button class="btn btn-primary" (click)="loadAccounts()">
+      <span>&#x21bb;</span> Refresh
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading accounts...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-message">
+    <span class="error-icon">⚠</span>
+    <p>{{ error }}</p>
+    <button class="btn btn-secondary" (click)="loadAccounts()">Try Again</button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && !error" class="dashboard-content">
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="card-icon">💰</div>
+        <div class="card-content">
+          <h3>Total Balance</h3>
+          <p class="amount">${{ getTotalBalance().toFixed(2) }}</p>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">🏦</div>
+        <div class="card-content">
+          <h3>Active Accounts</h3>
+          <p class="count">{{ getActiveAccountsCount() }}</p>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">📊</div>
+        <div class="card-content">
+          <h3>Total Accounts</h3>
+          <p class="count">{{ accounts.length }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accounts Grid -->
+    <div class="accounts-section">
+      <h2>Your Accounts</h2>
+      <div class="accounts-grid">
+        <div *ngFor="let account of accounts"
+             class="account-card"
+             [class.selected]="selectedAccount?.id === account.id"
+             (click)="selectAccount(account)">
+          <div class="account-header">
+            <h3>{{ account.accountType }}</h3>
+            <span class="account-status" [class]="'status-' + account.status.toLowerCase()">
+              {{ account.status }}
+            </span>
+          </div>
+          <div class="account-details">
+            <p class="account-number">{{ account.accountNumber }}</p>
+            <p class="account-balance">${{ account.balance.toFixed(2) }}</p>
+          </div>
+          <div class="account-actions">
+            <a [routerLink]="['/banking/transactions', account.id]" class="btn btn-small">
+              Transactions
+            </a>
+            <a [routerLink]="['/banking/statement', account.id]" class="btn btn-small">
+              Statement
+            </a>
+            <a [routerLink]="['/banking/reports', account.id]" class="btn btn-small">
+              Reports
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="accounts.length === 0" class="empty-state">
+      <p>No accounts found. Create your first account to get started!</p>
+    </div>
+  </div>
+</div>

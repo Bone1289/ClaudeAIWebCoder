@@ -1,0 +1,324 @@
+.statement-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  color: #2c3e50;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.btn-back {
+  padding: 8px 16px;
+  background-color: #ecf0f1;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.btn-back:hover {
+  background-color: #bdc3c7;
+}
+
+/* Date Range Selector */
+.date-range-selector {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.date-range-selector .form-group {
+  flex: 1;
+  margin: 0;
+}
+
+.date-range-selector label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.date-input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+/* Loading and Error */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  color: #c00;
+}
+
+/* Statement Content */
+.statement-content {
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.statement-header {
+  text-align: center;
+  border-bottom: 3px solid #3498db;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+.statement-header h2 {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 2rem;
+}
+
+.statement-header .subtitle {
+  color: #7f8c8d;
+  margin: 8px 0 0 0;
+  font-size: 1.1rem;
+}
+
+/* Info Section */
+.info-section {
+  margin-bottom: 30px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.info-label {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.info-value {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Summary Section */
+.summary-section {
+  margin-bottom: 30px;
+}
+
+.summary-section h3 {
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.summary-item {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-item.highlight {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.summary-item.highlight .summary-label,
+.summary-item.highlight .summary-value {
+  color: white;
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.summary-value.positive {
+  color: #27ae60;
+}
+
+.summary-value.negative {
+  color: #e74c3c;
+}
+
+/* Transactions Section */
+.transactions-section {
+  margin-bottom: 30px;
+}
+
+.transactions-section h3 {
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.transactions-table th {
+  background-color: #34495e;
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.transactions-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.transactions-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.amount-col {
+  text-align: right;
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.transaction-type {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.type-deposit,
+.type-transfer_in {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.type-withdrawal,
+.type-transfer_out {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.no-transactions {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+}
+
+/* Statement Footer */
+.statement-footer {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 2px solid #ecf0f1;
+  color: #7f8c8d;
+  font-size: 0.85rem;
+}
+
+.statement-footer p {
+  margin: 4px 0;
+}
+
+.disclaimer {
+  font-style: italic;
+  margin-top: 12px;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .statement-content {
+    box-shadow: none;
+    padding: 20px;
+  }
+
+  .statement-page {
+    padding: 0;
+  }
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+}

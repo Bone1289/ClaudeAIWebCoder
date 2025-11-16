@@ -15,6 +15,10 @@ const routes: Routes = [
     loadChildren: () => import('./components/users/users.module').then(m => m.UsersModule)
   },
   {
+    path: 'banking',
+    loadChildren: () => import('./components/banking/banking.module').then(m => m.BankingModule)
+  },
+  {
     path: '**',
     redirectTo: ''
   }

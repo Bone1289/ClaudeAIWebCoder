@@ -1,0 +1,146 @@
+<div class="statement-page">
+  <div class="page-header no-print">
+    <button class="btn-back" (click)="goBack()">← Back</button>
+    <h1>Account Statement</h1>
+    <button class="btn btn-primary" (click)="printStatement()">🖨 Print</button>
+  </div>
+
+  <!-- Date Range Selector -->
+  <div class="date-range-selector no-print">
+    <div class="form-group">
+      <label for="startDate">Start Date</label>
+      <input
+        id="startDate"
+        type="date"
+        [(ngModel)]="startDate"
+        class="date-input">
+    </div>
+    <div class="form-group">
+      <label for="endDate">End Date</label>
+      <input
+        id="endDate"
+        type="date"
+        [(ngModel)]="endDate"
+        class="date-input">
+    </div>
+    <button class="btn btn-primary" (click)="loadStatement()">
+      Generate Statement
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading no-print">
+    <div class="spinner"></div>
+    <p>Generating statement...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-message no-print">
+    <span class="error-icon">⚠</span>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Statement Content -->
+  <div *ngIf="statement && !loading" class="statement-content">
+    <!-- Statement Header -->
+    <div class="statement-header">
+      <h2>Virtual Bank</h2>
+      <p class="subtitle">Account Statement</p>
+    </div>
+
+    <!-- Account Information -->
+    <div class="info-section">
+      <div class="info-row">
+        <span class="info-label">Account Number:</span>
+        <span class="info-value">{{ statement.account.accountNumber }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Account Type:</span>
+        <span class="info-value">{{ statement.account.accountType }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Statement Period:</span>
+        <span class="info-value">
+          {{ statement.startDate | date:'mediumDate' }} - {{ statement.endDate | date:'mediumDate' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="summary-section">
+      <h3>Summary</h3>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="summary-label">Opening Balance:</span>
+          <span class="summary-value">${{ statement.openingBalance.toFixed(2) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total Deposits:</span>
+          <span class="summary-value positive">${{ statement.totalDeposits.toFixed(2) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total Withdrawals:</span>
+          <span class="summary-value negative">${{ statement.totalWithdrawals.toFixed(2) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Net Change:</span>
+          <span class="summary-value" [class.positive]="statement.netChange >= 0" [class.negative]="statement.netChange < 0">
+            ${{ statement.netChange.toFixed(2) }}
+          </span>
+        </div>
+        <div class="summary-item highlight">
+          <span class="summary-label">Closing Balance:</span>
+          <span class="summary-value">${{ statement.closingBalance.toFixed(2) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total Transactions:</span>
+          <span class="summary-value">{{ statement.transactionCount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="transactions-section">
+      <h3>Transaction Details</h3>
+      <table class="transactions-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th class="amount-col">Amount</th>
+            <th class="amount-col">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transaction of statement.transactions">
+            <td>{{ transaction.createdAt | date:'short' }}</td>
+            <td>
+              <span class="transaction-type" [class]="'type-' + transaction.type.toLowerCase()">
+                {{ transaction.type }}
+              </span>
+            </td>
+            <td>{{ transaction.category }}</td>
+            <td>{{ transaction.description || '-' }}</td>
+            <td class="amount-col" [class.positive]="transaction.type === 'DEPOSIT' || transaction.type === 'TRANSFER_IN'"
+                [class.negative]="transaction.type === 'WITHDRAWAL' || transaction.type === 'TRANSFER_OUT'">
+              ${{ transaction.amount.toFixed(2) }}
+            </td>
+            <td class="amount-col">${{ transaction.balanceAfter.toFixed(2) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="statement.transactions.length === 0" class="no-transactions">
+        No transactions found for this period.
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="statement-footer">
+      <p>Generated on {{ new Date() | date:'medium' }}</p>
+      <p class="disclaimer">This is a computer-generated statement and does not require a signature.</p>
+    </div>
+  </div>
+</div>

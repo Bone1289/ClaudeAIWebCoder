@@ -1,0 +1,154 @@
+<div class="reports-page">
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">← Back</button>
+    <h1>Category Reports</h1>
+  </div>
+
+  <!-- Account Info -->
+  <div *ngIf="account" class="account-info">
+    <div class="info-item">
+      <span class="label">Account:</span>
+      <span class="value">{{ account.accountNumber }}</span>
+    </div>
+    <div class="info-item">
+      <span class="label">Type:</span>
+      <span class="value">{{ account.accountType }}</span>
+    </div>
+    <div class="info-item">
+      <span class="label">Balance:</span>
+      <span class="value balance">${{ account.balance.toFixed(2) }}</span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading reports...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-message">
+    <span class="error-icon">⚠</span>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Report Tabs -->
+  <div *ngIf="!loading && !error" class="report-tabs">
+    <button
+      class="tab"
+      [class.active]="selectedType === transactionTypes.DEPOSIT"
+      (click)="selectedType = transactionTypes.DEPOSIT">
+      📈 Income
+    </button>
+    <button
+      class="tab"
+      [class.active]="selectedType === transactionTypes.WITHDRAWAL"
+      (click)="selectedType = transactionTypes.WITHDRAWAL">
+      📉 Expenses
+    </button>
+  </div>
+
+  <!-- Report Content -->
+  <div *ngIf="!loading && !error && getActiveReport()" class="report-content">
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="card-icon">💰</div>
+        <div class="card-content">
+          <h3>Total {{ selectedType === transactionTypes.DEPOSIT ? 'Income' : 'Expenses' }}</h3>
+          <p class="amount">${{ getActiveReport()!.totalAmount.toFixed(2) }}</p>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">📊</div>
+        <div class="card-content">
+          <h3>Total Transactions</h3>
+          <p class="count">{{ getActiveReport()!.totalTransactions }}</p>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">🏷</div>
+        <div class="card-content">
+          <h3>Categories</h3>
+          <p class="count">{{ getActiveReport()!.categories.length }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="chart-section">
+      <h2>Distribution by Category</h2>
+      <div class="chart-container">
+        <!-- Simple CSS-based bar chart -->
+        <div class="bar-chart">
+          <div *ngFor="let item of getChartData()" class="bar-item">
+            <div class="bar-wrapper">
+              <div
+                class="bar"
+                [style.width.%]="item.percentage"
+                [style.background-color]="item.color">
+              </div>
+            </div>
+            <div class="bar-label">
+              <span class="category-name">{{ item.category }}</span>
+              <span class="category-amount">${{ item.amount.toFixed(2) }} ({{ item.percentage.toFixed(1) }}%)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pie chart representation using CSS -->
+        <div class="pie-chart-legend">
+          <h3>Legend</h3>
+          <div *ngFor="let item of getChartData()" class="legend-item">
+            <div class="color-box" [style.background-color]="item.color"></div>
+            <span>{{ item.category }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="table-section">
+      <h2>Detailed Breakdown</h2>
+      <table class="category-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Transactions</th>
+            <th>Percentage</th>
+            <th>Average</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let category of getActiveReport()!.categories">
+            <td class="category-name">{{ category.category }}</td>
+            <td class="amount">${{ category.amount.toFixed(2) }}</td>
+            <td class="count">{{ category.count }}</td>
+            <td class="percentage">
+              <div class="percentage-bar">
+                <div class="percentage-fill" [style.width.%]="category.percentage"></div>
+                <span class="percentage-text">{{ category.percentage.toFixed(1) }}%</span>
+              </div>
+            </td>
+            <td class="amount">${{ (category.amount / category.count).toFixed(2) }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td><strong>Total</strong></td>
+            <td class="amount"><strong>${{ getActiveReport()!.totalAmount.toFixed(2) }}</strong></td>
+            <td class="count"><strong>{{ getActiveReport()!.totalTransactions }}</strong></td>
+            <td class="percentage"><strong>100%</strong></td>
+            <td class="amount"><strong>${{ (getActiveReport()!.totalAmount / getActiveReport()!.totalTransactions).toFixed(2) }}</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="getActiveReport()!.categories.length === 0" class="empty-state">
+      <p>No {{ selectedType === transactionTypes.DEPOSIT ? 'income' : 'expense' }} transactions found.</p>
+    </div>
+  </div>
+</div>
