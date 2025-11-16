@@ -1,0 +1,62 @@
+package com.example.demo.adapter.out.persistence.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+/**
+ * JPA Entity for Account persistence
+ * Uses standard JPA annotations - database agnostic
+ * No SQL-specific code, easily portable to any JPA-supported database
+ */
+@Entity
+@Table(name = "accounts")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class AccountJpaEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "account_number", unique = true, nullable = false, length = 50)
+    private String accountNumber;
+
+    @Column(name = "customer_id", nullable = false)
+    private Long customerId;
+
+    @Column(name = "account_type", nullable = false, length = 20)
+    private String accountType;
+
+    @Column(name = "balance", nullable = false, precision = 15, scale = 2)
+    private BigDecimal balance;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private AccountStatus status;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    public enum AccountStatus {
+        ACTIVE, SUSPENDED, CLOSED
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+}
