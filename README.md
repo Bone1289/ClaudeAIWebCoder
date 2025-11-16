@@ -1,114 +1,287 @@
-# Spring Boot Demo Application
+# Spring Boot + Angular Full-Stack Application
 
-A simple Spring Boot application with Gradle build configuration.
+A full-stack demo application showcasing Spring Boot backend with Angular frontend.
 
 ## Project Structure
 
 ```
 .
-├── build.gradle                 # Gradle build configuration
-├── settings.gradle              # Gradle settings
-├── gradle.properties            # Gradle properties
-├── gradlew                      # Gradle wrapper script (Unix)
-├── gradlew.bat                  # Gradle wrapper script (Windows)
-├── gradle/                      # Gradle wrapper files
-└── src/
-    ├── main/
-    │   ├── java/
-    │   │   └── com/example/demo/
-    │   │       ├── DemoApplication.java          # Main Spring Boot application
-    │   │       └── controller/
-    │   │           └── HelloController.java       # Sample REST controller
-    │   └── resources/
-    │       └── application.properties             # Application configuration
-    └── test/
-        └── java/
-            └── com/example/demo/                  # Test directory
+├── backend/                 # Spring Boot application (Java + Gradle)
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/       # Java source code
+│   │   │   └── resources/  # Application properties
+│   │   └── test/           # Unit and integration tests
+│   ├── build.gradle        # Gradle build configuration
+│   ├── settings.gradle     # Gradle settings
+│   └── gradlew            # Gradle wrapper
+│
+├── frontend/               # Angular application (TypeScript + Node.js)
+│   ├── src/
+│   │   ├── app/           # Angular components and services
+│   │   ├── assets/        # Static assets
+│   │   └── environments/  # Environment configurations
+│   ├── package.json       # NPM dependencies
+│   ├── angular.json       # Angular CLI configuration
+│   └── proxy.conf.json    # Development proxy configuration
+│
+└── README.md              # This file
 ```
 
-## Features
+## Technology Stack
 
-- Spring Boot 3.3.5
-- Spring Web (REST API)
-- Spring Boot Actuator (health checks)
-- Gradle 8.x build system
-- Java 17
+### Backend
+- **Java 17** - Programming language
+- **Spring Boot 3.3.5** - Application framework
+- **Spring Web** - RESTful API
+- **Spring Boot Actuator** - Health monitoring
+- **Gradle 8.x** - Build tool
 
-## Building the Application
+### Frontend
+- **Angular 17** - Frontend framework
+- **TypeScript 5.4** - Programming language
+- **RxJS 7.8** - Reactive programming
+- **Angular Router** - Navigation and routing
+- **HttpClient** - HTTP communication
 
-### Using Gradle Wrapper (Recommended)
+## Getting Started
 
+### Prerequisites
+
+**Backend:**
+- Java 17 or higher
+- Gradle 8.x (or use included wrapper)
+
+**Frontend:**
+- Node.js 18.x or higher
+- npm 9.x or higher
+- Angular CLI 17.x
+
+### Running the Application
+
+#### 1. Start the Backend
+
+```bash
+cd backend
+./gradlew bootRun
+```
+
+The backend will start on `http://localhost:8080`
+
+#### 2. Start the Frontend
+
+In a separate terminal:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+The frontend will start on `http://localhost:4200`
+
+#### 3. Access the Application
+
+Open your browser and navigate to:
+- **Frontend:** http://localhost:4200
+- **Backend API:** http://localhost:8080/api
+
+## Available API Endpoints
+
+### Backend Endpoints
+
+- **GET /api/hello?name={name}**
+  - Returns a personalized greeting message
+  - Example: `http://localhost:8080/api/hello?name=John`
+
+- **GET /api/health**
+  - Returns application health status
+  - Example: `http://localhost:8080/api/health`
+
+- **GET /actuator/health**
+  - Spring Boot Actuator health endpoint
+  - Example: `http://localhost:8080/actuator/health`
+
+## Development
+
+### Backend Development
+
+**Build the project:**
+```bash
+cd backend
+./gradlew build
+```
+
+**Run tests:**
+```bash
+./gradlew test
+```
+
+**Clean build:**
 ```bash
 ./gradlew clean build
 ```
 
-### Using Local Gradle Installation
+### Frontend Development
 
+**Install dependencies:**
 ```bash
-gradle clean build
+cd frontend
+npm install
 ```
 
-## Running the Application
-
+**Run development server:**
 ```bash
-./gradlew bootRun
+npm start
 ```
 
-Or after building:
+**Build for production:**
+```bash
+npm run build
+```
+
+**Run tests:**
+```bash
+npm test
+```
+
+## Frontend-Backend Integration
+
+During development, the Angular application uses a proxy configuration (`frontend/proxy.conf.json`) to forward API requests to the Spring Boot backend. This avoids CORS issues:
+
+- Frontend runs on `http://localhost:4200`
+- Backend runs on `http://localhost:8080`
+- API requests to `/api/*` are proxied from frontend to backend
+
+## Project Features
+
+- **RESTful API** - Clean REST endpoints with Spring Boot
+- **Reactive Programming** - RxJS observables for async operations
+- **Lazy Loading** - Angular modules loaded on-demand
+- **Responsive Design** - Mobile-friendly UI
+- **Error Handling** - Comprehensive error handling on both ends
+- **Health Monitoring** - Built-in health checks
+- **Development Proxy** - Seamless local development
+
+## Building for Production
+
+### Backend
+
+Build a production JAR:
+
+```bash
+cd backend
+./gradlew clean build
+```
+
+Run the JAR:
 
 ```bash
 java -jar build/libs/spring-demo-app-0.0.1-SNAPSHOT.jar
 ```
 
-## API Endpoints
+### Frontend
 
-Once the application is running on port 8080:
+Build for production:
 
-- **GET /api/hello** - Returns a hello message
-  - Query parameter: `name` (optional, default: "World")
-  - Example: `http://localhost:8080/api/hello?name=John`
+```bash
+cd frontend
+npm run build
+```
 
-- **GET /api/health** - Returns application health status
-  - Example: `http://localhost:8080/api/health`
+The production files will be in `frontend/dist/spring-demo-frontend/`.
 
-- **GET /actuator/health** - Spring Boot Actuator health endpoint
-  - Example: `http://localhost:8080/actuator/health`
+You can:
+1. Serve them from a web server (nginx, Apache, etc.)
+2. Deploy to cloud platforms (Netlify, Vercel, AWS S3, etc.)
+3. Serve them from Spring Boot as static resources
 
 ## Configuration
 
-Application configuration can be modified in `src/main/resources/application.properties`:
+### Backend Configuration
 
-- Server port: `server.port` (default: 8080)
-- Application name: `spring.application.name`
-- Logging levels
-- Actuator endpoints
+Edit `backend/src/main/resources/application.properties`:
 
-## Development
-
-### Prerequisites
-
-- Java 17 or higher
-- Gradle 8.x (or use the included Gradle wrapper)
-
-### Testing
-
-Run all tests:
-
-```bash
-./gradlew test
+```properties
+server.port=8080
+spring.application.name=spring-demo-app
 ```
 
-### Code Quality
+### Frontend Configuration
 
-The project includes:
-- JUnit 5 for testing
-- Spring Boot Test for integration testing
+Edit `frontend/src/environments/environment.ts` for development:
 
-## Notes
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:8080/api'
+};
+```
 
-This is a basic Spring Boot application template. You can extend it by adding:
-- Database connectivity (Spring Data JPA)
-- Security (Spring Security)
+## Docker Support (Optional)
+
+You can containerize both applications:
+
+**Backend Dockerfile example:**
+```dockerfile
+FROM openjdk:17-jdk-slim
+COPY build/libs/*.jar app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]
+```
+
+**Frontend Dockerfile example:**
+```dockerfile
+FROM node:18 AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist/spring-demo-frontend /usr/share/nginx/html
+```
+
+## Troubleshooting
+
+### Backend Issues
+
+**Port already in use:**
+- Change the port in `application.properties`: `server.port=8081`
+
+**Gradle build fails:**
+- Ensure Java 17 is installed: `java -version`
+- Clean the build: `./gradlew clean`
+
+### Frontend Issues
+
+**npm install fails:**
+- Clear npm cache: `npm cache clean --force`
+- Delete `node_modules` and reinstall
+
+**Proxy not working:**
+- Ensure backend is running on port 8080
+- Check `proxy.conf.json` configuration
+
+**API calls fail:**
+- Check browser console for errors
+- Verify backend is running: `http://localhost:8080/api/health`
+
+## Contributing
+
+This is a demo application for educational purposes. Feel free to extend it with:
+- Database integration (Spring Data JPA)
+- Authentication (Spring Security)
 - Additional REST endpoints
-- Business logic and services
-- More comprehensive testing
+- More Angular components
+- Unit and integration tests
+
+## License
+
+This is a demo application for educational purposes.
+
+## Documentation
+
+For more details, see:
+- [Backend README](backend/README.md)
+- [Frontend README](frontend/README.md)
