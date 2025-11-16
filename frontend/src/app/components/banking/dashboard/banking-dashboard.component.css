@@ -495,3 +495,71 @@
   font-size: 0.9rem;
   font-style: italic;
 }
+
+/* Autocomplete Styles */
+.autocomplete-wrapper {
+  position: relative;
+}
+
+.autocomplete-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #3498db;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  margin-top: -1px;
+}
+
+.suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 0.15s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background-color: #f8f9fa;
+}
+
+.country-flag {
+  font-size: 1.5rem;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.country-name {
+  flex: 1;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.country-code {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  background-color: #ecf0f1;
+  border-radius: 4px;
+}
+
+.no-results {
+  padding: 16px;
+  text-align: center;
+  color: #7f8c8d;
+  font-style: italic;
+}

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BankingService } from '../../../services/banking.service';
 import { Account, CreateAccountRequest, UpdateAccountRequest } from '../../../models/banking.model';
 import { ApiResponse } from '../../../models/api-response.model';
+import { COUNTRIES, Country } from '../../../data/countries';
 
 @Component({
   selector: 'app-banking-dashboard',
@@ -32,6 +33,12 @@ export class BankingDashboardComponent implements OnInit {
   accountToDelete: Account | null = null;
 
   accountTypes = ['CHECKING', 'SAVINGS', 'CREDIT'];
+
+  // Countries and autocomplete
+  countries: Country[] = COUNTRIES;
+  nationalityInput: string = '';
+  showNationalitySuggestions: boolean = false;
+  filteredCountries: Country[] = [];
 
   constructor(private bankingService: BankingService) { }
 
@@ -76,6 +83,9 @@ export class BankingDashboardComponent implements OnInit {
       nationality: '',
       accountType: 'CHECKING'
     };
+    this.nationalityInput = '';
+    this.filteredCountries = [];
+    this.showNationalitySuggestions = false;
     this.showAddModal = true;
     this.error = null;
     this.successMessage = null;
@@ -177,5 +187,42 @@ export class BankingDashboardComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  // ========== Nationality Autocomplete ==========
+
+  onNationalityInput(): void {
+    const input = this.nationalityInput.toLowerCase().trim();
+
+    if (!input) {
+      this.filteredCountries = this.countries.slice(0, 10); // Show top 10 by default
+      this.showNationalitySuggestions = false;
+      this.newAccount.nationality = '';
+      return;
+    }
+
+    this.filteredCountries = this.countries
+      .filter((country: Country) =>
+        country.name.toLowerCase().includes(input) ||
+        country.code.toLowerCase().includes(input)
+      )
+      .slice(0, 10); // Limit to 10 results
+    this.showNationalitySuggestions = true;
+
+    // Check if exact match exists
+    const exactMatch = this.countries.find((country: Country) =>
+      country.name.toLowerCase() === input
+    );
+    if (exactMatch) {
+      this.newAccount.nationality = exactMatch.name;
+    } else {
+      this.newAccount.nationality = '';
+    }
+  }
+
+  selectNationality(country: Country): void {
+    this.nationalityInput = country.name;
+    this.newAccount.nationality = country.name;
+    this.showNationalitySuggestions = false;
   }
 }
