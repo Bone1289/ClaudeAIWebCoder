@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BankingService } from '../../../services/banking.service';
-import { Account, TransactionCategory } from '../../../models/banking.model';
+import { Account } from '../../../models/banking.model';
 
 @Component({
   selector: 'app-banking-dashboard',
@@ -12,9 +12,6 @@ export class BankingDashboardComponent implements OnInit {
   selectedAccount: Account | null = null;
   loading = false;
   error: string | null = null;
-
-  // Transaction categories for display
-  transactionCategories = Object.values(TransactionCategory);
 
   constructor(private bankingService: BankingService) { }
 

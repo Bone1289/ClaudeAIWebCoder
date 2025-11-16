@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BankingService } from '../../../services/banking.service';
-import { Account, TransactionCategory, TransactionRequest, TransferRequest } from '../../../models/banking.model';
+import { CategoryService } from '../../../services/category.service';
+import { Account, Category, CategoryType, TransactionRequest, TransferRequest } from '../../../models/banking.model';
 
 @Component({
   selector: 'app-transaction-forms',
@@ -19,13 +20,13 @@ export class TransactionFormsComponent implements OnInit {
   depositForm = {
     amount: 0,
     description: '',
-    category: TransactionCategory.OTHER
+    categoryId: undefined as number | undefined
   };
 
   withdrawForm = {
     amount: 0,
     description: '',
-    category: TransactionCategory.OTHER
+    categoryId: undefined as number | undefined
   };
 
   transferForm = {
@@ -34,25 +35,10 @@ export class TransactionFormsComponent implements OnInit {
     description: ''
   };
 
-  // Transaction categories
-  incomeCategories = [
-    TransactionCategory.SALARY,
-    TransactionCategory.INVESTMENT,
-    TransactionCategory.REFUND,
-    TransactionCategory.OTHER
-  ];
-
-  expenseCategories = [
-    TransactionCategory.GROCERIES,
-    TransactionCategory.UTILITIES,
-    TransactionCategory.RENT,
-    TransactionCategory.ENTERTAINMENT,
-    TransactionCategory.HEALTHCARE,
-    TransactionCategory.TRANSPORTATION,
-    TransactionCategory.SHOPPING,
-    TransactionCategory.DINING,
-    TransactionCategory.OTHER
-  ];
+  // Transaction categories loaded from API
+  incomeCategories: Category[] = [];
+  expenseCategories: Category[] = [];
+  allCategories: Category[] = [];
 
   loading = false;
   error: string | null = null;
@@ -60,6 +46,7 @@ export class TransactionFormsComponent implements OnInit {
 
   constructor(
     private bankingService: BankingService,
+    private categoryService: CategoryService,
     private route: ActivatedRoute,
     private router: Router
   ) { }
@@ -70,6 +57,24 @@ export class TransactionFormsComponent implements OnInit {
       if (this.accountId) {
         this.loadAccount();
         this.loadAccounts();
+      }
+    });
+
+    // Load categories
+    this.loadCategories();
+
+    // Subscribe to category updates
+    this.categoryService.categories$.subscribe(categories => {
+      this.allCategories = categories;
+      this.incomeCategories = categories.filter(cat => cat.type === CategoryType.INCOME && cat.active);
+      this.expenseCategories = categories.filter(cat => cat.type === CategoryType.EXPENSE && cat.active);
+    });
+  }
+
+  loadCategories(): void {
+    this.categoryService.loadCategories().subscribe({
+      error: (error) => {
+        console.error('Failed to load categories:', error);
       }
     });
   }
@@ -112,7 +117,7 @@ export class TransactionFormsComponent implements OnInit {
     const request: TransactionRequest = {
       amount: this.depositForm.amount,
       description: this.depositForm.description,
-      category: this.depositForm.category
+      categoryId: this.depositForm.categoryId
     };
 
     this.bankingService.deposit(this.accountId, request).subscribe({
@@ -138,7 +143,7 @@ export class TransactionFormsComponent implements OnInit {
     const request: TransactionRequest = {
       amount: this.withdrawForm.amount,
       description: this.withdrawForm.description,
-      category: this.withdrawForm.category
+      categoryId: this.withdrawForm.categoryId
     };
 
     this.bankingService.withdraw(this.accountId, request).subscribe({
@@ -185,7 +190,7 @@ export class TransactionFormsComponent implements OnInit {
     this.depositForm = {
       amount: 0,
       description: '',
-      category: TransactionCategory.OTHER
+      categoryId: undefined
     };
   }
 
@@ -193,7 +198,7 @@ export class TransactionFormsComponent implements OnInit {
     this.withdrawForm = {
       amount: 0,
       description: '',
-      category: TransactionCategory.OTHER
+      categoryId: undefined
     };
   }
 

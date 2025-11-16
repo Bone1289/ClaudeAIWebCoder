@@ -74,11 +74,11 @@
         <label for="depositCategory">Category</label>
         <select
           id="depositCategory"
-          [(ngModel)]="depositForm.category"
-          name="depositCategory"
-          required>
-          <option *ngFor="let category of incomeCategories" [value]="category">
-            {{ category }}
+          [(ngModel)]="depositForm.categoryId"
+          name="depositCategory">
+          <option [value]="undefined">-- Select Category (Optional) --</option>
+          <option *ngFor="let category of incomeCategories" [value]="category.id">
+            {{ category.name }}
           </option>
         </select>
       </div>
@@ -120,11 +120,11 @@
         <label for="withdrawCategory">Category</label>
         <select
           id="withdrawCategory"
-          [(ngModel)]="withdrawForm.category"
-          name="withdrawCategory"
-          required>
-          <option *ngFor="let category of expenseCategories" [value]="category">
-            {{ category }}
+          [(ngModel)]="withdrawForm.categoryId"
+          name="withdrawCategory">
+          <option [value]="undefined">-- Select Category (Optional) --</option>
+          <option *ngFor="let category of expenseCategories" [value]="category.id">
+            {{ category.name }}
           </option>
         </select>
       </div>

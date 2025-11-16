@@ -86,16 +86,11 @@ export class CategoryReportsComponent implements OnInit {
     const report = this.getActiveReport();
     if (!report) return [];
 
-    const colors = [
-      '#3498db', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6',
-      '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#16a085'
-    ];
-
-    return report.categories.map((cat, index) => ({
-      category: cat.category,
+    return report.categories.map((cat) => ({
+      category: cat.category.name,
       amount: cat.amount,
       percentage: cat.percentage,
-      color: colors[index % colors.length]
+      color: cat.category.color
     }));
   }
 
