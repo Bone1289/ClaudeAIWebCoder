@@ -35,7 +35,7 @@ echo ""
 
 # Ask user what to do
 echo "Select an option:"
-echo "1) Clean up and start fresh (remove containers, volumes, and rebuild)"
+echo "1) Clean up and start fresh (remove containers, volumes, and rebuild) [DEFAULT]"
 echo "2) Start all services (MySQL + Backend + Frontend)"
 echo "3) Stop all services"
 echo "4) Restart all services"
@@ -43,37 +43,34 @@ echo "5) View logs"
 echo "6) Rebuild backend only"
 echo "7) Rebuild frontend only"
 echo "8) Rebuild all services"
-read -p "Enter choice [1-8]: " choice
+read -p "Enter choice [1-8] (default: 1): " choice
+
+# Set default to option 1 if no input
+choice=${choice:-1}
 
 case $choice in
     1)
         echo ""
-        read -p "⚠️  This will remove all containers and data, then rebuild. Continue? (y/N): " confirm
-        if [[ $confirm == [yY] ]]; then
-            echo ""
-            echo "🧹 Cleaning up existing containers and volumes..."
-            docker compose down -v
-            echo ""
-            echo "🚀 Starting fresh with full rebuild..."
-            echo "This may take a few minutes (building images)..."
-            echo ""
-            docker compose up -d --build
-            echo ""
-            echo "✅ Services started successfully!"
-            echo ""
-            echo "📊 Service Status:"
-            docker compose ps
-            echo ""
-            echo "🌐 Access the application:"
-            echo "   Frontend:  http://localhost"
-            echo "   Backend:   http://localhost:8080/api"
-            echo "   Health:    http://localhost:8080/actuator/health"
-            echo "   MySQL:     localhost:3306 (user: root, password: root)"
-            echo ""
-            echo "📝 View logs with: docker compose logs -f"
-        else
-            echo "Cancelled"
-        fi
+        echo "🧹 Cleaning up existing containers and volumes..."
+        docker compose down -v
+        echo ""
+        echo "🚀 Starting fresh with full rebuild..."
+        echo "This may take a few minutes (building images)..."
+        echo ""
+        docker compose up -d --build
+        echo ""
+        echo "✅ Services started successfully!"
+        echo ""
+        echo "📊 Service Status:"
+        docker compose ps
+        echo ""
+        echo "🌐 Access the application:"
+        echo "   Frontend:  http://localhost"
+        echo "   Backend:   http://localhost:8080/api"
+        echo "   Health:    http://localhost:8080/actuator/health"
+        echo "   MySQL:     localhost:3306 (user: root, password: root)"
+        echo ""
+        echo "📝 View logs with: docker compose logs -f"
         ;;
     2)
         echo ""
