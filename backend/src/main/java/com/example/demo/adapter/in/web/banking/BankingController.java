@@ -26,6 +26,8 @@ public class BankingController {
 
     private final CreateAccountUseCase createAccountUseCase;
     private final GetAccountUseCase getAccountUseCase;
+    private final UpdateAccountUseCase updateAccountUseCase;
+    private final DeleteAccountUseCase deleteAccountUseCase;
     private final DepositUseCase depositUseCase;
     private final WithdrawUseCase withdrawUseCase;
     private final TransferUseCase transferUseCase;
@@ -35,6 +37,8 @@ public class BankingController {
 
     public BankingController(CreateAccountUseCase createAccountUseCase,
                             GetAccountUseCase getAccountUseCase,
+                            UpdateAccountUseCase updateAccountUseCase,
+                            DeleteAccountUseCase deleteAccountUseCase,
                             DepositUseCase depositUseCase,
                             WithdrawUseCase withdrawUseCase,
                             TransferUseCase transferUseCase,
@@ -43,6 +47,8 @@ public class BankingController {
                             GenerateCategoryReportUseCase generateCategoryReportUseCase) {
         this.createAccountUseCase = createAccountUseCase;
         this.getAccountUseCase = getAccountUseCase;
+        this.updateAccountUseCase = updateAccountUseCase;
+        this.deleteAccountUseCase = deleteAccountUseCase;
         this.depositUseCase = depositUseCase;
         this.withdrawUseCase = withdrawUseCase;
         this.transferUseCase = transferUseCase;
@@ -86,6 +92,36 @@ public class BankingController {
                 .map(AccountResponse::fromDomain)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success("Customer accounts retrieved", accounts));
+    }
+
+    @PutMapping("/accounts/{id}")
+    public ResponseEntity<ApiResponse<AccountResponse>> updateAccount(@PathVariable Long id, @RequestBody UpdateAccountRequest request) {
+        try {
+            return updateAccountUseCase.updateAccount(id, request.getAccountType())
+                    .map(account -> ResponseEntity.ok(
+                            ApiResponse.success("Account updated successfully", AccountResponse.fromDomain(account))))
+                    .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(ApiResponse.error("Account not found")));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/accounts/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteAccount(@PathVariable Long id) {
+        try {
+            boolean deleted = deleteAccountUseCase.deleteAccount(id);
+            if (deleted) {
+                return ResponseEntity.ok(ApiResponse.success("Account deleted successfully", null));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Account not found"));
+            }
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PostMapping("/accounts/{id}/deposit")

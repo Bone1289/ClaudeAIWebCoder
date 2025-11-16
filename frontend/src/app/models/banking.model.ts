@@ -93,3 +93,7 @@ export interface CreateAccountRequest {
   customerId: number;
   accountType: string;
 }
+
+export interface UpdateAccountRequest {
+  accountType: string;
+}

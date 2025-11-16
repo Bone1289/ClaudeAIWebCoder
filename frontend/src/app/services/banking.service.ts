@@ -10,6 +10,7 @@ import {
   TransactionRequest,
   TransferRequest,
   CreateAccountRequest,
+  UpdateAccountRequest,
   TransactionType
 } from '../models/banking.model';
 
@@ -62,6 +63,29 @@ export class BankingService {
    */
   getAccountsByCustomerId(customerId: number): Observable<ApiResponse<Account[]>> {
     return this.http.get<ApiResponse<Account[]>>(`${this.apiUrl}/accounts/customer/${customerId}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Update an account
+   * @param id - Account ID
+   * @param request - Update account request
+   * @returns Observable<ApiResponse<Account>> - Updated account
+   */
+  updateAccount(id: number, request: UpdateAccountRequest): Observable<ApiResponse<Account>> {
+    return this.http.put<ApiResponse<Account>>(`${this.apiUrl}/accounts/${id}`, request).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Delete an account
+   * @param id - Account ID
+   * @returns Observable<ApiResponse<void>> - Delete confirmation
+   */
+  deleteAccount(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/accounts/${id}`).pipe(
       catchError(this.handleError)
     );
   }

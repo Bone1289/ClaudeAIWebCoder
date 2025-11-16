@@ -116,6 +116,17 @@ public class Account {
         return new Account(id, accountNumber, customerId, accountType, balance, AccountStatus.CLOSED, createdAt, LocalDateTime.now());
     }
 
+    /**
+     * Update account details (account type only - number and customer cannot be changed)
+     */
+    public Account updateAccountType(String newAccountType) {
+        validateAccountType(newAccountType);
+        if (status == AccountStatus.CLOSED) {
+            throw new IllegalStateException("Cannot update a closed account");
+        }
+        return new Account(id, accountNumber, customerId, newAccountType, balance, status, createdAt, LocalDateTime.now());
+    }
+
     // Validation methods
     private static void validateAccountNumber(String accountNumber) {
         if (accountNumber == null || accountNumber.trim().isEmpty()) {
@@ -127,8 +138,8 @@ public class Account {
         if (accountType == null || accountType.trim().isEmpty()) {
             throw new IllegalArgumentException("Account type cannot be null or empty");
         }
-        if (!accountType.equals("CHECKING") && !accountType.equals("SAVINGS")) {
-            throw new IllegalArgumentException("Account type must be CHECKING or SAVINGS");
+        if (!accountType.equals("CHECKING") && !accountType.equals("SAVINGS") && !accountType.equals("CREDIT")) {
+            throw new IllegalArgumentException("Account type must be CHECKING, SAVINGS, or CREDIT");
         }
     }
 

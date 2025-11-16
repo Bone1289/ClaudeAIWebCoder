@@ -24,6 +24,8 @@ import java.util.Optional;
 public class BankingService implements
         CreateAccountUseCase,
         GetAccountUseCase,
+        UpdateAccountUseCase,
+        DeleteAccountUseCase,
         DepositUseCase,
         WithdrawUseCase,
         TransferUseCase,
@@ -71,6 +73,36 @@ public class BankingService implements
     @Override
     public List<Account> getAccountsByCustomerId(Long customerId) {
         return accountRepository.findByCustomerId(customerId);
+    }
+
+    @Override
+    public Optional<Account> updateAccount(Long id, String accountType) {
+        Optional<Account> accountOpt = accountRepository.findById(id);
+        if (accountOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Account account = accountOpt.get();
+        Account updatedAccount = account.updateAccountType(accountType);
+        Account savedAccount = accountRepository.update(updatedAccount);
+        return Optional.of(savedAccount);
+    }
+
+    @Override
+    public boolean deleteAccount(Long id) {
+        Optional<Account> accountOpt = accountRepository.findById(id);
+        if (accountOpt.isEmpty()) {
+            return false;
+        }
+
+        Account account = accountOpt.get();
+
+        // Only allow deletion if balance is zero (business rule)
+        if (account.getBalance().compareTo(BigDecimal.ZERO) != 0) {
+            throw new IllegalStateException("Cannot delete account with non-zero balance. Please transfer or withdraw all funds first.");
+        }
+
+        return accountRepository.deleteById(id);
     }
 
     @Override
