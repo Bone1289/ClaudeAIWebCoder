@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { BankingService } from '../../../services/banking.service';
-import { AccountStatement } from '../../../models/banking.model';
+import { CategoryService } from '../../../services/category.service';
+import { AccountStatement, Category } from '../../../models/banking.model';
 import { ApiResponse } from '../../../models/api-response.model';
 
 @Component({
@@ -12,6 +13,7 @@ import { ApiResponse } from '../../../models/api-response.model';
 export class AccountStatementComponent implements OnInit {
   statement: AccountStatement | null = null;
   accountId: string | null = null;
+  categories: Category[] = [];
 
   // Date range
   startDate: string = '';
@@ -23,6 +25,7 @@ export class AccountStatementComponent implements OnInit {
 
   constructor(
     private bankingService: BankingService,
+    private categoryService: CategoryService,
     private route: ActivatedRoute,
     private router: Router
   ) { }
@@ -32,6 +35,12 @@ export class AccountStatementComponent implements OnInit {
       this.accountId = params['id'];
       this.setDefaultDateRange();
     });
+
+    // Load categories
+    this.categoryService.categories$.subscribe((categories: Category[]) => {
+      this.categories = categories;
+    });
+    this.categoryService.loadCategories(false); // Load all categories including inactive
   }
 
   setDefaultDateRange(): void {
@@ -73,5 +82,14 @@ export class AccountStatementComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/banking/dashboard']);
+  }
+
+  /**
+   * Get category name by ID
+   */
+  getCategoryName(categoryId: string | null | undefined): string {
+    if (!categoryId) return '-';
+    const category = this.categories.find((cat: Category) => cat.id === categoryId);
+    return category ? category.name : 'Unknown';
   }
 }
