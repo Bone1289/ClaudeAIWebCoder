@@ -6,12 +6,13 @@ import java.time.LocalDateTime;
 /**
  * Transaction domain entity
  * Represents a financial transaction (deposit, withdrawal, transfer)
+ * Now uses TransactionCategory entity reference instead of enum
  */
 public class Transaction {
     private final Long id;
     private final Long accountId;
     private final TransactionType type;
-    private final TransactionCategory category;
+    private final Long categoryId;  // Reference to TransactionCategory entity
     private final BigDecimal amount;
     private final BigDecimal balanceAfter;
     private final String description;
@@ -22,29 +23,13 @@ public class Transaction {
         DEPOSIT, WITHDRAWAL, TRANSFER_IN, TRANSFER_OUT
     }
 
-    public enum TransactionCategory {
-        SALARY,           // Income
-        INVESTMENT,       // Income
-        REFUND,          // Income
-        GROCERIES,       // Expense
-        UTILITIES,       // Expense
-        RENT,            // Expense
-        ENTERTAINMENT,   // Expense
-        HEALTHCARE,      // Expense
-        TRANSPORTATION,  // Expense
-        SHOPPING,        // Expense
-        DINING,          // Expense
-        TRANSFER,        // Transfer between accounts
-        OTHER            // Uncategorized
-    }
-
-    private Transaction(Long id, Long accountId, TransactionType type, TransactionCategory category,
+    private Transaction(Long id, Long accountId, TransactionType type, Long categoryId,
                        BigDecimal amount, BigDecimal balanceAfter, String description,
                        Long relatedAccountId, LocalDateTime createdAt) {
         this.id = id;
         this.accountId = accountId;
         this.type = type;
-        this.category = category != null ? category : TransactionCategory.OTHER;
+        this.categoryId = categoryId;
         this.amount = amount;
         this.balanceAfter = balanceAfter;
         this.description = description;
@@ -56,7 +41,7 @@ public class Transaction {
      * Create a deposit transaction
      */
     public static Transaction createDeposit(Long accountId, BigDecimal amount, BigDecimal balanceAfter,
-                                           String description, TransactionCategory category) {
+                                           String description, Long categoryId) {
         validateAmount(amount);
         validateAccountId(accountId);
 
@@ -64,7 +49,7 @@ public class Transaction {
             null,
             accountId,
             TransactionType.DEPOSIT,
-            category != null ? category : TransactionCategory.OTHER,
+            categoryId,
             amount,
             balanceAfter,
             description != null ? description : "Deposit",
@@ -73,16 +58,11 @@ public class Transaction {
         );
     }
 
-    // Convenience method without category
-    public static Transaction createDeposit(Long accountId, BigDecimal amount, BigDecimal balanceAfter, String description) {
-        return createDeposit(accountId, amount, balanceAfter, description, TransactionCategory.OTHER);
-    }
-
     /**
      * Create a withdrawal transaction
      */
     public static Transaction createWithdrawal(Long accountId, BigDecimal amount, BigDecimal balanceAfter,
-                                              String description, TransactionCategory category) {
+                                              String description, Long categoryId) {
         validateAmount(amount);
         validateAccountId(accountId);
 
@@ -90,7 +70,7 @@ public class Transaction {
             null,
             accountId,
             TransactionType.WITHDRAWAL,
-            category != null ? category : TransactionCategory.OTHER,
+            categoryId,
             amount,
             balanceAfter,
             description != null ? description : "Withdrawal",
@@ -99,16 +79,11 @@ public class Transaction {
         );
     }
 
-    // Convenience method without category
-    public static Transaction createWithdrawal(Long accountId, BigDecimal amount, BigDecimal balanceAfter, String description) {
-        return createWithdrawal(accountId, amount, balanceAfter, description, TransactionCategory.OTHER);
-    }
-
     /**
      * Create a transfer-out transaction
      */
     public static Transaction createTransferOut(Long accountId, BigDecimal amount, BigDecimal balanceAfter,
-                                                Long toAccountId, String description) {
+                                                Long toAccountId, String description, Long transferCategoryId) {
         validateAmount(amount);
         validateAccountId(accountId);
         validateAccountId(toAccountId);
@@ -117,7 +92,7 @@ public class Transaction {
             null,
             accountId,
             TransactionType.TRANSFER_OUT,
-            TransactionCategory.TRANSFER,  // Transfers always use TRANSFER category
+            transferCategoryId,  // TRANSFER category ID
             amount,
             balanceAfter,
             description != null ? description : "Transfer to account " + toAccountId,
@@ -130,7 +105,7 @@ public class Transaction {
      * Create a transfer-in transaction
      */
     public static Transaction createTransferIn(Long accountId, BigDecimal amount, BigDecimal balanceAfter,
-                                               Long fromAccountId, String description) {
+                                               Long fromAccountId, String description, Long transferCategoryId) {
         validateAmount(amount);
         validateAccountId(accountId);
         validateAccountId(fromAccountId);
@@ -139,7 +114,7 @@ public class Transaction {
             null,
             accountId,
             TransactionType.TRANSFER_IN,
-            TransactionCategory.TRANSFER,  // Transfers always use TRANSFER category
+            transferCategoryId,  // TRANSFER category ID
             amount,
             balanceAfter,
             description != null ? description : "Transfer from account " + fromAccountId,
@@ -151,7 +126,7 @@ public class Transaction {
     /**
      * Reconstitute transaction from persistence
      */
-    public static Transaction of(Long id, Long accountId, TransactionType type, TransactionCategory category,
+    public static Transaction of(Long id, Long accountId, TransactionType type, Long categoryId,
                                  BigDecimal amount, BigDecimal balanceAfter, String description,
                                  Long relatedAccountId, LocalDateTime createdAt) {
         if (id == null) {
@@ -160,7 +135,7 @@ public class Transaction {
         validateAccountId(accountId);
         validateAmount(amount);
 
-        return new Transaction(id, accountId, type, category, amount, balanceAfter, description, relatedAccountId, createdAt);
+        return new Transaction(id, accountId, type, categoryId, amount, balanceAfter, description, relatedAccountId, createdAt);
     }
 
     private static void validateAmount(BigDecimal amount) {
@@ -188,6 +163,10 @@ public class Transaction {
         return type;
     }
 
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
     public BigDecimal getAmount() {
         return amount;
     }
@@ -208,16 +187,13 @@ public class Transaction {
         return createdAt;
     }
 
-    public TransactionCategory getCategory() {
-        return category;
-    }
-
     @Override
     public String toString() {
         return "Transaction{" +
                 "id=" + id +
                 ", accountId=" + accountId +
                 ", type=" + type +
+                ", categoryId=" + categoryId +
                 ", amount=" + amount +
                 ", balanceAfter=" + balanceAfter +
                 ", description='" + description + '\'' +

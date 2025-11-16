@@ -8,13 +8,13 @@ import java.time.LocalDateTime;
 /**
  * JPA Entity for Transaction persistence
  * Uses standard JPA annotations - database agnostic
- * No SQL-specific code, easily portable to any JPA-supported database
+ * Now uses foreign key reference to TransactionCategoryJpaEntity
  */
 @Entity
 @Table(name = "transactions", indexes = {
     @Index(name = "idx_account_id", columnList = "account_id"),
     @Index(name = "idx_created_at", columnList = "created_at"),
-    @Index(name = "idx_category", columnList = "category")
+    @Index(name = "idx_category_id", columnList = "category_id")
 })
 @Getter
 @Setter
@@ -34,9 +34,9 @@ public class TransactionJpaEntity {
     @Column(name = "type", nullable = false, length = 20)
     private TransactionType type;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category", nullable = false, length = 30)
-    private TransactionCategory category;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private TransactionCategoryJpaEntity category;
 
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
@@ -55,13 +55,6 @@ public class TransactionJpaEntity {
 
     public enum TransactionType {
         DEPOSIT, WITHDRAWAL, TRANSFER_IN, TRANSFER_OUT
-    }
-
-    public enum TransactionCategory {
-        SALARY, INVESTMENT, REFUND,
-        GROCERIES, UTILITIES, RENT, ENTERTAINMENT,
-        HEALTHCARE, TRANSPORTATION, SHOPPING, DINING,
-        TRANSFER, OTHER
     }
 
     @PrePersist

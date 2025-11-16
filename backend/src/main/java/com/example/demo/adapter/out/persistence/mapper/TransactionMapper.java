@@ -1,5 +1,6 @@
 package com.example.demo.adapter.out.persistence.mapper;
 
+import com.example.demo.adapter.out.persistence.entity.TransactionCategoryJpaEntity;
 import com.example.demo.adapter.out.persistence.entity.TransactionJpaEntity;
 import com.example.demo.domain.Transaction;
 import org.mapstruct.*;
@@ -8,6 +9,7 @@ import org.mapstruct.*;
  * MapStruct mapper for Transaction domain ↔ TransactionJpaEntity
  * This is part of the persistence adapter layer
  * MapStruct generates the implementation at compile time (zero runtime overhead)
+ * Now handles category entity references instead of enums
  */
 @Mapper(componentModel = "spring")
 public interface TransactionMapper {
@@ -16,14 +18,15 @@ public interface TransactionMapper {
      * Map JPA Entity to Domain
      */
     @Mapping(target = "type", source = "type")
-    @Mapping(target = "category", source = "category")
+    @Mapping(target = "categoryId", source = "category.id")
     Transaction toDomain(TransactionJpaEntity entity);
 
     /**
      * Map Domain to JPA Entity
+     * Note: category relationship must be set separately in the repository
      */
     @Mapping(target = "type", source = "type")
-    @Mapping(target = "category", source = "category")
+    @Mapping(target = "category", ignore = true)  // Set separately in repository
     TransactionJpaEntity toEntity(Transaction domain);
 
     /**
@@ -37,18 +40,5 @@ public interface TransactionMapper {
     default TransactionJpaEntity.TransactionType mapType(Transaction.TransactionType domainType) {
         if (domainType == null) return null;
         return TransactionJpaEntity.TransactionType.valueOf(domainType.name());
-    }
-
-    /**
-     * Custom mapping for Transaction Category enum
-     */
-    default Transaction.TransactionCategory mapCategory(TransactionJpaEntity.TransactionCategory entityCategory) {
-        if (entityCategory == null) return null;
-        return Transaction.TransactionCategory.valueOf(entityCategory.name());
-    }
-
-    default TransactionJpaEntity.TransactionCategory mapCategory(Transaction.TransactionCategory domainCategory) {
-        if (domainCategory == null) return null;
-        return TransactionJpaEntity.TransactionCategory.valueOf(domainCategory.name());
     }
 }
