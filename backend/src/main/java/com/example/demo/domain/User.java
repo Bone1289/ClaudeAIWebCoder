@@ -46,9 +46,23 @@ public class User {
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("User email cannot be null or empty");
         }
+        // Email format validation
+        if (!isValidEmail(email.trim())) {
+            throw new IllegalArgumentException("Invalid email format. Please provide a valid email address (e.g., user@example.com)");
+        }
         if (role == null || role.trim().isEmpty()) {
             throw new IllegalArgumentException("User role cannot be null or empty");
         }
+    }
+
+    /**
+     * Validates email format using RFC 5322 compliant regex
+     * @param email the email address to validate
+     * @return true if email format is valid, false otherwise
+     */
+    private static boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+        return email != null && email.matches(emailRegex);
     }
 
     // Getters
