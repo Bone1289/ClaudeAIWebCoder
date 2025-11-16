@@ -19,6 +19,7 @@ export class AccountStatementComponent implements OnInit {
 
   loading = false;
   error: string | null = null;
+  currentDate = new Date();
 
   constructor(
     private bankingService: BankingService,
