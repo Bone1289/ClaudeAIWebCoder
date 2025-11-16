@@ -1,23 +1,38 @@
-package com.example.demo.model;
+package com.example.demo.adapter.in.web.dto;
 
-public class User {
+import com.example.demo.domain.User;
+
+/**
+ * DTO for user response
+ * This is part of the web adapter layer
+ * Converts domain User to API response
+ */
+public class UserResponse {
     private Long id;
     private String name;
     private String email;
     private String role;
 
-    // Constructors
-    public User() {
+    public UserResponse() {
     }
 
-    public User(Long id, String name, String email, String role) {
+    public UserResponse(Long id, String name, String email, String role) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.role = role;
     }
 
-    // Getters and Setters
+    // Factory method to convert domain User to UserResponse
+    public static UserResponse fromDomain(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
+    }
+
     public Long getId() {
         return id;
     }
@@ -48,15 +63,5 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", role='" + role + '\'' +
-                '}';
     }
 }

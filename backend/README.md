@@ -1,38 +1,58 @@
 # Spring Boot Demo Application
 
-A simple Spring Boot application with Gradle build configuration.
+A Spring Boot application built with **Hexagonal Architecture** (Ports and Adapters pattern).
+
+## Architecture
+
+This application follows **Hexagonal Architecture** principles for:
+- Clean separation of concerns
+- Framework independence
+- High testability
+- Easy maintainability
+
+See [HEXAGONAL_ARCHITECTURE.md](HEXAGONAL_ARCHITECTURE.md) for detailed documentation.
 
 ## Project Structure
 
 ```
-.
-├── build.gradle                 # Gradle build configuration
-├── settings.gradle              # Gradle settings
-├── gradle.properties            # Gradle properties
-├── gradlew                      # Gradle wrapper script (Unix)
-├── gradlew.bat                  # Gradle wrapper script (Windows)
-├── gradle/                      # Gradle wrapper files
-└── src/
-    ├── main/
-    │   ├── java/
-    │   │   └── com/example/demo/
-    │   │       ├── DemoApplication.java          # Main Spring Boot application
-    │   │       └── controller/
-    │   │           └── HelloController.java       # Sample REST controller
-    │   └── resources/
-    │       └── application.properties             # Application configuration
-    └── test/
-        └── java/
-            └── com/example/demo/                  # Test directory
+src/main/java/com/example/demo/
+├── domain/                           # Domain layer (business entities)
+│   └── User.java
+├── application/                      # Application layer
+│   ├── ports/                        # Port interfaces
+│   │   ├── in/                       # Input ports (use cases)
+│   │   │   ├── CreateUserUseCase.java
+│   │   │   ├── GetUserUseCase.java
+│   │   │   ├── UpdateUserUseCase.java
+│   │   │   └── DeleteUserUseCase.java
+│   │   └── out/                      # Output ports
+│   │       └── UserRepository.java
+│   └── service/                      # Business logic
+│       └── UserManagementService.java
+├── adapter/                          # Adapters
+│   ├── in/                           # Input adapters
+│   │   └── web/                      # REST API
+│   │       ├── dto/                  # DTOs
+│   │       ├── UserController.java
+│   │       └── HelloController.java
+│   └── out/                          # Output adapters
+│       └── persistence/
+│           └── InMemoryUserRepository.java
+├── config/                           # Configuration
+│   └── CorsConfig.java
+└── DemoApplication.java              # Main application
 ```
 
 ## Features
 
+- **Hexagonal Architecture** (Ports and Adapters)
 - Spring Boot 3.3.5
 - Spring Web (REST API)
 - Spring Boot Actuator (health checks)
 - Gradle 8.x build system
 - Java 17
+- CORS support
+- Full CRUD operations
 
 ## Building the Application
 

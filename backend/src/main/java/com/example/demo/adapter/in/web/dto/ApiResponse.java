@@ -1,11 +1,14 @@
-package com.example.demo.model;
+package com.example.demo.adapter.in.web.dto;
 
+/**
+ * Generic API response wrapper
+ * This is part of the web adapter layer
+ */
 public class ApiResponse<T> {
     private boolean success;
     private String message;
     private T data;
 
-    // Constructors
     public ApiResponse() {
     }
 
@@ -15,7 +18,6 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-    // Static factory methods
     public static <T> ApiResponse<T> success(String message, T data) {
         return new ApiResponse<>(true, message, data);
     }
@@ -24,7 +26,6 @@ public class ApiResponse<T> {
         return new ApiResponse<>(false, message, null);
     }
 
-    // Getters and Setters
     public boolean isSuccess() {
         return success;
     }
