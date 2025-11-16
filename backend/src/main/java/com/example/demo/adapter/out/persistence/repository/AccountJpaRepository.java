@@ -6,13 +6,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Spring Data JPA Repository for Account persistence
  * Uses standard JPA repository - database agnostic
  */
 @Repository
-public interface AccountJpaRepository extends JpaRepository<AccountJpaEntity, Long> {
+public interface AccountJpaRepository extends JpaRepository<AccountJpaEntity, UUID> {
 
     Optional<AccountJpaEntity> findByAccountNumber(String accountNumber);
 
