@@ -1,6 +1,7 @@
 package com.example.demo.domain;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Transaction Category domain entity
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
  */
 public class TransactionCategory {
 
-    private Long id;
+    private UUID id;
     private String name;
     private String description;
     private CategoryType type;  // INCOME or EXPENSE
@@ -22,7 +23,7 @@ public class TransactionCategory {
     }
 
     // Private constructor to enforce factory methods
-    private TransactionCategory(Long id, String name, String description, CategoryType type,
+    private TransactionCategory(UUID id, String name, String description, CategoryType type,
                                 String color, boolean active, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
@@ -54,7 +55,7 @@ public class TransactionCategory {
     /**
      * Factory method to reconstitute from persistence
      */
-    public static TransactionCategory reconstitute(Long id, String name, String description,
+    public static TransactionCategory reconstitute(UUID id, String name, String description,
                                                    CategoryType type, String color,
                                                    boolean active, LocalDateTime createdAt) {
         return new TransactionCategory(id, name, description, type, color, active, createdAt);
@@ -123,7 +124,7 @@ public class TransactionCategory {
     }
 
     // Getters
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 

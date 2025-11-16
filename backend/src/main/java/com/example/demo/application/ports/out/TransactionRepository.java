@@ -5,6 +5,7 @@ import com.example.demo.domain.Transaction;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Output port for transaction persistence
@@ -12,22 +13,22 @@ import java.util.List;
  */
 public interface TransactionRepository {
     Transaction save(Transaction transaction);
-    List<Transaction> findByAccountId(Long accountId);
+    List<Transaction> findByAccountId(UUID accountId);
     List<Transaction> findAll();
 
     /**
      * Find transactions for an account within a date range
      */
-    List<Transaction> findByAccountIdAndDateRange(Long accountId, LocalDateTime startDate, LocalDateTime endDate);
+    List<Transaction> findByAccountIdAndDateRange(UUID accountId, LocalDateTime startDate, LocalDateTime endDate);
 
     /**
      * Find transactions by account and category ID
      */
-    List<Transaction> findByAccountIdAndCategoryId(Long accountId, Long categoryId);
+    List<Transaction> findByAccountIdAndCategoryId(UUID accountId, UUID categoryId);
 
     /**
      * Get category summary (category -> total amount, count)
      * Returns full category entities with aggregated data
      */
-    List<CategoryReport.CategorySummary> getCategorySummary(Long accountId, Transaction.TransactionType type);
+    List<CategoryReport.CategorySummary> getCategorySummary(UUID accountId, Transaction.TransactionType type);
 }
