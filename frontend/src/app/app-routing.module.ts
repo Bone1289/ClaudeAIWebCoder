@@ -4,15 +4,8 @@ import { RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    loadChildren: () => import('./components/home/home.module').then(m => m.HomeModule)
-  },
-  {
-    path: 'demo',
-    loadChildren: () => import('./components/demo/demo.module').then(m => m.DemoModule)
-  },
-  {
-    path: 'users',
-    loadChildren: () => import('./components/users/users.module').then(m => m.UsersModule)
+    redirectTo: 'banking/dashboard',
+    pathMatch: 'full'
   },
   {
     path: 'banking',
@@ -20,7 +13,7 @@ const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: ''
+    redirectTo: 'banking/dashboard'
   }
 ];
 
