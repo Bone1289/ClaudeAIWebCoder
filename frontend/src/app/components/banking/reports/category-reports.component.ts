@@ -11,7 +11,7 @@ import { ApiResponse } from '../../../models/api-response.model';
 })
 export class CategoryReportsComponent implements OnInit {
   account: Account | null = null;
-  accountId: number | null = null;
+  accountId: string | null = null;
 
   incomeReport: CategoryReport | null = null;
   expenseReport: CategoryReport | null = null;
@@ -30,7 +30,7 @@ export class CategoryReportsComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
-      this.accountId = +params['id'];
+      this.accountId = params['id'];
       if (this.accountId) {
         this.loadAccount();
         this.loadReports();

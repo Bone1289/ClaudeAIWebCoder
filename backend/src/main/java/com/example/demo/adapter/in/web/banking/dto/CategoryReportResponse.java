@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CategoryReportResponse {
-    private Long accountId;
+    private String accountId;
     private String transactionType;
     private List<CategorySummaryResponse> categories;
     private BigDecimal totalAmount;
@@ -16,7 +16,7 @@ public class CategoryReportResponse {
 
     public static CategoryReportResponse fromDomain(CategoryReport report) {
         CategoryReportResponse response = new CategoryReportResponse();
-        response.accountId = report.accountId();
+        response.accountId = report.accountId().toString();
         response.transactionType = report.transactionType().name();
         response.categories = report.categories().stream()
                 .map(CategorySummaryResponse::fromDomain)
@@ -53,8 +53,8 @@ public class CategoryReportResponse {
     }
 
     // Getters and Setters
-    public Long getAccountId() { return accountId; }
-    public void setAccountId(Long accountId) { this.accountId = accountId; }
+    public String getAccountId() { return accountId; }
+    public void setAccountId(String accountId) { this.accountId = accountId; }
     public String getTransactionType() { return transactionType; }
     public void setTransactionType(String transactionType) { this.transactionType = transactionType; }
     public List<CategorySummaryResponse> getCategories() { return categories; }

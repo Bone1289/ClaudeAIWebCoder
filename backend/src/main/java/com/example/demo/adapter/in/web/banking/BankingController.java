@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -83,7 +84,7 @@ public class BankingController {
     }
 
     @GetMapping("/accounts/{id}")
-    public ResponseEntity<ApiResponse<AccountResponse>> getAccountById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AccountResponse>> getAccountById(@PathVariable UUID id) {
         return getAccountUseCase.getAccountById(id)
                 .map(account -> ResponseEntity.ok(
                         ApiResponse.success("Account found", AccountResponse.fromDomain(account))))
@@ -91,16 +92,8 @@ public class BankingController {
                         .body(ApiResponse.error("Account not found")));
     }
 
-    @GetMapping("/accounts/customer/{customerId}")
-    public ResponseEntity<ApiResponse<List<AccountResponse>>> getAccountsByCustomer(@PathVariable Long customerId) {
-        List<AccountResponse> accounts = getAccountUseCase.getAccountsByCustomerId(customerId).stream()
-                .map(AccountResponse::fromDomain)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(ApiResponse.success("Customer accounts retrieved", accounts));
-    }
-
     @PutMapping("/accounts/{id}")
-    public ResponseEntity<ApiResponse<AccountResponse>> updateAccount(@PathVariable Long id, @RequestBody UpdateAccountRequest request) {
+    public ResponseEntity<ApiResponse<AccountResponse>> updateAccount(@PathVariable UUID id, @RequestBody UpdateAccountRequest request) {
         try {
             return updateAccountUseCase.updateAccount(id, request.getAccountType())
                     .map(account -> ResponseEntity.ok(
@@ -114,7 +107,7 @@ public class BankingController {
     }
 
     @DeleteMapping("/accounts/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteAccount(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteAccount(@PathVariable UUID id) {
         try {
             boolean deleted = deleteAccountUseCase.deleteAccount(id);
             if (deleted) {
@@ -130,7 +123,7 @@ public class BankingController {
     }
 
     @PostMapping("/accounts/{id}/deposit")
-    public ResponseEntity<ApiResponse<AccountResponse>> deposit(@PathVariable Long id, @RequestBody TransactionRequest request) {
+    public ResponseEntity<ApiResponse<AccountResponse>> deposit(@PathVariable UUID id, @RequestBody TransactionRequest request) {
         try {
             Account account;
             if (request.getCategoryId() != null) {
@@ -145,7 +138,7 @@ public class BankingController {
     }
 
     @PostMapping("/accounts/{id}/withdraw")
-    public ResponseEntity<ApiResponse<AccountResponse>> withdraw(@PathVariable Long id, @RequestBody TransactionRequest request) {
+    public ResponseEntity<ApiResponse<AccountResponse>> withdraw(@PathVariable UUID id, @RequestBody TransactionRequest request) {
         try {
             Account account;
             if (request.getCategoryId() != null) {
@@ -160,7 +153,7 @@ public class BankingController {
     }
 
     @PostMapping("/accounts/{id}/transfer")
-    public ResponseEntity<ApiResponse<Void>> transfer(@PathVariable Long id, @RequestBody TransferRequest request) {
+    public ResponseEntity<ApiResponse<Void>> transfer(@PathVariable UUID id, @RequestBody TransferRequest request) {
         try {
             transferUseCase.transfer(id, request.getToAccountId(), request.getAmount(), request.getDescription());
             return ResponseEntity.ok(ApiResponse.success("Transfer successful", null));
@@ -170,7 +163,7 @@ public class BankingController {
     }
 
     @GetMapping("/accounts/{id}/transactions")
-    public ResponseEntity<ApiResponse<List<TransactionResponse>>> getTransactionHistory(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<List<TransactionResponse>>> getTransactionHistory(@PathVariable UUID id) {
         List<TransactionResponse> transactions = getTransactionHistoryUseCase.getTransactionHistory(id).stream()
                 .map(TransactionResponse::fromDomain)
                 .collect(Collectors.toList());
@@ -187,7 +180,7 @@ public class BankingController {
 
     @GetMapping("/accounts/{id}/statement")
     public ResponseEntity<ApiResponse<AccountStatementResponse>> getAccountStatement(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         try {
@@ -203,7 +196,7 @@ public class BankingController {
 
     @GetMapping("/accounts/{id}/category-report")
     public ResponseEntity<ApiResponse<CategoryReportResponse>> getCategoryReport(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestParam String type) {
         try {
             Transaction.TransactionType transactionType = Transaction.TransactionType.valueOf(type);

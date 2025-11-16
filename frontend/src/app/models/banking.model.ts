@@ -18,7 +18,7 @@ export enum CategoryType {
 }
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
   description: string;
   type: CategoryType;
@@ -28,7 +28,7 @@ export interface Category {
 }
 
 export interface Account {
-  id: number;
+  id: string;
   accountNumber: string;
   firstName: string;
   lastName: string;
@@ -40,14 +40,14 @@ export interface Account {
 }
 
 export interface Transaction {
-  id: number;
-  accountId: number;
+  id: string;
+  accountId: string;
   type: TransactionType;
-  categoryId: number;
+  categoryId: string | null;
   amount: number;
   balanceAfter: number;
   description: string;
-  relatedAccountId?: number;
+  relatedAccountId?: string | null;
   createdAt: string;
 }
 
@@ -72,7 +72,7 @@ export interface CategorySummary {
 }
 
 export interface CategoryReport {
-  accountId: number;
+  accountId: string;
   transactionType: TransactionType;
   categories: CategorySummary[];
   totalAmount: number;
@@ -82,11 +82,11 @@ export interface CategoryReport {
 export interface TransactionRequest {
   amount: number;
   description: string;
-  categoryId?: number;
+  categoryId?: string;
 }
 
 export interface TransferRequest {
-  toAccountId: number;
+  toAccountId: string;
   amount: number;
   description: string;
 }

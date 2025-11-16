@@ -13,7 +13,7 @@ import { ApiResponse } from '../../../models/api-response.model';
 export class TransactionFormsComponent implements OnInit {
   account: Account | null = null;
   accounts: Account[] = [];
-  accountId: number | null = null;
+  accountId: string | null = null;
 
   activeTab: 'deposit' | 'withdraw' | 'transfer' = 'deposit';
 
@@ -21,17 +21,17 @@ export class TransactionFormsComponent implements OnInit {
   depositForm = {
     amount: 0,
     description: '',
-    categoryId: undefined as number | undefined
+    categoryId: undefined as string | undefined
   };
 
   withdrawForm = {
     amount: 0,
     description: '',
-    categoryId: undefined as number | undefined
+    categoryId: undefined as string | undefined
   };
 
   transferForm = {
-    toAccountId: 0,
+    toAccountId: '',
     amount: 0,
     description: ''
   };
@@ -54,7 +54,7 @@ export class TransactionFormsComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
-      this.accountId = +params['id'];
+      this.accountId = params['id'];
       if (this.accountId) {
         this.loadAccount();
         this.loadAccounts();
@@ -205,7 +205,7 @@ export class TransactionFormsComponent implements OnInit {
 
   resetTransferForm(): void {
     this.transferForm = {
-      toAccountId: 0,
+      toAccountId: '',
       amount: 0,
       description: ''
     };

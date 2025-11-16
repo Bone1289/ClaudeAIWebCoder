@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class AccountResponse {
-    private Long id;
+    private String id;
     private String accountNumber;
     private String firstName;
     private String lastName;
@@ -18,7 +18,7 @@ public class AccountResponse {
 
     public static AccountResponse fromDomain(Account account) {
         AccountResponse response = new AccountResponse();
-        response.id = account.getId();
+        response.id = account.getId().toString();
         response.accountNumber = account.getAccountNumber();
         response.firstName = account.getFirstName();
         response.lastName = account.getLastName();
@@ -31,8 +31,8 @@ public class AccountResponse {
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public String getAccountNumber() { return accountNumber; }
     public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
     public String getFirstName() { return firstName; }

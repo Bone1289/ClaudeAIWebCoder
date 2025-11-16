@@ -50,7 +50,7 @@ export class BankingService {
    * @param id - Account ID
    * @returns Observable<ApiResponse<Account>> - Account object
    */
-  getAccountById(id: number): Observable<ApiResponse<Account>> {
+  getAccountById(id: string): Observable<ApiResponse<Account>> {
     return this.http.get<ApiResponse<Account>>(`${this.apiUrl}/accounts/${id}`).pipe(
       catchError(this.handleError)
     );
@@ -61,7 +61,7 @@ export class BankingService {
    * @param customerId - Customer ID
    * @returns Observable<ApiResponse<Account[]>> - List of customer accounts
    */
-  getAccountsByCustomerId(customerId: number): Observable<ApiResponse<Account[]>> {
+  getAccountsByCustomerId(customerId: string): Observable<ApiResponse<Account[]>> {
     return this.http.get<ApiResponse<Account[]>>(`${this.apiUrl}/accounts/customer/${customerId}`).pipe(
       catchError(this.handleError)
     );
@@ -73,7 +73,7 @@ export class BankingService {
    * @param request - Update account request
    * @returns Observable<ApiResponse<Account>> - Updated account
    */
-  updateAccount(id: number, request: UpdateAccountRequest): Observable<ApiResponse<Account>> {
+  updateAccount(id: string, request: UpdateAccountRequest): Observable<ApiResponse<Account>> {
     return this.http.put<ApiResponse<Account>>(`${this.apiUrl}/accounts/${id}`, request).pipe(
       catchError(this.handleError)
     );
@@ -84,7 +84,7 @@ export class BankingService {
    * @param id - Account ID
    * @returns Observable<ApiResponse<void>> - Delete confirmation
    */
-  deleteAccount(id: number): Observable<ApiResponse<void>> {
+  deleteAccount(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/accounts/${id}`).pipe(
       catchError(this.handleError)
     );
@@ -98,7 +98,7 @@ export class BankingService {
    * @param request - Transaction request with amount and description
    * @returns Observable<ApiResponse<Account>> - Updated account
    */
-  deposit(accountId: number, request: TransactionRequest): Observable<ApiResponse<Account>> {
+  deposit(accountId: string, request: TransactionRequest): Observable<ApiResponse<Account>> {
     return this.http.post<ApiResponse<Account>>(`${this.apiUrl}/accounts/${accountId}/deposit`, request).pipe(
       catchError(this.handleError)
     );
@@ -110,7 +110,7 @@ export class BankingService {
    * @param request - Transaction request with amount and description
    * @returns Observable<ApiResponse<Account>> - Updated account
    */
-  withdraw(accountId: number, request: TransactionRequest): Observable<ApiResponse<Account>> {
+  withdraw(accountId: string, request: TransactionRequest): Observable<ApiResponse<Account>> {
     return this.http.post<ApiResponse<Account>>(`${this.apiUrl}/accounts/${accountId}/withdraw`, request).pipe(
       catchError(this.handleError)
     );
@@ -122,7 +122,7 @@ export class BankingService {
    * @param request - Transfer request with destination account, amount, and description
    * @returns Observable<ApiResponse<void>> - Transfer confirmation
    */
-  transfer(fromAccountId: number, request: TransferRequest): Observable<ApiResponse<void>> {
+  transfer(fromAccountId: string, request: TransferRequest): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.apiUrl}/accounts/${fromAccountId}/transfer`, request).pipe(
       catchError(this.handleError)
     );
@@ -133,7 +133,7 @@ export class BankingService {
    * @param accountId - Account ID
    * @returns Observable<ApiResponse<Transaction[]>> - List of transactions
    */
-  getTransactionHistory(accountId: number): Observable<ApiResponse<Transaction[]>> {
+  getTransactionHistory(accountId: string): Observable<ApiResponse<Transaction[]>> {
     return this.http.get<ApiResponse<Transaction[]>>(`${this.apiUrl}/accounts/${accountId}/transactions`).pipe(
       catchError(this.handleError)
     );
@@ -158,7 +158,7 @@ export class BankingService {
    * @param endDate - End date (ISO string)
    * @returns Observable<ApiResponse<AccountStatement>> - Account statement
    */
-  getAccountStatement(accountId: number, startDate: string, endDate: string): Observable<ApiResponse<AccountStatement>> {
+  getAccountStatement(accountId: string, startDate: string, endDate: string): Observable<ApiResponse<AccountStatement>> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate);
@@ -177,7 +177,7 @@ export class BankingService {
    * @param transactionType - Type of transactions (DEPOSIT or WITHDRAWAL)
    * @returns Observable<ApiResponse<CategoryReport>> - Category report
    */
-  getCategoryReport(accountId: number, transactionType: TransactionType): Observable<ApiResponse<CategoryReport>> {
+  getCategoryReport(accountId: string, transactionType: TransactionType): Observable<ApiResponse<CategoryReport>> {
     const params = new HttpParams().set('type', transactionType);
 
     return this.http.get<ApiResponse<CategoryReport>>(
