@@ -64,6 +64,7 @@ public class KafkaConfig {
      * Includes monitoring metrics for Prometheus
      */
     @Bean
+    @org.springframework.context.annotation.Primary
     public ProducerFactory<String, Notification> notificationProducerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -87,6 +88,7 @@ public class KafkaConfig {
      * Consumer configuration for processing notifications from Kafka
      */
     @Bean
+    @org.springframework.context.annotation.Primary
     public ConsumerFactory<String, Notification> notificationConsumerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
