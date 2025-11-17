@@ -1,0 +1,51 @@
+<div class="account-management">
+  <div class="header">
+    <h1>Account Management</h1>
+    <button class="btn-refresh" (click)="loadAccounts()">Refresh</button>
+  </div>
+
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    Loading accounts...
+  </div>
+
+  <div class="accounts-table" *ngIf="!isLoading && accounts.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Account Number</th>
+          <th>Account Holder</th>
+          <th>Nationality</th>
+          <th>Type</th>
+          <th>Balance</th>
+          <th>Transactions</th>
+          <th>Created</th>
+          <th>Last Transaction</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let account of accounts">
+          <td><strong>{{ account.accountNumber }}</strong></td>
+          <td>{{ account.firstName }} {{ account.lastName }}</td>
+          <td>{{ account.nationality }}</td>
+          <td>
+            <span class="badge badge-type" [style.background-color]="getAccountTypeColor(account.accountType)">
+              {{ account.accountType }}
+            </span>
+          </td>
+          <td class="balance">${{ account.balance.toFixed(2) }}</td>
+          <td>{{ account.transactionCount }}</td>
+          <td>{{ account.createdAt | date:'short' }}</td>
+          <td>{{ account.lastTransactionDate ? (account.lastTransactionDate | date:'short') : 'No transactions' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="no-data" *ngIf="!isLoading && accounts.length === 0">
+    No accounts found.
+  </div>
+</div>

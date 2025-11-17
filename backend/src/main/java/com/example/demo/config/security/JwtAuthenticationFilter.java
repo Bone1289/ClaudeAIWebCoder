@@ -47,16 +47,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Validate token
             if (jwtUtil.validateToken(token)) {
-                // Extract user ID from token
+                // Extract user ID, email, and role from token
                 UUID userId = jwtUtil.getUserIdFromToken(token);
                 String email = jwtUtil.getEmailFromToken(token);
+                String role = jwtUtil.getRoleFromToken(token);
 
                 // Create authentication object
                 // We store userId as the principal (name)
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     userId.toString(), // Principal is the user ID as string
                     null, // No credentials needed
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
                 );
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

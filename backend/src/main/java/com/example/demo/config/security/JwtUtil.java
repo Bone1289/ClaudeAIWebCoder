@@ -26,7 +26,7 @@ public class JwtUtil {
     /**
      * Generate JWT token for user
      */
-    public String generateToken(UUID userId, String email) {
+    public String generateToken(UUID userId, String email, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
@@ -35,6 +35,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("email", email)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)
@@ -55,6 +56,14 @@ public class JwtUtil {
     public String getEmailFromToken(String token) {
         Claims claims = getAllClaimsFromToken(token);
         return claims.get("email", String.class);
+    }
+
+    /**
+     * Get role from JWT token
+     */
+    public String getRoleFromToken(String token) {
+        Claims claims = getAllClaimsFromToken(token);
+        return claims.get("role", String.class);
     }
 
     /**

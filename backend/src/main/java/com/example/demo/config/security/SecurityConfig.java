@@ -2,6 +2,7 @@ package com.example.demo.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -56,6 +58,9 @@ public class SecurityConfig {
 
                         // Allow public access to actuator endpoints
                         .requestMatchers("/actuator/**").permitAll()
+
+                        // Require ADMIN role for admin endpoints
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // Require authentication for all banking endpoints
                         .requestMatchers("/api/banking/**").authenticated()

@@ -4,6 +4,7 @@ import com.example.demo.application.ports.in.CreateAccountUseCase;
 import com.example.demo.application.ports.in.DepositUseCase;
 import com.example.demo.application.ports.in.ManageCategoryUseCase;
 import com.example.demo.application.ports.in.RegisterUserUseCase;
+import com.example.demo.application.ports.out.UserRepository;
 import com.example.demo.domain.Account;
 import com.example.demo.domain.TransactionCategory;
 import com.example.demo.domain.User;
@@ -31,7 +32,8 @@ public class DataInitializer {
             RegisterUserUseCase registerUserUseCase,
             CreateAccountUseCase createAccountUseCase,
             DepositUseCase depositUseCase,
-            ManageCategoryUseCase manageCategoryUseCase) {
+            ManageCategoryUseCase manageCategoryUseCase,
+            UserRepository userRepository) {
 
         return args -> {
             logger.info("Starting data initialization...");
@@ -40,7 +42,7 @@ public class DataInitializer {
             initializeCategories(manageCategoryUseCase);
 
             // Initialize Users and Accounts
-            initializeUsersAndAccounts(registerUserUseCase, createAccountUseCase, depositUseCase);
+            initializeUsersAndAccounts(registerUserUseCase, createAccountUseCase, depositUseCase, userRepository);
 
             logger.info("Data initialization completed successfully!");
         };
@@ -146,10 +148,24 @@ public class DataInitializer {
 
     private void initializeUsersAndAccounts(RegisterUserUseCase registerUserUseCase,
                                            CreateAccountUseCase createAccountUseCase,
-                                           DepositUseCase depositUseCase) {
+                                           DepositUseCase depositUseCase,
+                                           UserRepository userRepository) {
         logger.info("Initializing sample users and accounts...");
 
         try {
+            // Create Admin User
+            User adminUser = registerUserUseCase.registerUser(
+                "admin@example.com",
+                "admin",
+                "Admin",
+                "Admin",
+                "User"
+            );
+            // Promote to admin role and save
+            adminUser = adminUser.promoteToAdmin();
+            userRepository.update(adminUser);
+            logger.info("Created admin user: {} ({}) with role: {}", adminUser.getUsername(), adminUser.getEmail(), adminUser.getRole());
+
             // Create User 1: Demo User
             User demoUser = registerUserUseCase.registerUser(
                 "demo@example.com",

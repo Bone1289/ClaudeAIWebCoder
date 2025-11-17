@@ -1,0 +1,84 @@
+<div class="user-management">
+  <div class="header">
+    <h1>User Management</h1>
+    <button class="btn-refresh" (click)="loadUsers()">Refresh</button>
+  </div>
+
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    Loading users...
+  </div>
+
+  <div class="users-table" *ngIf="!isLoading && users.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.username }}</td>
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td>{{ user.email }}</td>
+          <td><span class="badge badge-role">{{ user.role }}</span></td>
+          <td>
+            <span class="badge badge-status" [style.background-color]="getStatusColor(user.status)">
+              {{ user.status }}
+            </span>
+          </td>
+          <td>{{ user.createdAt | date:'short' }}</td>
+          <td class="actions">
+            <button
+              *ngIf="user.status === 'ACTIVE'"
+              class="btn-action btn-warning"
+              (click)="suspendUser(user)"
+              title="Suspend">
+              Suspend
+            </button>
+            <button
+              *ngIf="user.status === 'SUSPENDED'"
+              class="btn-action btn-success"
+              (click)="activateUser(user)"
+              title="Activate">
+              Activate
+            </button>
+            <button
+              *ngIf="user.status !== 'LOCKED'"
+              class="btn-action btn-warning"
+              (click)="lockUser(user)"
+              title="Lock">
+              Lock
+            </button>
+            <button
+              *ngIf="user.status === 'LOCKED'"
+              class="btn-action btn-success"
+              (click)="activateUser(user)"
+              title="Unlock">
+              Unlock
+            </button>
+            <button
+              class="btn-action btn-danger"
+              (click)="deleteUser(user)"
+              title="Delete">
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="no-data" *ngIf="!isLoading && users.length === 0">
+    No users found.
+  </div>
+</div>
