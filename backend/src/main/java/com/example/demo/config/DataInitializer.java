@@ -146,6 +146,16 @@ public class DataInitializer {
 
         // Check if accounts already exist
         try {
+            // Create Default Account: Demo User
+            Account defaultAccount = createAccountUseCase.createAccount(
+                "Demo",
+                "User",
+                "United States",
+                "CHECKING"
+            );
+            depositUseCase.deposit(defaultAccount.getId(), new BigDecimal("1000.00"), "Initial deposit");
+            logger.info("Created default account for Demo User with initial balance $1000");
+
             // Create Account 1: John Doe
             Account account1 = createAccountUseCase.createAccount(
                 "John",
