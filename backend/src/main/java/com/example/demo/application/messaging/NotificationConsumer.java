@@ -3,6 +3,7 @@ package com.example.demo.application.messaging;
 import com.example.demo.application.ports.out.NotificationRepository;
 import com.example.demo.application.ports.out.UserRepository;
 import com.example.demo.application.service.EmailService;
+import com.example.demo.application.service.SseEmitterService;
 import com.example.demo.config.KafkaConfig;
 import com.example.demo.domain.User;
 import com.example.demo.domain.notification.Notification;
@@ -28,6 +29,7 @@ public class NotificationConsumer {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final SseEmitterService sseEmitterService;
     private final Counter notificationsProcessed;
     private final Counter notificationsFailed;
 
@@ -35,10 +37,12 @@ public class NotificationConsumer {
             NotificationRepository notificationRepository,
             UserRepository userRepository,
             EmailService emailService,
+            SseEmitterService sseEmitterService,
             MeterRegistry meterRegistry) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
+        this.sseEmitterService = sseEmitterService;
         this.notificationsProcessed = Counter.builder("kafka.notifications.processed")
                 .description("Total notifications processed from Kafka")
                 .register(meterRegistry);
@@ -64,14 +68,23 @@ public class NotificationConsumer {
             Notification savedNotification = notificationRepository.save(notification);
             log.debug("Notification saved to database: id={}", savedNotification.getId());
 
-            // 2. Send email if channel is EMAIL or BOTH
+            // 2. Push notification via SSE to connected clients (real-time)
+            sseEmitterService.sendNotificationToUser(savedNotification.getUserId(), savedNotification);
+            log.debug("Notification pushed via SSE: id={}, userId={}",
+                    savedNotification.getId(), savedNotification.getUserId());
+
+            // 3. Update unread count via SSE
+            long unreadCount = notificationRepository.countUnreadByUserId(savedNotification.getUserId());
+            sseEmitterService.sendUnreadCountToUser(savedNotification.getUserId(), unreadCount);
+
+            // 4. Send email if channel is EMAIL or BOTH
             if (notification.getChannel() == Notification.NotificationChannel.EMAIL ||
                     notification.getChannel() == Notification.NotificationChannel.BOTH) {
 
                 sendEmailNotification(savedNotification);
             }
 
-            // 3. Acknowledge the message
+            // 5. Acknowledge the message
             notificationsProcessed.increment();
             acknowledgment.acknowledge();
 

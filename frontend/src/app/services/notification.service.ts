@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, Subject, interval } from 'rxjs';
-import { switchMap, tap, startWith } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Notification {
@@ -36,39 +36,130 @@ export interface ApiResponse<T> {
 })
 export class NotificationService {
   private apiUrl = `${environment.apiUrl}/notifications`;
+  private sseUrl = `${environment.apiUrl}/notifications/stream`;
+  private eventSource: EventSource | null = null;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectDelay = 2000; // 2 seconds
+
   private unreadCountSubject = new Subject<number>();
   private notificationsUpdatedSubject = new Subject<void>();
-
-  // Polling interval in milliseconds (30 seconds)
-  private pollingInterval = 30000;
+  private newNotificationSubject = new Subject<Notification>();
 
   unreadCount$ = this.unreadCountSubject.asObservable();
   notificationsUpdated$ = this.notificationsUpdatedSubject.asObservable();
+  newNotification$ = this.newNotificationSubject.asObservable();
 
-  constructor(private http: HttpClient) {
-    // Start polling for unread count
-    this.startPolling();
+  constructor(
+    private http: HttpClient,
+    private ngZone: NgZone
+  ) {
+    // Start SSE connection for real-time updates
+    this.connectToSSE();
   }
 
   /**
-   * Start polling for unread notification count
+   * Connect to Server-Sent Events (SSE) stream for real-time notifications
    */
-  private startPolling(): void {
-    interval(this.pollingInterval)
-      .pipe(
-        startWith(0), // Emit immediately
-        switchMap(() => this.getUnreadCount())
-      )
-      .subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.unreadCountSubject.next(response.data);
-          }
-        },
-        error: (error) => {
-          console.error('Error polling unread count:', error);
-        }
+  private connectToSSE(): void {
+    // Get auth token from localStorage
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('No auth token found, cannot connect to SSE');
+      return;
+    }
+
+    // EventSource doesn't support custom headers, so we need to pass token as query param or cookie
+    // For now, we'll rely on the cookie-based auth
+    this.ngZone.runOutsideAngular(() => {
+      this.eventSource = new EventSource(this.sseUrl, { withCredentials: true });
+
+      this.eventSource.addEventListener('connected', (event: MessageEvent) => {
+        this.ngZone.run(() => {
+          console.log('SSE connected:', event.data);
+          this.reconnectAttempts = 0; // Reset reconnect counter on successful connection
+        });
       });
+
+      this.eventSource.addEventListener('notification', (event: MessageEvent) => {
+        this.ngZone.run(() => {
+          try {
+            const notification: Notification = JSON.parse(event.data);
+            console.log('New notification received via SSE:', notification);
+            this.newNotificationSubject.next(notification);
+            this.notificationsUpdatedSubject.next();
+          } catch (error) {
+            console.error('Error parsing notification:', error);
+          }
+        });
+      });
+
+      this.eventSource.addEventListener('unread-count', (event: MessageEvent) => {
+        this.ngZone.run(() => {
+          try {
+            const data = JSON.parse(event.data);
+            console.log('Unread count updated via SSE:', data.unreadCount);
+            this.unreadCountSubject.next(data.unreadCount);
+          } catch (error) {
+            console.error('Error parsing unread count:', error);
+          }
+        });
+      });
+
+      this.eventSource.addEventListener('heartbeat', (event: MessageEvent) => {
+        // Heartbeat received - connection is alive
+        console.debug('SSE heartbeat received');
+      });
+
+      this.eventSource.onerror = (error) => {
+        this.ngZone.run(() => {
+          console.error('SSE connection error:', error);
+          this.handleSSEError();
+        });
+      });
+    });
+  }
+
+  /**
+   * Handle SSE connection errors and attempt reconnection
+   */
+  private handleSSEError(): void {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+    }
+
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      const delay = this.reconnectDelay * this.reconnectAttempts;
+      console.log(`Attempting to reconnect SSE (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms...`);
+
+      setTimeout(() => {
+        this.connectToSSE();
+      }, delay);
+    } else {
+      console.error('Max SSE reconnect attempts reached. Please refresh the page.');
+    }
+  }
+
+  /**
+   * Disconnect from SSE stream (call on logout or service destroy)
+   */
+  disconnectSSE(): void {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+      console.log('SSE connection closed');
+    }
+  }
+
+  /**
+   * Reconnect to SSE stream (call after login)
+   */
+  reconnectSSE(): void {
+    this.disconnectSSE();
+    this.reconnectAttempts = 0;
+    this.connectToSSE();
   }
 
   /**

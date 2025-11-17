@@ -5,16 +5,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
 
 /**
- * Configuration for asynchronous task execution
+ * Configuration for asynchronous task execution and scheduled tasks
  * Enables @Async annotation for non-blocking operations like email sending
+ * Enables @Scheduled annotation for periodic tasks like SSE heartbeats
  */
 @Configuration
 @EnableAsync
+@EnableScheduling
 public class AsyncConfig {
 
     private static final Logger log = LoggerFactory.getLogger(AsyncConfig.class);

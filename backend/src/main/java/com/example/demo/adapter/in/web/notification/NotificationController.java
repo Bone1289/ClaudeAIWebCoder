@@ -7,6 +7,7 @@ import com.example.demo.application.ports.in.CreateNotificationUseCase;
 import com.example.demo.application.ports.in.DeleteNotificationUseCase;
 import com.example.demo.application.ports.in.GetNotificationsUseCase;
 import com.example.demo.application.ports.in.MarkNotificationAsReadUseCase;
+import com.example.demo.application.service.SseEmitterService;
 import com.example.demo.config.security.SecurityUtil;
 import com.example.demo.domain.notification.Notification;
 import com.example.demo.domain.notification.Notification.*;
@@ -15,9 +16,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -34,16 +37,19 @@ public class NotificationController {
     private final GetNotificationsUseCase getNotificationsUseCase;
     private final MarkNotificationAsReadUseCase markNotificationAsReadUseCase;
     private final DeleteNotificationUseCase deleteNotificationUseCase;
+    private final SseEmitterService sseEmitterService;
 
     public NotificationController(
             CreateNotificationUseCase createNotificationUseCase,
             GetNotificationsUseCase getNotificationsUseCase,
             MarkNotificationAsReadUseCase markNotificationAsReadUseCase,
-            DeleteNotificationUseCase deleteNotificationUseCase) {
+            DeleteNotificationUseCase deleteNotificationUseCase,
+            SseEmitterService sseEmitterService) {
         this.createNotificationUseCase = createNotificationUseCase;
         this.getNotificationsUseCase = getNotificationsUseCase;
         this.markNotificationAsReadUseCase = markNotificationAsReadUseCase;
         this.deleteNotificationUseCase = deleteNotificationUseCase;
+        this.sseEmitterService = sseEmitterService;
     }
 
     /**
@@ -276,5 +282,30 @@ public class NotificationController {
         deleteNotificationUseCase.deleteAllNotifications(userId);
 
         return ResponseEntity.ok(ApiResponse.success("All notifications deleted successfully", null));
+    }
+
+    /**
+     * Subscribe to real-time notifications via Server-Sent Events (SSE)
+     * GET /api/notifications/stream
+     *
+     * This endpoint establishes a persistent connection for receiving real-time notifications.
+     * The connection will automatically send heartbeats every 30 seconds to keep it alive.
+     *
+     * Events sent:
+     * - "connected": Initial connection confirmation
+     * - "notification": New notification received
+     * - "unread-count": Updated unread notification count
+     * - "heartbeat": Keep-alive heartbeat
+     */
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamNotifications() {
+        UUID userId = SecurityUtil.getCurrentUserId();
+        SseEmitter emitter = sseEmitterService.createEmitter(userId);
+
+        // Send initial unread count
+        long unreadCount = getNotificationsUseCase.getUnreadCount(userId);
+        sseEmitterService.sendUnreadCountToUser(userId, unreadCount);
+
+        return emitter;
     }
 }
