@@ -153,7 +153,7 @@ public class DataInitializer {
                 "United States",
                 "CHECKING"
             );
-            depositUseCase.deposit(account1.getId(), new BigDecimal("5000.00"));
+            depositUseCase.deposit(account1.getId(), new BigDecimal("5000.00"), "Initial deposit");
             logger.info("Created account for John Doe with initial balance $5000");
 
             // Create Account 2: Jane Smith
@@ -163,7 +163,7 @@ public class DataInitializer {
                 "United Kingdom",
                 "SAVINGS"
             );
-            depositUseCase.deposit(account2.getId(), new BigDecimal("10000.00"));
+            depositUseCase.deposit(account2.getId(), new BigDecimal("10000.00"), "Initial deposit");
             logger.info("Created account for Jane Smith with initial balance $10000");
 
             // Create Account 3: Carlos Rodriguez
@@ -173,7 +173,7 @@ public class DataInitializer {
                 "Spain",
                 "CHECKING"
             );
-            depositUseCase.deposit(account3.getId(), new BigDecimal("3500.50"));
+            depositUseCase.deposit(account3.getId(), new BigDecimal("3500.50"), "Initial deposit");
             logger.info("Created account for Carlos Rodriguez with initial balance $3500.50");
 
             // Create Account 4: Yuki Tanaka
@@ -183,7 +183,7 @@ public class DataInitializer {
                 "Japan",
                 "SAVINGS"
             );
-            depositUseCase.deposit(account4.getId(), new BigDecimal("7500.00"));
+            depositUseCase.deposit(account4.getId(), new BigDecimal("7500.00"), "Initial deposit");
             logger.info("Created account for Yuki Tanaka with initial balance $7500");
 
             // Create Account 5: Emma Johnson
@@ -193,7 +193,7 @@ public class DataInitializer {
                 "Canada",
                 "CREDIT"
             );
-            depositUseCase.deposit(account5.getId(), new BigDecimal("2000.00"));
+            depositUseCase.deposit(account5.getId(), new BigDecimal("2000.00"), "Initial deposit");
             logger.info("Created account for Emma Johnson with initial balance $2000");
 
         } catch (Exception e) {
