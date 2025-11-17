@@ -34,11 +34,62 @@ export class BankingDashboardComponent implements OnInit {
 
   accountTypes = ['CHECKING', 'SAVINGS', 'CREDIT'];
 
-  // Countries and autocomplete
-  countries: Country[] = COUNTRIES;
-  nationalityInput: string = '';
-  showNationalitySuggestions: boolean = false;
-  filteredCountries: Country[] = [];
+  countries = [
+    { code: 'US', name: 'United States', flag: '🇺🇸' },
+    { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
+    { code: 'CA', name: 'Canada', flag: '🇨🇦' },
+    { code: 'AU', name: 'Australia', flag: '🇦🇺' },
+    { code: 'DE', name: 'Germany', flag: '🇩🇪' },
+    { code: 'FR', name: 'France', flag: '🇫🇷' },
+    { code: 'IT', name: 'Italy', flag: '🇮🇹' },
+    { code: 'ES', name: 'Spain', flag: '🇪🇸' },
+    { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
+    { code: 'BE', name: 'Belgium', flag: '🇧🇪' },
+    { code: 'CH', name: 'Switzerland', flag: '🇨🇭' },
+    { code: 'AT', name: 'Austria', flag: '🇦🇹' },
+    { code: 'SE', name: 'Sweden', flag: '🇸🇪' },
+    { code: 'NO', name: 'Norway', flag: '🇳🇴' },
+    { code: 'DK', name: 'Denmark', flag: '🇩🇰' },
+    { code: 'FI', name: 'Finland', flag: '🇫🇮' },
+    { code: 'PL', name: 'Poland', flag: '🇵🇱' },
+    { code: 'PT', name: 'Portugal', flag: '🇵🇹' },
+    { code: 'GR', name: 'Greece', flag: '🇬🇷' },
+    { code: 'IE', name: 'Ireland', flag: '🇮🇪' },
+    { code: 'JP', name: 'Japan', flag: '🇯🇵' },
+    { code: 'CN', name: 'China', flag: '🇨🇳' },
+    { code: 'KR', name: 'South Korea', flag: '🇰🇷' },
+    { code: 'IN', name: 'India', flag: '🇮🇳' },
+    { code: 'BR', name: 'Brazil', flag: '🇧🇷' },
+    { code: 'MX', name: 'Mexico', flag: '🇲🇽' },
+    { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
+    { code: 'CL', name: 'Chile', flag: '🇨🇱' },
+    { code: 'ZA', name: 'South Africa', flag: '🇿🇦' },
+    { code: 'EG', name: 'Egypt', flag: '🇪🇬' },
+    { code: 'NZ', name: 'New Zealand', flag: '🇳🇿' },
+    { code: 'SG', name: 'Singapore', flag: '🇸🇬' },
+    { code: 'MY', name: 'Malaysia', flag: '🇲🇾' },
+    { code: 'TH', name: 'Thailand', flag: '🇹🇭' },
+    { code: 'PH', name: 'Philippines', flag: '🇵🇭' },
+    { code: 'ID', name: 'Indonesia', flag: '🇮🇩' },
+    { code: 'VN', name: 'Vietnam', flag: '🇻🇳' },
+    { code: 'AE', name: 'United Arab Emirates', flag: '🇦🇪' },
+    { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦' },
+    { code: 'IL', name: 'Israel', flag: '🇮🇱' },
+    { code: 'TR', name: 'Turkey', flag: '🇹🇷' },
+    { code: 'RU', name: 'Russia', flag: '🇷🇺' },
+    { code: 'UA', name: 'Ukraine', flag: '🇺🇦' },
+    { code: 'RO', name: 'Romania', flag: '🇷🇴' },
+    { code: 'CZ', name: 'Czech Republic', flag: '🇨🇿' },
+    { code: 'HU', name: 'Hungary', flag: '🇭🇺' },
+    { code: 'SK', name: 'Slovakia', flag: '🇸🇰' },
+    { code: 'BG', name: 'Bulgaria', flag: '🇧🇬' },
+    { code: 'HR', name: 'Croatia', flag: '🇭🇷' },
+    { code: 'SI', name: 'Slovenia', flag: '🇸🇮' }
+  ];
+
+  // Autocomplete state
+  filteredCountries: any[] = [];
+  showCountryDropdown = false;
 
   constructor(private bankingService: BankingService) { }
 
@@ -74,6 +125,44 @@ export class BankingDashboardComponent implements OnInit {
     return this.accounts.filter(account => account.status === 'ACTIVE').length;
   }
 
+  getCountryFlag(nationality: string): string {
+    const country = this.countries.find(c => c.name === nationality || c.code === nationality);
+    return country ? country.flag : '🌍';
+  }
+
+  // ========== Autocomplete Methods ==========
+
+  onNationalityInput(event: any): void {
+    const value = event.target.value;
+    if (value && value.length > 0) {
+      this.filteredCountries = this.countries.filter(country =>
+        country.name.toLowerCase().includes(value.toLowerCase()) ||
+        country.code.toLowerCase().includes(value.toLowerCase())
+      );
+      this.showCountryDropdown = this.filteredCountries.length > 0;
+    } else {
+      this.filteredCountries = this.countries;
+      this.showCountryDropdown = true;
+    }
+  }
+
+  onNationalityFocus(): void {
+    this.filteredCountries = this.countries;
+    this.showCountryDropdown = true;
+  }
+
+  selectCountry(country: any): void {
+    this.newAccount.nationality = country.name;
+    this.showCountryDropdown = false;
+  }
+
+  hideCountryDropdown(): void {
+    // Delay to allow click event on dropdown item to fire
+    setTimeout(() => {
+      this.showCountryDropdown = false;
+    }, 200);
+  }
+
   // ========== Add Account ==========
 
   openAddModal(): void {
@@ -87,6 +176,7 @@ export class BankingDashboardComponent implements OnInit {
     this.filteredCountries = [];
     this.showNationalitySuggestions = false;
     this.showAddModal = true;
+    this.showCountryDropdown = false;
     this.error = null;
     this.successMessage = null;
   }
