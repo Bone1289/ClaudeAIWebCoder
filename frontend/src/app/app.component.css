@@ -1,46 +1,155 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container.no-header main {
+  padding: 0;
+}
+
 header {
-  background: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 0;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
 }
 
 header h1 {
-  color: #007bff;
-  margin-bottom: 15px;
+  color: white;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
 }
 
 nav {
   display: flex;
-  gap: 20px;
+  gap: 10px;
+  flex: 1;
+  justify-content: center;
 }
 
 nav a {
   text-decoration: none;
-  color: #333;
-  padding: 8px 16px;
-  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 10px 20px;
+  border-radius: 6px;
   transition: all 0.3s;
+  font-weight: 500;
 }
 
 nav a:hover {
-  background-color: #f0f0f0;
-}
-
-nav a.active {
-  background-color: #007bff;
+  background-color: rgba(255, 255, 255, 0.1);
   color: white;
 }
 
+nav a.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: white;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.user-email {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.btn-logout:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
 main {
-  min-height: 500px;
+  flex: 1;
+  padding: 30px 20px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 footer {
-  margin-top: 50px;
+  margin-top: auto;
   padding: 20px;
   text-align: center;
   color: #666;
   border-top: 1px solid #ddd;
+  background-color: #f8f9fa;
+}
+
+footer p {
+  margin: 0;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  header h1 {
+    text-align: center;
+  }
+
+  nav {
+    justify-content: center;
+  }
+
+  .user-menu {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-info {
+    align-items: center;
+  }
+
+  .btn-logout {
+    width: 100%;
+    justify-content: center;
+  }
 }

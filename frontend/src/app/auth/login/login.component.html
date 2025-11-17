@@ -1,0 +1,72 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>Virtual Bank</h1>
+      <h2>Sign In</h2>
+      <p>Welcome back! Please sign in to continue.</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        {{ errorMessage }}
+      </div>
+
+      <!-- Email or Username Field -->
+      <div class="form-group">
+        <label for="emailOrUsername">Email or Username</label>
+        <input
+          type="text"
+          id="emailOrUsername"
+          formControlName="emailOrUsername"
+          class="form-control"
+          [class.is-invalid]="submitted && f['emailOrUsername'].errors"
+          placeholder="Enter your email or username"
+        />
+        <div *ngIf="submitted && f['emailOrUsername'].errors" class="invalid-feedback">
+          Email or username is required
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          class="form-control"
+          [class.is-invalid]="submitted && f['password'].errors"
+          placeholder="Enter your password"
+        />
+        <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
+          Password is required
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn-primary" [disabled]="loading">
+        <span *ngIf="loading" class="spinner"></span>
+        <span *ngIf="!loading">Sign In</span>
+        <span *ngIf="loading">Signing in...</span>
+      </button>
+
+      <!-- Sign Up Link -->
+      <div class="login-footer">
+        <p>Don't have an account? <a routerLink="/auth/signup" class="link">Sign up here</a></p>
+      </div>
+    </form>
+
+    <!-- Test Credentials -->
+    <div class="test-credentials">
+      <h3>Test Credentials</h3>
+      <p><strong>Email:</strong> demo@example.com</p>
+      <p><strong>Password:</strong> password123</p>
+    </div>
+  </div>
+</div>

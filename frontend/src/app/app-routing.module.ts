@@ -1,19 +1,25 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { AuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'banking/dashboard',
+    redirectTo: 'auth/login',
     pathMatch: 'full'
   },
   {
+    path: 'auth',
+    loadChildren: () => import('./auth/auth.module').then(m => m.AuthModule)
+  },
+  {
     path: 'banking',
-    loadChildren: () => import('./components/banking/banking.module').then(m => m.BankingModule)
+    loadChildren: () => import('./components/banking/banking.module').then(m => m.BankingModule),
+    canActivate: [AuthGuard]
   },
   {
     path: '**',
-    redirectTo: 'banking/dashboard'
+    redirectTo: 'auth/login'
   }
 ];
 
