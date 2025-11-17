@@ -15,15 +15,18 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
-        // Allow requests from Angular development server
-        corsConfiguration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:4200",
-            "http://localhost:8080"
+        // Allow requests from Angular development server and other localhost origins
+        // Using setAllowedOriginPatterns for more flexibility with localhost
+        corsConfiguration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost",
+            "http://localhost:*",
+            "http://127.0.0.1",
+            "http://127.0.0.1:*"
         ));
 
         // Allow common HTTP methods
         corsConfiguration.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "DELETE", "OPTIONS"
+            "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
         ));
 
         // Allow common headers
