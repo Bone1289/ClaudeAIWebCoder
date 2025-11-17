@@ -125,6 +125,9 @@
         <div class="form-group nationality-autocomplete">
           <label for="nationality">Nationality:</label>
           <div class="autocomplete-container">
+            <span *ngIf="newAccount.nationality" class="selected-flag-icon">
+              {{ getCountryFlag(newAccount.nationality) }}
+            </span>
             <input
               type="text"
               id="nationality"
@@ -133,6 +136,7 @@
               (focus)="onNationalityFocus()"
               (blur)="hideCountryDropdown()"
               class="form-control"
+              [class.has-flag]="newAccount.nationality"
               placeholder="Type to search countries..."
               autocomplete="off"
               required>

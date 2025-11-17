@@ -513,11 +513,40 @@
 
 .autocomplete-container {
   position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.selected-flag-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  z-index: 10;
+  pointer-events: none;
+  animation: flagFadeIn 0.3s ease-in-out;
+}
+
+@keyframes flagFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+.autocomplete-container input.has-flag {
+  padding-left: 45px;
+  transition: padding-left 0.3s ease-in-out;
 }
 
 .autocomplete-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% - 1px);
   left: 0;
   right: 0;
   max-height: 250px;
@@ -528,7 +557,6 @@
   border-radius: 0 0 6px 6px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  margin-top: -1px;
 }
 
 .autocomplete-item {
