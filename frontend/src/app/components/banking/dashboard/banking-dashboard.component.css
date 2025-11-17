@@ -495,3 +495,24 @@
   font-size: 0.9rem;
   font-style: italic;
 }
+
+/* Nationality Badge */
+.nationality-badge {
+  display: inline-block;
+  background-color: #ecf0f1;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+/* Nationality Select */
+.nationality-select {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.nationality-select option {
+  padding: 8px;
+  font-size: 1rem;
+}

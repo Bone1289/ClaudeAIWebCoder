@@ -74,7 +74,7 @@
           <div class="account-details">
             <p class="account-number">{{ account.accountNumber }}</p>
             <p class="account-balance">${{ account.balance.toFixed(2) }}</p>
-            <p class="account-customer">{{ account.firstName }} {{ account.lastName }} ({{ account.nationality }})</p>
+            <p class="account-customer">{{ account.firstName }} {{ account.lastName }} <span class="nationality-badge">{{ getCountryFlag(account.nationality) }} {{ account.nationality }}</span></p>
           </div>
           <div class="account-actions">
             <a [routerLink]="['/banking/transactions', account.id]" class="btn btn-small">
@@ -124,7 +124,11 @@
         </div>
         <div class="form-group">
           <label for="nationality">Nationality:</label>
-          <input type="text" id="nationality" [(ngModel)]="newAccount.nationality" class="form-control" placeholder="Enter nationality" required>
+          <select id="nationality" [(ngModel)]="newAccount.nationality" class="form-control nationality-select" required>
+            <option *ngFor="let country of countries" [value]="country.name">
+              {{ country.flag }} {{ country.name }}
+            </option>
+          </select>
         </div>
         <div class="form-group">
           <label for="accountType">Account Type:</label>
