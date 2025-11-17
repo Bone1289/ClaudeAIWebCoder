@@ -24,7 +24,8 @@ FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built application from build stage
-COPY --from=build /app/dist/frontend-admin /usr/share/nginx/html
+# Angular 17 outputs to dist/frontend-admin/browser/
+COPY --from=build /app/dist/frontend-admin/browser /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
