@@ -22,13 +22,16 @@ public class NotificationProducer {
     private static final Logger log = LoggerFactory.getLogger(NotificationProducer.class);
 
     private final KafkaTemplate<String, Notification> kafkaTemplate;
+    private final KafkaTemplate<String, String> emailKafkaTemplate;
     private final Counter notificationsSent;
     private final Counter notificationsFailed;
 
     public NotificationProducer(
             KafkaTemplate<String, Notification> kafkaTemplate,
+            KafkaTemplate<String, String> emailKafkaTemplate,
             MeterRegistry meterRegistry) {
         this.kafkaTemplate = kafkaTemplate;
+        this.emailKafkaTemplate = emailKafkaTemplate;
         this.notificationsSent = Counter.builder("kafka.notifications.sent")
                 .description("Total notifications sent to Kafka")
                 .register(meterRegistry);
@@ -100,7 +103,7 @@ public class NotificationProducer {
 
         log.debug("Sending email event to Kafka: email={}, subject={}", email, subject);
 
-        kafkaTemplate.send(KafkaConfig.EMAIL_TOPIC, key, message)
+        emailKafkaTemplate.send(KafkaConfig.EMAIL_TOPIC, key, message)
                 .whenComplete((result, ex) -> {
                     if (ex == null) {
                         log.info("Email event sent successfully to Kafka: email={}, partition={}, offset={}",
