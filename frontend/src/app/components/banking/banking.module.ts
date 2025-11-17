@@ -7,6 +7,7 @@ import { BankingDashboardComponent } from './dashboard/banking-dashboard.compone
 import { TransactionFormsComponent } from './transactions/transaction-forms.component';
 import { AccountStatementComponent } from './statement/account-statement.component';
 import { CategoryReportsComponent } from './reports/category-reports.component';
+import { CategoryManagementComponent } from './categories/category-management.component';
 
 const routes: Routes = [
   {
@@ -26,6 +27,10 @@ const routes: Routes = [
     component: CategoryReportsComponent
   },
   {
+    path: 'categories',
+    component: CategoryManagementComponent
+  },
+  {
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full'
@@ -37,7 +42,8 @@ const routes: Routes = [
     BankingDashboardComponent,
     TransactionFormsComponent,
     AccountStatementComponent,
-    CategoryReportsComponent
+    CategoryReportsComponent,
+    CategoryManagementComponent
   ],
   imports: [
     CommonModule,
