@@ -17,5 +17,7 @@ public interface AccountJpaRepository extends JpaRepository<AccountJpaEntity, UU
 
     Optional<AccountJpaEntity> findByAccountNumber(String accountNumber);
 
+    List<AccountJpaEntity> findByUserId(UUID userId);
+
     boolean existsByAccountNumber(String accountNumber);
 }

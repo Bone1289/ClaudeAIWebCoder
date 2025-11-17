@@ -58,6 +58,11 @@ public class BankingService implements
     }
 
     @Override
+    public List<Account> getAccountsByUserId(UUID userId) {
+        return accountRepository.findByUserId(userId);
+    }
+
+    @Override
     public Optional<Account> getAccountById(UUID id) {
         return accountRepository.findById(id);
     }

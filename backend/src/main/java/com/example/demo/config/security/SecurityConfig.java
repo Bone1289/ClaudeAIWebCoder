@@ -9,6 +9,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Spring Security configuration
@@ -17,6 +18,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     /**
      * Password encoder bean for hashing passwords
@@ -28,8 +35,7 @@ public class SecurityConfig {
 
     /**
      * Security filter chain configuration
-     * For now, we allow all requests to support initial testing
-     * In production, you should protect endpoints appropriately
+     * Configures JWT authentication and protects banking endpoints
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -45,13 +51,15 @@ public class SecurityConfig {
                         // Allow public access to actuator endpoints
                         .requestMatchers("/actuator/**").permitAll()
 
-                        // For initial testing, allow all banking endpoints
-                        // TODO: In production, require authentication for these
-                        .requestMatchers("/api/**").permitAll()
+                        // Require authentication for all banking endpoints
+                        .requestMatchers("/api/banking/**").authenticated()
 
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )
+
+                // Add JWT authentication filter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // Stateless session management (JWT doesn't need sessions)
                 .sessionManagement(session ->

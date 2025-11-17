@@ -60,6 +60,13 @@ public class JpaAccountRepository implements AccountRepository {
     }
 
     @Override
+    public List<Account> findByUserId(UUID userId) {
+        return jpaRepository.findByUserId(userId).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Account update(Account account) {
         if (account.getId() == null || !jpaRepository.existsById(account.getId())) {
             throw new IllegalArgumentException("Cannot update account: account not found");
