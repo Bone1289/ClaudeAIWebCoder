@@ -1,0 +1,240 @@
+<div class="category-management">
+  <div class="page-header">
+    <h1>Category Management</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openAddModal()">
+        + Add Category
+      </button>
+      <button class="btn btn-secondary" (click)="loadCategories()">
+        <span>&#x21bb;</span> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="success-message">
+    <span class="success-icon">✓</span>
+    <p>{{ successMessage }}</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !showAddModal && !showEditModal && !showDeleteModal" class="error-message">
+    <span class="error-icon">⚠</span>
+    <p>{{ error }}</p>
+    <button class="btn btn-secondary" (click)="loadCategories()">Try Again</button>
+  </div>
+
+  <!-- Category Content -->
+  <div *ngIf="!loading" class="category-content">
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card income">
+        <div class="card-icon">💵</div>
+        <div class="card-content">
+          <h3>Income Categories</h3>
+          <p class="card-value">{{ incomeCategories.length }}</p>
+          <p class="card-detail">{{ getActiveCount(CategoryType.INCOME) }} active</p>
+        </div>
+      </div>
+      <div class="summary-card expense">
+        <div class="card-icon">💸</div>
+        <div class="card-content">
+          <h3>Expense Categories</h3>
+          <p class="card-value">{{ expenseCategories.length }}</p>
+          <p class="card-detail">{{ getActiveCount(CategoryType.EXPENSE) }} active</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Income Categories -->
+    <div class="category-section">
+      <h2>💵 Income Categories</h2>
+      <div class="category-grid">
+        <div *ngFor="let category of incomeCategories" class="category-card" [class.inactive]="!category.active">
+          <div class="category-header">
+            <div class="category-info">
+              <span class="category-color-dot" [style.background-color]="category.color"></span>
+              <h3>{{ category.name }}</h3>
+              <span *ngIf="!category.active" class="inactive-badge">Inactive</span>
+            </div>
+            <div class="category-actions">
+              <button class="btn-icon" (click)="openEditModal(category)" title="Edit">
+                ✏️
+              </button>
+              <button class="btn-icon" (click)="openDeleteModal(category)" title="Delete">
+                🗑️
+              </button>
+            </div>
+          </div>
+          <p class="category-description">{{ category.description }}</p>
+          <div class="category-footer">
+            <span class="category-status" [class.active]="category.active">
+              {{ category.active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+        <div *ngIf="incomeCategories.length === 0" class="empty-state">
+          <p>No income categories yet. Create one to get started!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expense Categories -->
+    <div class="category-section">
+      <h2>💸 Expense Categories</h2>
+      <div class="category-grid">
+        <div *ngFor="let category of expenseCategories" class="category-card" [class.inactive]="!category.active">
+          <div class="category-header">
+            <div class="category-info">
+              <span class="category-color-dot" [style.background-color]="category.color"></span>
+              <h3>{{ category.name }}</h3>
+              <span *ngIf="!category.active" class="inactive-badge">Inactive</span>
+            </div>
+            <div class="category-actions">
+              <button class="btn-icon" (click)="openEditModal(category)" title="Edit">
+                ✏️
+              </button>
+              <button class="btn-icon" (click)="openDeleteModal(category)" title="Delete">
+                🗑️
+              </button>
+            </div>
+          </div>
+          <p class="category-description">{{ category.description }}</p>
+          <div class="category-footer">
+            <span class="category-status" [class.active]="category.active">
+              {{ category.active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+        <div *ngIf="expenseCategories.length === 0" class="empty-state">
+          <p>No expense categories yet. Create one to get started!</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Add Category Modal -->
+  <div *ngIf="showAddModal" class="modal-overlay" (click)="closeAddModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Add New Category</h2>
+        <button class="close-btn" (click)="closeAddModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="categoryName">Category Name:</label>
+          <input type="text" id="categoryName" [(ngModel)]="categoryForm.name" class="form-control" placeholder="e.g., Groceries" required>
+        </div>
+        <div class="form-group">
+          <label for="categoryDescription">Description:</label>
+          <textarea id="categoryDescription" [(ngModel)]="categoryForm.description" class="form-control" placeholder="Brief description" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="categoryType">Type:</label>
+          <select id="categoryType" [(ngModel)]="categoryForm.type" class="form-control">
+            <option [value]="CategoryType.INCOME">Income</option>
+            <option [value]="CategoryType.EXPENSE">Expense</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Color:</label>
+          <div class="color-picker">
+            <div *ngFor="let color of availableColors"
+                 class="color-option"
+                 [class.selected]="categoryForm.color === color.value"
+                 [style.background-color]="color.value"
+                 (click)="categoryForm.color = color.value"
+                 [title]="color.name">
+            </div>
+          </div>
+        </div>
+        <div *ngIf="error" class="error-message-inline">
+          {{ error }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="createCategory()" [disabled]="loading || !categoryForm.name || !categoryForm.description">
+          {{ loading ? 'Creating...' : 'Create Category' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Category Modal -->
+  <div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Edit Category</h2>
+        <button class="close-btn" (click)="closeEditModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="editCategoryName">Category Name:</label>
+          <input type="text" id="editCategoryName" [(ngModel)]="categoryForm.name" class="form-control" placeholder="e.g., Groceries" required>
+        </div>
+        <div class="form-group">
+          <label for="editCategoryDescription">Description:</label>
+          <textarea id="editCategoryDescription" [(ngModel)]="categoryForm.description" class="form-control" placeholder="Brief description" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Color:</label>
+          <div class="color-picker">
+            <div *ngFor="let color of availableColors"
+                 class="color-option"
+                 [class.selected]="categoryForm.color === color.value"
+                 [style.background-color]="color.value"
+                 (click)="categoryForm.color = color.value"
+                 [title]="color.name">
+            </div>
+          </div>
+        </div>
+        <div *ngIf="error" class="error-message-inline">
+          {{ error }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="updateCategory()" [disabled]="loading || !categoryForm.name || !categoryForm.description">
+          {{ loading ? 'Updating...' : 'Update Category' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Category Modal -->
+  <div *ngIf="showDeleteModal" class="modal-overlay" (click)="closeDeleteModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Delete Category</h2>
+        <button class="close-btn" (click)="closeDeleteModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="warning-text">⚠️ Are you sure you want to delete this category?</p>
+        <div class="category-summary">
+          <p><strong>Name:</strong> {{ categoryToDelete?.name }}</p>
+          <p><strong>Type:</strong> {{ categoryToDelete?.type }}</p>
+          <p><strong>Description:</strong> {{ categoryToDelete?.description }}</p>
+        </div>
+        <p class="info-text">This action cannot be undone.</p>
+        <div *ngIf="error" class="error-message-inline">
+          {{ error }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" (click)="deleteCategory()" [disabled]="loading">
+          {{ loading ? 'Deleting...' : 'Delete Category' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -70,17 +70,37 @@
           placeholder="0.00">
       </div>
 
-      <div class="form-group">
+      <div class="form-group autocomplete-wrapper">
         <label for="depositCategory">Category</label>
-        <select
+        <input
           id="depositCategory"
-          [(ngModel)]="depositForm.categoryId"
-          name="depositCategory">
-          <option [value]="undefined">-- Select Category (Optional) --</option>
-          <option *ngFor="let category of incomeCategories" [value]="category.id">
-            {{ category.name }}
-          </option>
-        </select>
+          type="text"
+          [(ngModel)]="depositCategoryInput"
+          (input)="onDepositCategoryInput()"
+          (focus)="showDepositSuggestions = true; onDepositCategoryInput()"
+          name="depositCategory"
+          placeholder="Type to search or create category..."
+          autocomplete="off">
+
+        <div class="autocomplete-suggestions" *ngIf="showDepositSuggestions">
+          <div class="suggestion-item"
+               *ngFor="let category of filteredIncomeCategories"
+               (mousedown)="selectDepositCategory(category)">
+            <span class="category-color" [style.background-color]="category.color"></span>
+            <span class="category-name">{{ category.name }}</span>
+          </div>
+
+          <div class="suggestion-item create-new"
+               *ngIf="depositCategoryInput && filteredIncomeCategories.length === 0"
+               (mousedown)="createDepositCategory()">
+            <span class="create-icon">+</span>
+            Create "{{ depositCategoryInput }}"
+          </div>
+
+          <div class="no-results" *ngIf="!depositCategoryInput">
+            Type to search categories
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -116,17 +136,37 @@
           placeholder="0.00">
       </div>
 
-      <div class="form-group">
+      <div class="form-group autocomplete-wrapper">
         <label for="withdrawCategory">Category</label>
-        <select
+        <input
           id="withdrawCategory"
-          [(ngModel)]="withdrawForm.categoryId"
-          name="withdrawCategory">
-          <option [value]="undefined">-- Select Category (Optional) --</option>
-          <option *ngFor="let category of expenseCategories" [value]="category.id">
-            {{ category.name }}
-          </option>
-        </select>
+          type="text"
+          [(ngModel)]="withdrawCategoryInput"
+          (input)="onWithdrawCategoryInput()"
+          (focus)="showWithdrawSuggestions = true; onWithdrawCategoryInput()"
+          name="withdrawCategory"
+          placeholder="Type to search or create category..."
+          autocomplete="off">
+
+        <div class="autocomplete-suggestions" *ngIf="showWithdrawSuggestions">
+          <div class="suggestion-item"
+               *ngFor="let category of filteredExpenseCategories"
+               (mousedown)="selectWithdrawCategory(category)">
+            <span class="category-color" [style.background-color]="category.color"></span>
+            <span class="category-name">{{ category.name }}</span>
+          </div>
+
+          <div class="suggestion-item create-new"
+               *ngIf="withdrawCategoryInput && filteredExpenseCategories.length === 0"
+               (mousedown)="createWithdrawCategory()">
+            <span class="create-icon">+</span>
+            Create "{{ withdrawCategoryInput }}"
+          </div>
+
+          <div class="no-results" *ngIf="!withdrawCategoryInput">
+            Type to search categories
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
