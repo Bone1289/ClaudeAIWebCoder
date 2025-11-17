@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 
 /**
  * Seeds default transaction categories into the database
- * Only runs in dev profile
+ * Runs in dev, docker, and local profiles (not in production)
  */
 @Component
-@Profile("dev")
+@Profile({"dev", "docker", "local"})
 public class CategoryDataSeeder implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(CategoryDataSeeder.class);

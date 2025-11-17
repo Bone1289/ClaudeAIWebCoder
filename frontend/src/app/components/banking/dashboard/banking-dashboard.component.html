@@ -2,6 +2,9 @@
   <div class="dashboard-header">
     <h1>Bank Account Management</h1>
     <div class="header-actions">
+      <button class="btn btn-success" routerLink="/banking/categories">
+        🏷️ Manage Categories
+      </button>
       <button class="btn btn-primary" (click)="openAddModal()">
         + Add Account
       </button>
@@ -122,9 +125,32 @@
           <label for="lastName">Last Name:</label>
           <input type="text" id="lastName" [(ngModel)]="newAccount.lastName" class="form-control" placeholder="Enter last name" required>
         </div>
-        <div class="form-group">
+        <div class="form-group autocomplete-wrapper">
           <label for="nationality">Nationality:</label>
-          <input type="text" id="nationality" [(ngModel)]="newAccount.nationality" class="form-control" placeholder="Enter nationality" required>
+          <input
+            type="text"
+            id="nationality"
+            [(ngModel)]="nationalityInput"
+            (input)="onNationalityInput()"
+            (focus)="showNationalitySuggestions = true; onNationalityInput()"
+            class="form-control"
+            placeholder="Type to search countries..."
+            autocomplete="off"
+            required>
+
+          <div class="autocomplete-suggestions" *ngIf="showNationalitySuggestions">
+            <div class="suggestion-item"
+                 *ngFor="let country of filteredCountries"
+                 (mousedown)="selectNationality(country)">
+              <span class="country-flag">{{ country.flag }}</span>
+              <span class="country-name">{{ country.name }}</span>
+              <span class="country-code">{{ country.code }}</span>
+            </div>
+
+            <div class="no-results" *ngIf="nationalityInput && filteredCountries.length === 0">
+              No countries found
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label for="accountType">Account Type:</label>

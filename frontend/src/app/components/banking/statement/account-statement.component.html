@@ -121,7 +121,7 @@
                 {{ transaction.type }}
               </span>
             </td>
-            <td>-</td>
+            <td>{{ getCategoryName(transaction.categoryId) }}</td>
             <td>{{ transaction.description || '-' }}</td>
             <td class="amount-col" [class.positive]="transaction.type === 'DEPOSIT' || transaction.type === 'TRANSFER_IN'"
                 [class.negative]="transaction.type === 'WITHDRAWAL' || transaction.type === 'TRANSFER_OUT'">
