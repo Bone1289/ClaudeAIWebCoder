@@ -4,11 +4,17 @@ import com.example.demo.application.ports.in.*;
 import com.example.demo.application.ports.out.AccountRepository;
 import com.example.demo.application.ports.out.CategoryRepository;
 import com.example.demo.application.ports.out.TransactionRepository;
+import com.example.demo.application.ports.out.UserRepository;
 import com.example.demo.domain.Account;
+import com.example.demo.domain.AuditLog;
 import com.example.demo.domain.Transaction;
 import com.example.demo.domain.TransactionCategory;
+import com.example.demo.domain.User;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -35,13 +41,19 @@ public class BankingService implements
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
+    private final AuditService auditService;
+    private final UserRepository userRepository;
 
     public BankingService(AccountRepository accountRepository,
                          TransactionRepository transactionRepository,
-                         CategoryRepository categoryRepository) {
+                         CategoryRepository categoryRepository,
+                         AuditService auditService,
+                         UserRepository userRepository) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
+        this.auditService = auditService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -49,7 +61,29 @@ public class BankingService implements
         String accountNumber = accountRepository.generateAccountNumber();
         Account account = Account.create(userId, accountNumber, firstName, lastName, nationality, accountType);
 
-        return accountRepository.save(account);
+        Account savedAccount = accountRepository.save(account);
+
+        // Audit log account creation
+        try {
+            Optional<User> userOpt = userRepository.findById(userId);
+            String username = userOpt.map(User::getUsername).orElse("unknown");
+
+            auditService.logSuccess(
+                    AuditLog.AuditAction.ACCOUNT_CREATED,
+                    userId.getMostSignificantBits(),
+                    username,
+                    "Account",
+                    savedAccount.getId().toString(),
+                    String.format("Account created: accountNumber=%s, type=%s, holder=%s %s",
+                            accountNumber, accountType, firstName, lastName),
+                    getCurrentRequest()
+            );
+        } catch (Exception e) {
+            // Don't fail account creation if audit logging fails
+            e.printStackTrace();
+        }
+
+        return savedAccount;
     }
 
     @Override
@@ -99,7 +133,31 @@ public class BankingService implements
             throw new IllegalStateException("Cannot delete account with non-zero balance. Please transfer or withdraw all funds first.");
         }
 
-        return accountRepository.deleteById(id);
+        boolean deleted = accountRepository.deleteById(id);
+
+        // Audit log account closure/deletion
+        if (deleted) {
+            try {
+                Optional<User> userOpt = userRepository.findById(account.getUserId());
+                String username = userOpt.map(User::getUsername).orElse("unknown");
+
+                auditService.logSuccess(
+                        AuditLog.AuditAction.ACCOUNT_CLOSED,
+                        account.getUserId().getMostSignificantBits(),
+                        username,
+                        "Account",
+                        account.getId().toString(),
+                        String.format("Account closed: accountNumber=%s, type=%s, finalBalance=%s",
+                                account.getAccountNumber(), account.getAccountType(), account.getBalance()),
+                        getCurrentRequest()
+                );
+            } catch (Exception e) {
+                // Don't fail account deletion if audit logging fails
+                e.printStackTrace();
+            }
+        }
+
+        return deleted;
     }
 
     @Override
@@ -129,6 +187,26 @@ public class BankingService implements
                 categoryId
         );
         transactionRepository.save(transaction);
+
+        // Audit log deposit transaction
+        try {
+            Optional<User> userOpt = userRepository.findById(savedAccount.getUserId());
+            String username = userOpt.map(User::getUsername).orElse("unknown");
+
+            auditService.logSuccess(
+                    AuditLog.AuditAction.TRANSACTION_DEPOSIT,
+                    savedAccount.getUserId().getMostSignificantBits(),
+                    username,
+                    "Transaction",
+                    transaction.getId().toString(),
+                    String.format("Deposit: amount=%s, accountNumber=%s, newBalance=%s, description=%s",
+                            amount, savedAccount.getAccountNumber(), savedAccount.getBalance(), description),
+                    getCurrentRequest()
+            );
+        } catch (Exception e) {
+            // Don't fail transaction if audit logging fails
+            e.printStackTrace();
+        }
 
         return savedAccount;
     }
@@ -160,6 +238,26 @@ public class BankingService implements
                 categoryId
         );
         transactionRepository.save(transaction);
+
+        // Audit log withdrawal transaction
+        try {
+            Optional<User> userOpt = userRepository.findById(savedAccount.getUserId());
+            String username = userOpt.map(User::getUsername).orElse("unknown");
+
+            auditService.logSuccess(
+                    AuditLog.AuditAction.TRANSACTION_WITHDRAWAL,
+                    savedAccount.getUserId().getMostSignificantBits(),
+                    username,
+                    "Transaction",
+                    transaction.getId().toString(),
+                    String.format("Withdrawal: amount=%s, accountNumber=%s, newBalance=%s, description=%s",
+                            amount, savedAccount.getAccountNumber(), savedAccount.getBalance(), description),
+                    getCurrentRequest()
+            );
+        } catch (Exception e) {
+            // Don't fail transaction if audit logging fails
+            e.printStackTrace();
+        }
 
         return savedAccount;
     }
@@ -208,6 +306,27 @@ public class BankingService implements
                 transferCategoryId
         );
         transactionRepository.save(transferIn);
+
+        // Audit log transfer transaction
+        try {
+            Optional<User> userOpt = userRepository.findById(savedFromAccount.getUserId());
+            String username = userOpt.map(User::getUsername).orElse("unknown");
+
+            auditService.logSuccess(
+                    AuditLog.AuditAction.TRANSACTION_TRANSFER,
+                    savedFromAccount.getUserId().getMostSignificantBits(),
+                    username,
+                    "Transaction",
+                    transferOut.getId().toString(),
+                    String.format("Transfer: amount=%s, from=%s (balance=%s), to=%s (balance=%s), description=%s",
+                            amount, savedFromAccount.getAccountNumber(), savedFromAccount.getBalance(),
+                            savedToAccount.getAccountNumber(), savedToAccount.getBalance(), description),
+                    getCurrentRequest()
+            );
+        } catch (Exception e) {
+            // Don't fail transaction if audit logging fails
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -236,5 +355,17 @@ public class BankingService implements
         return categoryRepository.findByName("TRANSFER")
                 .map(TransactionCategory::getId)
                 .orElseThrow(() -> new IllegalStateException("'TRANSFER' category not found"));
+    }
+
+    /**
+     * Get current HttpServletRequest from RequestContextHolder
+     */
+    private HttpServletRequest getCurrentRequest() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            return attributes != null ? attributes.getRequest() : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
