@@ -3,8 +3,11 @@ package com.example.demo.config;
 import com.example.demo.application.ports.in.CreateAccountUseCase;
 import com.example.demo.application.ports.in.DepositUseCase;
 import com.example.demo.application.ports.in.ManageCategoryUseCase;
+import com.example.demo.application.ports.in.RegisterUserUseCase;
+import com.example.demo.application.ports.out.UserRepository;
 import com.example.demo.domain.Account;
 import com.example.demo.domain.TransactionCategory;
+import com.example.demo.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -26,9 +29,11 @@ public class DataInitializer {
 
     @Bean
     CommandLineRunner initDatabase(
+            RegisterUserUseCase registerUserUseCase,
             CreateAccountUseCase createAccountUseCase,
             DepositUseCase depositUseCase,
-            ManageCategoryUseCase manageCategoryUseCase) {
+            ManageCategoryUseCase manageCategoryUseCase,
+            UserRepository userRepository) {
 
         return args -> {
             logger.info("Starting data initialization...");
@@ -36,8 +41,8 @@ public class DataInitializer {
             // Initialize Categories
             initializeCategories(manageCategoryUseCase);
 
-            // Initialize Accounts
-            initializeAccounts(createAccountUseCase, depositUseCase);
+            // Initialize Users and Accounts
+            initializeUsersAndAccounts(registerUserUseCase, createAccountUseCase, depositUseCase, userRepository);
 
             logger.info("Data initialization completed successfully!");
         };
@@ -141,73 +146,140 @@ public class DataInitializer {
         logger.info("Created 12 transaction categories");
     }
 
-    private void initializeAccounts(CreateAccountUseCase createAccountUseCase, DepositUseCase depositUseCase) {
-        logger.info("Initializing sample accounts...");
+    private void initializeUsersAndAccounts(RegisterUserUseCase registerUserUseCase,
+                                           CreateAccountUseCase createAccountUseCase,
+                                           DepositUseCase depositUseCase,
+                                           UserRepository userRepository) {
+        logger.info("Initializing sample users and accounts...");
 
-        // Check if accounts already exist
         try {
-            // Create Default Account: Demo User
-            Account defaultAccount = createAccountUseCase.createAccount(
+            // Create Admin User
+            User adminUser = registerUserUseCase.registerUser(
+                "admin@example.com",
+                "admin",
+                "Admin",
+                "Admin",
+                "User"
+            );
+            // Promote to admin role and save
+            adminUser = adminUser.promoteToAdmin();
+            userRepository.update(adminUser);
+            logger.info("Created admin user: {} ({}) with role: {}", adminUser.getUsername(), adminUser.getEmail(), adminUser.getRole());
+
+            // Create User 1: Demo User
+            User demoUser = registerUserUseCase.registerUser(
+                "demo@example.com",
+                "demo",
+                "password123",
+                "Demo",
+                "User"
+            );
+            logger.info("Created user: {} ({})", demoUser.getUsername(), demoUser.getEmail());
+
+            Account demoAccount = createAccountUseCase.createAccount(
+                demoUser.getId(),
                 "Demo",
                 "User",
                 "United States",
                 "CHECKING"
             );
-            depositUseCase.deposit(defaultAccount.getId(), new BigDecimal("1000.00"), "Initial deposit");
-            logger.info("Created default account for Demo User with initial balance $1000");
+            depositUseCase.deposit(demoAccount.getId(), new BigDecimal("1000.00"), "Initial deposit");
+            logger.info("Created CHECKING account for Demo User with initial balance $1000");
 
-            // Create Account 1: John Doe
-            Account account1 = createAccountUseCase.createAccount(
+            // Create User 2: John Doe (with multiple accounts)
+            User johnDoe = registerUserUseCase.registerUser(
+                "john.doe@example.com",
+                "johndoe",
+                "password123",
+                "John",
+                "Doe"
+            );
+            logger.info("Created user: {} ({})", johnDoe.getUsername(), johnDoe.getEmail());
+
+            Account johnChecking = createAccountUseCase.createAccount(
+                johnDoe.getId(),
                 "John",
                 "Doe",
                 "United States",
                 "CHECKING"
             );
-            depositUseCase.deposit(account1.getId(), new BigDecimal("5000.00"), "Initial deposit");
-            logger.info("Created account for John Doe with initial balance $5000");
+            depositUseCase.deposit(johnChecking.getId(), new BigDecimal("5000.00"), "Initial deposit");
+            logger.info("Created CHECKING account for John Doe with initial balance $5000");
 
-            // Create Account 2: Jane Smith
-            Account account2 = createAccountUseCase.createAccount(
+            Account johnSavings = createAccountUseCase.createAccount(
+                johnDoe.getId(),
+                "John",
+                "Doe",
+                "United States",
+                "SAVINGS"
+            );
+            depositUseCase.deposit(johnSavings.getId(), new BigDecimal("15000.00"), "Initial deposit");
+            logger.info("Created SAVINGS account for John Doe with initial balance $15000");
+
+            // Create User 3: Jane Smith
+            User janeSmith = registerUserUseCase.registerUser(
+                "jane.smith@example.com",
+                "janesmith",
+                "password123",
+                "Jane",
+                "Smith"
+            );
+            logger.info("Created user: {} ({})", janeSmith.getUsername(), janeSmith.getEmail());
+
+            Account janeAccount = createAccountUseCase.createAccount(
+                janeSmith.getId(),
                 "Jane",
                 "Smith",
                 "United Kingdom",
                 "SAVINGS"
             );
-            depositUseCase.deposit(account2.getId(), new BigDecimal("10000.00"), "Initial deposit");
-            logger.info("Created account for Jane Smith with initial balance $10000");
+            depositUseCase.deposit(janeAccount.getId(), new BigDecimal("10000.00"), "Initial deposit");
+            logger.info("Created SAVINGS account for Jane Smith with initial balance $10000");
 
-            // Create Account 3: Carlos Rodriguez
-            Account account3 = createAccountUseCase.createAccount(
+            // Create User 4: Carlos Rodriguez
+            User carlosRodriguez = registerUserUseCase.registerUser(
+                "carlos.rodriguez@example.com",
+                "carlosr",
+                "password123",
+                "Carlos",
+                "Rodriguez"
+            );
+            logger.info("Created user: {} ({})", carlosRodriguez.getUsername(), carlosRodriguez.getEmail());
+
+            Account carlosAccount = createAccountUseCase.createAccount(
+                carlosRodriguez.getId(),
                 "Carlos",
                 "Rodriguez",
                 "Spain",
                 "CHECKING"
             );
-            depositUseCase.deposit(account3.getId(), new BigDecimal("3500.50"), "Initial deposit");
-            logger.info("Created account for Carlos Rodriguez with initial balance $3500.50");
+            depositUseCase.deposit(carlosAccount.getId(), new BigDecimal("3500.50"), "Initial deposit");
+            logger.info("Created CHECKING account for Carlos Rodriguez with initial balance $3500.50");
 
-            // Create Account 4: Yuki Tanaka
-            Account account4 = createAccountUseCase.createAccount(
+            // Create User 5: Yuki Tanaka
+            User yukiTanaka = registerUserUseCase.registerUser(
+                "yuki.tanaka@example.com",
+                "yukitanaka",
+                "password123",
+                "Yuki",
+                "Tanaka"
+            );
+            logger.info("Created user: {} ({})", yukiTanaka.getUsername(), yukiTanaka.getEmail());
+
+            Account yukiAccount = createAccountUseCase.createAccount(
+                yukiTanaka.getId(),
                 "Yuki",
                 "Tanaka",
                 "Japan",
                 "SAVINGS"
             );
-            depositUseCase.deposit(account4.getId(), new BigDecimal("7500.00"), "Initial deposit");
-            logger.info("Created account for Yuki Tanaka with initial balance $7500");
+            depositUseCase.deposit(yukiAccount.getId(), new BigDecimal("7500.00"), "Initial deposit");
+            logger.info("Created SAVINGS account for Yuki Tanaka with initial balance $7500");
 
-            // Create Account 5: Emma Johnson
-            Account account5 = createAccountUseCase.createAccount(
-                "Emma",
-                "Johnson",
-                "Canada",
-                "CREDIT"
-            );
-            depositUseCase.deposit(account5.getId(), new BigDecimal("2000.00"), "Initial deposit");
-            logger.info("Created account for Emma Johnson with initial balance $2000");
+            logger.info("Created 5 users with 6 total bank accounts (John has 2 accounts)");
 
         } catch (Exception e) {
-            logger.warn("Accounts might already exist: {}", e.getMessage());
+            logger.warn("Users/Accounts might already exist: {}", e.getMessage());
         }
     }
 }

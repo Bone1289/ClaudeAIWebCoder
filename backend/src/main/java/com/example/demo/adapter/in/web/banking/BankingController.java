@@ -3,6 +3,7 @@ package com.example.demo.adapter.in.web.banking;
 import com.example.demo.adapter.in.web.banking.dto.*;
 import com.example.demo.adapter.in.web.dto.ApiResponse;
 import com.example.demo.application.ports.in.*;
+import com.example.demo.config.security.SecurityUtil;
 import com.example.demo.domain.Account;
 import com.example.demo.domain.AccountStatement;
 import com.example.demo.domain.CategoryReport;
@@ -61,7 +62,11 @@ public class BankingController {
     @PostMapping("/accounts")
     public ResponseEntity<ApiResponse<AccountResponse>> createAccount(@RequestBody CreateAccountRequest request) {
         try {
+            // Get current authenticated user ID
+            UUID userId = SecurityUtil.getCurrentUserId();
+
             Account account = createAccountUseCase.createAccount(
+                    userId,
                     request.getFirstName(),
                     request.getLastName(),
                     request.getNationality(),
@@ -77,7 +82,11 @@ public class BankingController {
 
     @GetMapping("/accounts")
     public ResponseEntity<ApiResponse<List<AccountResponse>>> getAllAccounts() {
-        List<AccountResponse> accounts = getAccountUseCase.getAllAccounts().stream()
+        // Get current authenticated user ID
+        UUID userId = SecurityUtil.getCurrentUserId();
+
+        // Get only accounts belonging to the current user
+        List<AccountResponse> accounts = getAccountUseCase.getAccountsByUserId(userId).stream()
                 .map(AccountResponse::fromDomain)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success("Accounts retrieved successfully", accounts));
@@ -85,7 +94,10 @@ public class BankingController {
 
     @GetMapping("/accounts/{id}")
     public ResponseEntity<ApiResponse<AccountResponse>> getAccountById(@PathVariable UUID id) {
+        UUID userId = SecurityUtil.getCurrentUserId();
+
         return getAccountUseCase.getAccountById(id)
+                .filter(account -> account.getUserId().equals(userId)) // Ensure account belongs to current user
                 .map(account -> ResponseEntity.ok(
                         ApiResponse.success("Account found", AccountResponse.fromDomain(account))))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)

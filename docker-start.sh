@@ -36,14 +36,15 @@ echo ""
 # Ask user what to do
 echo "Select an option:"
 echo "1) Clean up and start fresh (remove containers, volumes, and rebuild) [DEFAULT]"
-echo "2) Start all services (MySQL + Backend + Frontend)"
+echo "2) Start all services (MySQL + Backend + Frontend + Admin)"
 echo "3) Stop all services"
 echo "4) Restart all services"
 echo "5) View logs"
 echo "6) Rebuild backend only"
 echo "7) Rebuild frontend only"
-echo "8) Rebuild all services"
-read -p "Enter choice [1-8] (default: 1): " choice
+echo "8) Rebuild admin portal only"
+echo "9) Rebuild all services"
+read -p "Enter choice [1-9] (default: 1): " choice
 
 # Set default to option 1 if no input
 choice=${choice:-1}
@@ -65,10 +66,15 @@ case $choice in
         docker compose ps
         echo ""
         echo "🌐 Access the application:"
-        echo "   Frontend:  http://localhost"
-        echo "   Backend:   http://localhost:8080/api"
-        echo "   Health:    http://localhost:8080/actuator/health"
-        echo "   MySQL:     localhost:3306 (user: root, password: root)"
+        echo "   Frontend:      http://localhost"
+        echo "   Admin Portal:  http://localhost:4201"
+        echo "   Backend:       http://localhost:8080/api"
+        echo "   Health:        http://localhost:8080/actuator/health"
+        echo "   MySQL:         localhost:3306 (user: root, password: root)"
+        echo ""
+        echo "👤 Default Credentials:"
+        echo "   User:  demo@example.com / password123"
+        echo "   Admin: admin / Admin"
         echo ""
         echo "📝 View logs with: docker compose logs -f"
         ;;
@@ -85,10 +91,15 @@ case $choice in
         docker compose ps
         echo ""
         echo "🌐 Access the application:"
-        echo "   Frontend:  http://localhost"
-        echo "   Backend:   http://localhost:8080/api"
-        echo "   Health:    http://localhost:8080/actuator/health"
-        echo "   MySQL:     localhost:3306 (user: root, password: root)"
+        echo "   Frontend:      http://localhost"
+        echo "   Admin Portal:  http://localhost:4201"
+        echo "   Backend:       http://localhost:8080/api"
+        echo "   Health:        http://localhost:8080/actuator/health"
+        echo "   MySQL:         localhost:3306 (user: root, password: root)"
+        echo ""
+        echo "👤 Default Credentials:"
+        echo "   User:  demo@example.com / password123"
+        echo "   Admin: admin / Admin"
         echo ""
         echo "📝 View logs with: docker compose logs -f"
         echo "🛑 Stop services with: docker compose down"
@@ -155,6 +166,28 @@ case $choice in
         echo "📝 View frontend logs with: docker compose logs -f frontend"
         ;;
     8)
+        echo ""
+        echo "🔨 Rebuilding admin portal only..."
+        echo "Stopping frontend-admin service..."
+        docker compose stop frontend-admin
+        echo ""
+        echo "Building new admin portal image..."
+        docker compose build frontend-admin
+        echo ""
+        echo "Starting admin portal service..."
+        docker compose up -d frontend-admin
+        echo ""
+        echo "✅ Admin portal rebuilt and restarted!"
+        echo ""
+        echo "📊 Admin Portal Status:"
+        docker compose ps frontend-admin
+        echo ""
+        echo "🌐 Access at: http://localhost:4201"
+        echo "👤 Login with: admin / Admin"
+        echo ""
+        echo "📝 View admin portal logs with: docker compose logs -f frontend-admin"
+        ;;
+    9)
         echo ""
         echo "🔨 Rebuilding all services..."
         echo ""

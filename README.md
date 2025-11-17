@@ -16,7 +16,7 @@ A full-stack demo application showcasing Spring Boot backend with Angular fronte
 │   ├── settings.gradle     # Gradle settings
 │   └── gradlew            # Gradle wrapper
 │
-├── frontend/               # Angular application (TypeScript + Node.js)
+├── frontend/               # Angular user application (TypeScript + Node.js)
 │   ├── src/
 │   │   ├── app/           # Angular components and services
 │   │   ├── assets/        # Static assets
@@ -25,6 +25,15 @@ A full-stack demo application showcasing Spring Boot backend with Angular fronte
 │   ├── angular.json       # Angular CLI configuration
 │   └── proxy.conf.json    # Development proxy configuration
 │
+├── frontend-admin/         # Angular admin portal (TypeScript + Node.js)
+│   ├── src/
+│   │   ├── app/           # Admin components and services
+│   │   ├── assets/        # Static assets
+│   │   └── environments/  # Environment configurations
+│   ├── package.json       # NPM dependencies
+│   └── angular.json       # Angular CLI configuration
+│
+├── docker-compose.yml      # Docker Compose configuration
 └── README.md              # This file
 ```
 
@@ -80,10 +89,23 @@ npm start
 
 The frontend will start on `http://localhost:4200`
 
-#### 3. Access the Application
+#### 3. Start the Admin Portal (Optional)
+
+In a separate terminal:
+
+```bash
+cd frontend-admin
+npm install
+npm start
+```
+
+The admin portal will start on `http://localhost:4201`
+
+#### 4. Access the Application
 
 Open your browser and navigate to:
-- **Frontend:** http://localhost:4200
+- **User Frontend:** http://localhost:4200
+- **Admin Portal:** http://localhost:4201
 - **Backend API:** http://localhost:8080/api
 
 ## Available API Endpoints
@@ -218,28 +240,78 @@ export const environment = {
 };
 ```
 
-## Docker Support (Optional)
+## Docker Support
 
-You can containerize both applications:
+The complete application stack can be run using Docker Compose:
 
-**Backend Dockerfile example:**
-```dockerfile
-FROM openjdk:17-jdk-slim
-COPY build/libs/*.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+### Quick Start with Docker
+
+```bash
+# Build and start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
 ```
 
-**Frontend Dockerfile example:**
-```dockerfile
-FROM node:18 AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
+### Services Included
 
-FROM nginx:alpine
-COPY --from=build /app/dist/spring-demo-frontend /usr/share/nginx/html
+The Docker Compose setup includes:
+
+1. **MySQL Database** (port 3306)
+   - Pre-configured with database schema
+   - Persistent data storage
+
+2. **Spring Boot Backend** (port 8080)
+   - Automatic database connection
+   - Health checks enabled
+
+3. **Angular User Frontend** (port 80)
+   - Production-optimized build
+   - Nginx web server
+
+4. **Angular Admin Portal** (port 4201)
+   - Admin-only interface
+   - Separate deployment
+
+### Access Points
+
+Once Docker Compose is running:
+- **User Application:** http://localhost
+- **Admin Portal:** http://localhost:4201
+- **Backend API:** http://localhost:8080/api
+- **MySQL:** localhost:3306
+
+### Default Credentials
+
+**Regular User:**
+- Email: demo@example.com
+- Password: password123
+
+**Admin User:**
+- Username: admin
+- Password: Admin
+
+### Docker Commands
+
+```bash
+# Build without cache
+docker-compose build --no-cache
+
+# Start specific service
+docker-compose up -d backend
+
+# View service logs
+docker-compose logs -f frontend-admin
+
+# Restart a service
+docker-compose restart backend
+
+# Remove everything including volumes
+docker-compose down -v
 ```
 
 ## Troubleshooting

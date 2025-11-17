@@ -11,6 +11,7 @@ import java.util.UUID;
  */
 public interface GetAccountUseCase {
     List<Account> getAllAccounts();
+    List<Account> getAccountsByUserId(UUID userId);
     Optional<Account> getAccountById(UUID id);
     Optional<Account> getAccountByAccountNumber(String accountNumber);
 }

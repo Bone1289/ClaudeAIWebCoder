@@ -1,0 +1,29 @@
+<div class="dashboard-container">
+  <nav class="sidebar">
+    <h1>Admin Portal</h1>
+    <ul class="nav-menu">
+      <li>
+        <a routerLink="/dashboard/users" routerLinkActive="active">
+          <span>👥</span> Users
+        </a>
+      </li>
+      <li>
+        <a routerLink="/dashboard/accounts" routerLinkActive="active">
+          <span>💳</span> Accounts
+        </a>
+      </li>
+    </ul>
+    <div class="user-info" *ngIf="currentUser">
+      <div class="user-details">
+        <strong>{{ currentUser.firstName }} {{ currentUser.lastName }}</strong>
+        <small>{{ currentUser.email }}</small>
+        <span class="badge">{{ currentUser.role }}</span>
+      </div>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

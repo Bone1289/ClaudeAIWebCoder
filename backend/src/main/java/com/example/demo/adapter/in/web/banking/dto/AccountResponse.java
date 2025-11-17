@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public class AccountResponse {
     private String id;
+    private String userId;
     private String accountNumber;
     private String firstName;
     private String lastName;
@@ -19,6 +20,7 @@ public class AccountResponse {
     public static AccountResponse fromDomain(Account account) {
         AccountResponse response = new AccountResponse();
         response.id = account.getId().toString();
+        response.userId = account.getUserId() != null ? account.getUserId().toString() : null;
         response.accountNumber = account.getAccountNumber();
         response.firstName = account.getFirstName();
         response.lastName = account.getLastName();
@@ -33,6 +35,8 @@ public class AccountResponse {
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
     public String getAccountNumber() { return accountNumber; }
     public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
     public String getFirstName() { return firstName; }

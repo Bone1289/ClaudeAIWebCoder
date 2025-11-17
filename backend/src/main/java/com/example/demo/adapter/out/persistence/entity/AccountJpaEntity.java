@@ -25,6 +25,9 @@ public class AccountJpaEntity {
     @Column(name = "id", updatable = false, nullable = false, columnDefinition = "BINARY(16)")
     private UUID id;
 
+    @Column(name = "user_id", nullable = false, columnDefinition = "BINARY(16)")
+    private UUID userId;
+
     @Column(name = "account_number", unique = true, nullable = false, length = 50)
     private String accountNumber;
 

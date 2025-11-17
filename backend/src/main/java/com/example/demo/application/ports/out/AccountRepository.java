@@ -14,6 +14,7 @@ public interface AccountRepository {
     Optional<Account> findById(UUID id);
     Optional<Account> findByAccountNumber(String accountNumber);
     List<Account> findAll();
+    List<Account> findByUserId(UUID userId);
     Account update(Account account);
     boolean deleteById(UUID id);
     String generateAccountNumber();
