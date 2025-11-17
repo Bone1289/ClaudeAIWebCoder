@@ -10,6 +10,7 @@ import java.util.UUID;
  */
 public class Account {
     private final UUID id;
+    private final UUID userId; // Link to User
     private final String accountNumber;
     private final String firstName;
     private final String lastName;
@@ -24,10 +25,11 @@ public class Account {
         ACTIVE, SUSPENDED, CLOSED
     }
 
-    private Account(UUID id, String accountNumber, String firstName, String lastName, String nationality,
+    private Account(UUID id, UUID userId, String accountNumber, String firstName, String lastName, String nationality,
                    String accountType, BigDecimal balance, AccountStatus status,
                    LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
+        this.userId = userId;
         this.accountNumber = accountNumber;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -42,8 +44,11 @@ public class Account {
     /**
      * Create a new account
      */
-    public static Account create(String accountNumber, String firstName, String lastName,
+    public static Account create(UUID userId, String accountNumber, String firstName, String lastName,
                                 String nationality, String accountType) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         validateAccountType(accountType);
         validateName(firstName, "First name");
         validateName(lastName, "Last name");
@@ -51,6 +56,7 @@ public class Account {
 
         return new Account(
             null,
+            userId,
             accountNumber,
             firstName,
             lastName,
@@ -66,11 +72,14 @@ public class Account {
     /**
      * Reconstitute account from persistence
      */
-    public static Account of(UUID id, String accountNumber, String firstName, String lastName,
+    public static Account of(UUID id, UUID userId, String accountNumber, String firstName, String lastName,
                             String nationality, String accountType, BigDecimal balance,
                             AccountStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         if (id == null) {
             throw new IllegalArgumentException("Account ID cannot be null");
+        }
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
         }
         validateAccountNumber(accountNumber);
         validateName(firstName, "First name");
@@ -79,7 +88,7 @@ public class Account {
         validateAccountType(accountType);
         validateBalance(balance);
 
-        return new Account(id, accountNumber, firstName, lastName, nationality, accountType, balance, status, createdAt, updatedAt);
+        return new Account(id, userId, accountNumber, firstName, lastName, nationality, accountType, balance, status, createdAt, updatedAt);
     }
 
     /**
@@ -92,7 +101,7 @@ public class Account {
         validatePositiveAmount(amount);
 
         BigDecimal newBalance = this.balance.add(amount);
-        return new Account(id, accountNumber, firstName, lastName, nationality, accountType, newBalance, status, createdAt, LocalDateTime.now());
+        return new Account(id, userId, accountNumber, firstName, lastName, nationality, accountType, newBalance, status, createdAt, LocalDateTime.now());
     }
 
     /**
@@ -109,7 +118,7 @@ public class Account {
             throw new IllegalArgumentException("Insufficient funds. Current balance: " + this.balance);
         }
 
-        return new Account(id, accountNumber, firstName, lastName, nationality, accountType, newBalance, status, createdAt, LocalDateTime.now());
+        return new Account(id, userId, accountNumber, firstName, lastName, nationality, accountType, newBalance, status, createdAt, LocalDateTime.now());
     }
 
     /**
@@ -119,7 +128,7 @@ public class Account {
         if (status == AccountStatus.CLOSED) {
             throw new IllegalStateException("Cannot suspend a closed account");
         }
-        return new Account(id, accountNumber, firstName, lastName, nationality, accountType, balance, AccountStatus.SUSPENDED, createdAt, LocalDateTime.now());
+        return new Account(id, userId, accountNumber, firstName, lastName, nationality, accountType, balance, AccountStatus.SUSPENDED, createdAt, LocalDateTime.now());
     }
 
     /**
@@ -129,7 +138,7 @@ public class Account {
         if (balance.compareTo(BigDecimal.ZERO) != 0) {
             throw new IllegalStateException("Cannot close account with non-zero balance");
         }
-        return new Account(id, accountNumber, firstName, lastName, nationality, accountType, balance, AccountStatus.CLOSED, createdAt, LocalDateTime.now());
+        return new Account(id, userId, accountNumber, firstName, lastName, nationality, accountType, balance, AccountStatus.CLOSED, createdAt, LocalDateTime.now());
     }
 
     /**
@@ -140,7 +149,7 @@ public class Account {
         if (status == AccountStatus.CLOSED) {
             throw new IllegalStateException("Cannot update a closed account");
         }
-        return new Account(id, accountNumber, firstName, lastName, nationality, newAccountType, balance, status, createdAt, LocalDateTime.now());
+        return new Account(id, userId, accountNumber, firstName, lastName, nationality, newAccountType, balance, status, createdAt, LocalDateTime.now());
     }
 
     // Validation methods
@@ -189,6 +198,10 @@ public class Account {
     // Getters
     public UUID getId() {
         return id;
+    }
+
+    public UUID getUserId() {
+        return userId;
     }
 
     public String getAccountNumber() {
@@ -244,6 +257,7 @@ public class Account {
     public String toString() {
         return "Account{" +
                 "id=" + id +
+                ", userId=" + userId +
                 ", accountNumber='" + accountNumber + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +

@@ -61,7 +61,9 @@ public class BankingController {
     @PostMapping("/accounts")
     public ResponseEntity<ApiResponse<AccountResponse>> createAccount(@RequestBody CreateAccountRequest request) {
         try {
+            UUID userId = request.getUserId() != null ? UUID.fromString(request.getUserId()) : null;
             Account account = createAccountUseCase.createAccount(
+                    userId,
                     request.getFirstName(),
                     request.getLastName(),
                     request.getNationality(),

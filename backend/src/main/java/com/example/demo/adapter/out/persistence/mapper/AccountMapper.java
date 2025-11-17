@@ -22,6 +22,7 @@ public interface AccountMapper {
         }
         return Account.of(
             entity.getId(),
+            entity.getUserId(),
             entity.getAccountNumber(),
             entity.getFirstName(),
             entity.getLastName(),

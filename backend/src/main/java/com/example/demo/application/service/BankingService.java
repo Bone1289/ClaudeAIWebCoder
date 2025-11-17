@@ -45,9 +45,9 @@ public class BankingService implements
     }
 
     @Override
-    public Account createAccount(String firstName, String lastName, String nationality, String accountType) {
+    public Account createAccount(UUID userId, String firstName, String lastName, String nationality, String accountType) {
         String accountNumber = accountRepository.generateAccountNumber();
-        Account account = Account.create(accountNumber, firstName, lastName, nationality, accountType);
+        Account account = Account.create(userId, accountNumber, firstName, lastName, nationality, accountType);
 
         return accountRepository.save(account);
     }
