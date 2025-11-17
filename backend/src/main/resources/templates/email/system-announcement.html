@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>System Announcement</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #17a2b8; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px; }
+        .footer { margin-top: 20px; text-align: center; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>📢 System Announcement</h1></div>
+    <div class="content">
+        <h2 th:text="${title}">Announcement</h2>
+        <p th:text="${message}">Important system announcement.</p>
+    </div>
+    <div class="footer"><p>&copy; 2024 VirtualBank. All rights reserved.</p></div>
+</body>
+</html>

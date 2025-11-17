@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to VirtualBank</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px; }
+        .button { display: inline-block; padding: 12px 24px; background: #667eea; color: white; text-decoration: none; border-radius: 4px; margin-top: 15px; }
+        .footer { margin-top: 20px; text-align: center; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>Welcome to VirtualBank!</h1></div>
+    <div class="content">
+        <h2>Hello <span th:text="${username}">User</span>!</h2>
+        <p>Thank you for joining VirtualBank. We're excited to have you on board!</p>
+        <p>Get started by creating your first bank account and explore all our features.</p>
+        <a href="http://localhost" class="button">Get Started</a>
+    </div>
+    <div class="footer"><p>&copy; 2024 VirtualBank. All rights reserved.</p></div>
+</body>
+</html>

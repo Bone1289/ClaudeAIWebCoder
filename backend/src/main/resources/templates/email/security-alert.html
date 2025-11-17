@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Security Alert</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #fd7e14; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px; }
+        .footer { margin-top: 20px; text-align: center; color: #666; font-size: 12px; }
+        .alert { background: #fff3cd; border-left: 4px solid #fd7e14; padding: 15px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>🔒 Security Alert</h1></div>
+    <div class="content">
+        <div class="alert"><strong>Important:</strong> Please review this security notification carefully.</div>
+        <h2 th:text="${title}">Security Alert</h2>
+        <p th:text="${message}">A security event has been detected on your account.</p>
+    </div>
+    <div class="footer"><p>&copy; 2024 VirtualBank. All rights reserved.</p></div>
+</body>
+</html>
