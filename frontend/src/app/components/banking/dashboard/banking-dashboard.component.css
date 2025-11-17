@@ -506,13 +506,67 @@
   white-space: nowrap;
 }
 
-/* Nationality Select */
-.nationality-select {
-  font-size: 1rem;
-  line-height: 1.5;
+/* Nationality Autocomplete */
+.nationality-autocomplete {
+  position: relative;
 }
 
-.nationality-select option {
-  padding: 8px;
-  font-size: 1rem;
+.autocomplete-container {
+  position: relative;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #d0d0d0;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  margin-top: -1px;
+}
+
+.autocomplete-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.autocomplete-item:hover {
+  background-color: #f8f9fa;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.country-flag {
+  font-size: 1.5rem;
+  min-width: 30px;
+}
+
+.country-name {
+  font-size: 0.95rem;
+  color: #2c3e50;
+}
+
+.autocomplete-no-results {
+  padding: 12px;
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.autocomplete-container input:focus {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }

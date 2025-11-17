@@ -122,13 +122,33 @@
           <label for="lastName">Last Name:</label>
           <input type="text" id="lastName" [(ngModel)]="newAccount.lastName" class="form-control" placeholder="Enter last name" required>
         </div>
-        <div class="form-group">
+        <div class="form-group nationality-autocomplete">
           <label for="nationality">Nationality:</label>
-          <select id="nationality" [(ngModel)]="newAccount.nationality" class="form-control nationality-select" required>
-            <option *ngFor="let country of countries" [value]="country.name">
-              {{ country.flag }} {{ country.name }}
-            </option>
-          </select>
+          <div class="autocomplete-container">
+            <input
+              type="text"
+              id="nationality"
+              [(ngModel)]="newAccount.nationality"
+              (input)="onNationalityInput($event)"
+              (focus)="onNationalityFocus()"
+              (blur)="hideCountryDropdown()"
+              class="form-control"
+              placeholder="Type to search countries..."
+              autocomplete="off"
+              required>
+            <div *ngIf="showCountryDropdown" class="autocomplete-dropdown">
+              <div
+                *ngFor="let country of filteredCountries"
+                class="autocomplete-item"
+                (mousedown)="selectCountry(country)">
+                <span class="country-flag">{{ country.flag }}</span>
+                <span class="country-name">{{ country.name }}</span>
+              </div>
+              <div *ngIf="filteredCountries.length === 0" class="autocomplete-no-results">
+                No countries found
+              </div>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label for="accountType">Account Type:</label>

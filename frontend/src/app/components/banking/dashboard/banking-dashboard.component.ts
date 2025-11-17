@@ -86,6 +86,10 @@ export class BankingDashboardComponent implements OnInit {
     { code: 'SI', name: 'Slovenia', flag: '🇸🇮' }
   ];
 
+  // Autocomplete state
+  filteredCountries: any[] = [];
+  showCountryDropdown = false;
+
   constructor(private bankingService: BankingService) { }
 
   ngOnInit(): void {
@@ -125,16 +129,50 @@ export class BankingDashboardComponent implements OnInit {
     return country ? country.flag : '🌍';
   }
 
+  // ========== Autocomplete Methods ==========
+
+  onNationalityInput(event: any): void {
+    const value = event.target.value;
+    if (value && value.length > 0) {
+      this.filteredCountries = this.countries.filter(country =>
+        country.name.toLowerCase().includes(value.toLowerCase()) ||
+        country.code.toLowerCase().includes(value.toLowerCase())
+      );
+      this.showCountryDropdown = this.filteredCountries.length > 0;
+    } else {
+      this.filteredCountries = this.countries;
+      this.showCountryDropdown = true;
+    }
+  }
+
+  onNationalityFocus(): void {
+    this.filteredCountries = this.countries;
+    this.showCountryDropdown = true;
+  }
+
+  selectCountry(country: any): void {
+    this.newAccount.nationality = country.name;
+    this.showCountryDropdown = false;
+  }
+
+  hideCountryDropdown(): void {
+    // Delay to allow click event on dropdown item to fire
+    setTimeout(() => {
+      this.showCountryDropdown = false;
+    }, 200);
+  }
+
   // ========== Add Account ==========
 
   openAddModal(): void {
     this.newAccount = {
       firstName: '',
       lastName: '',
-      nationality: this.countries[0].name,
+      nationality: '',
       accountType: 'CHECKING'
     };
     this.showAddModal = true;
+    this.showCountryDropdown = false;
     this.error = null;
     this.successMessage = null;
   }
