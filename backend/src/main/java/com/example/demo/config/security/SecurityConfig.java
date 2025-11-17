@@ -43,8 +43,14 @@ public class SecurityConfig {
                 // Disable CSRF for stateless JWT authentication
                 .csrf(AbstractHttpConfigurer::disable)
 
+                // Enable CORS
+                .cors(cors -> cors.configure(http))
+
                 // Configure authorization
                 .authorizeHttpRequests(auth -> auth
+                        // Allow OPTIONS requests (CORS preflight)
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
                         // Allow public access to auth endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
@@ -53,6 +59,9 @@ public class SecurityConfig {
 
                         // Require authentication for all banking endpoints
                         .requestMatchers("/api/banking/**").authenticated()
+
+                        // Require authentication for all API endpoints
+                        .requestMatchers("/api/**").authenticated()
 
                         // All other requests require authentication
                         .anyRequest().authenticated()
