@@ -132,20 +132,6 @@ export class BankingDashboardComponent implements OnInit {
 
   // ========== Autocomplete Methods ==========
 
-  onNationalityInput(event: any): void {
-    const value = event.target.value;
-    if (value && value.length > 0) {
-      this.filteredCountries = this.countries.filter(country =>
-        country.name.toLowerCase().includes(value.toLowerCase()) ||
-        country.code.toLowerCase().includes(value.toLowerCase())
-      );
-      this.showCountryDropdown = this.filteredCountries.length > 0;
-    } else {
-      this.filteredCountries = this.countries;
-      this.showCountryDropdown = true;
-    }
-  }
-
   onNationalityFocus(): void {
     this.filteredCountries = this.countries;
     this.showCountryDropdown = true;
@@ -172,9 +158,7 @@ export class BankingDashboardComponent implements OnInit {
       nationality: '',
       accountType: 'CHECKING'
     };
-    this.nationalityInput = '';
     this.filteredCountries = [];
-    this.showNationalitySuggestions = false;
     this.showAddModal = true;
     this.showCountryDropdown = false;
     this.error = null;
@@ -281,38 +265,17 @@ export class BankingDashboardComponent implements OnInit {
 
   // ========== Nationality Autocomplete ==========
 
-  onNationalityInput(): void {
-    const input = this.nationalityInput.toLowerCase().trim();
-
-    if (!input) {
-      this.filteredCountries = this.countries.slice(0, 10); // Show top 10 by default
-      this.showNationalitySuggestions = false;
-      this.newAccount.nationality = '';
-      return;
-    }
-
-    this.filteredCountries = this.countries
-      .filter((country: Country) =>
-        country.name.toLowerCase().includes(input) ||
-        country.code.toLowerCase().includes(input)
-      )
-      .slice(0, 10); // Limit to 10 results
-    this.showNationalitySuggestions = true;
-
-    // Check if exact match exists
-    const exactMatch = this.countries.find((country: Country) =>
-      country.name.toLowerCase() === input
-    );
-    if (exactMatch) {
-      this.newAccount.nationality = exactMatch.name;
+  onNationalityInput(event: any): void {
+    const value = event.target.value;
+    if (value && value.length > 0) {
+      this.filteredCountries = this.countries.filter(country =>
+        country.name.toLowerCase().includes(value.toLowerCase()) ||
+        country.code.toLowerCase().includes(value.toLowerCase())
+      );
+      this.showCountryDropdown = this.filteredCountries.length > 0;
     } else {
-      this.newAccount.nationality = '';
+      this.filteredCountries = this.countries;
+      this.showCountryDropdown = true;
     }
-  }
-
-  selectNationality(country: Country): void {
-    this.nationalityInput = country.name;
-    this.newAccount.nationality = country.name;
-    this.showNationalitySuggestions = false;
   }
 }
