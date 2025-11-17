@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .priority-low { background: #28a745; color: white; }
+        .priority-medium { background: #ffc107; color: #333; }
+        .priority-high { background: #fd7e14; color: white; }
+        .priority-urgent { background: #dc3545; color: white; }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>VirtualBank</h1>
+        <p>Notification</p>
+    </div>
+
+    <div class="content">
+        <div th:if="${priority}"
+             th:class="${'priority-badge priority-' + #strings.toLowerCase(priority)}"
+             th:text="${priority}">
+        </div>
+
+        <h2 th:text="${title}">Notification Title</h2>
+
+        <p th:text="${message}">Notification message content goes here.</p>
+
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+            <p><strong>Notification Type:</strong> <span th:text="${type}">SYSTEM</span></p>
+            <p><strong>Date:</strong> <span th:text="${#temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</span></p>
+        </div>
+
+        <a href="http://localhost/notifications" class="button">View All Notifications</a>
+    </div>
+
+    <div class="footer">
+        <p>This is an automated email from VirtualBank. Please do not reply to this email.</p>
+        <p>&copy; 2024 VirtualBank. All rights reserved.</p>
+    </div>
+</body>
+</html>
