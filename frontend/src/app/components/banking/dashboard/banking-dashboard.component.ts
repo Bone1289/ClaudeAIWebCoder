@@ -32,7 +32,7 @@ export class BankingDashboardComponent implements OnInit {
   editAccountType: string = '';
   accountToDelete: Account | null = null;
 
-  accountTypes = ['CHECKING', 'SAVINGS', 'CREDIT'];
+  accountTypes = ['CHECKING', 'SAVINGS', 'CREDIT', 'DEBIT'];
 
   countries = [
     { code: 'US', name: 'United States', flag: '🇺🇸' },

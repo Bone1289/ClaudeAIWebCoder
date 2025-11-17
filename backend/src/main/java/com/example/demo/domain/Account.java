@@ -163,8 +163,9 @@ public class Account {
         if (accountType == null || accountType.trim().isEmpty()) {
             throw new IllegalArgumentException("Account type cannot be null or empty");
         }
-        if (!accountType.equals("CHECKING") && !accountType.equals("SAVINGS") && !accountType.equals("CREDIT")) {
-            throw new IllegalArgumentException("Account type must be CHECKING, SAVINGS, or CREDIT");
+        if (!accountType.equals("CHECKING") && !accountType.equals("SAVINGS") &&
+            !accountType.equals("CREDIT") && !accountType.equals("DEBIT")) {
+            throw new IllegalArgumentException("Account type must be CHECKING, SAVINGS, CREDIT, or DEBIT");
         }
     }
 
