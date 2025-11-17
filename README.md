@@ -314,6 +314,42 @@ docker-compose restart backend
 docker-compose down -v
 ```
 
+### Docker Troubleshooting
+
+If you experience issues starting the Docker containers, use the fix script:
+
+```bash
+./fix-docker-startup.sh
+```
+
+**Common Issues:**
+
+1. **MySQL or Elasticsearch Containers Fail to Start**
+   - Run: `./fix-docker-startup.sh`
+   - See: [DOCKER_TROUBLESHOOTING.md](DOCKER_TROUBLESHOOTING.md) for detailed solutions
+
+2. **Elasticsearch Fails on Linux/WSL** (most common)
+   ```bash
+   # Fix vm.max_map_count (required for Elasticsearch)
+   sudo sysctl -w vm.max_map_count=262144
+
+   # Make it permanent
+   echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+   ```
+
+3. **Port Conflicts**
+   - Check if ports are in use: `lsof -i :3306` or `lsof -i :9200`
+   - Stop conflicting services or change ports in docker-compose.yml
+
+4. **Corrupted Volumes**
+   ```bash
+   # Remove all volumes and start fresh
+   docker-compose down -v
+   docker-compose up -d --build
+   ```
+
+For comprehensive troubleshooting, see [DOCKER_TROUBLESHOOTING.md](DOCKER_TROUBLESHOOTING.md)
+
 ## Troubleshooting
 
 ### Backend Issues
