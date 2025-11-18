@@ -27,7 +27,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     // Subscribe to unread count updates
     const unreadSub = this.notificationService.unreadCount$.subscribe({
       next: (count) => {
-        console.log('Unread count updated:', count);
+        console.log('🔔 Notification bell: Unread count updated from', this.unreadCount, 'to', count);
         this.unreadCount = count;
       },
       error: (error) => {

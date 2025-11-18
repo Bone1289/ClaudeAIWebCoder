@@ -85,13 +85,12 @@ export class NotificationService {
         this.ngZone.run(() => {
           try {
             const notification: Notification = JSON.parse(event.data);
-            console.log('New notification received via SSE:', notification);
+            console.log('📩 SSE notification event received:', notification);
             this.newNotificationSubject.next(notification);
             this.notificationsUpdatedSubject.next();
-            // Refresh unread count when new notification arrives
-            this.refreshUnreadCount();
+            // Note: Don't call refreshUnreadCount() here - backend sends 'unread-count' event separately
           } catch (error) {
-            console.error('Error parsing notification:', error);
+            console.error('❌ Error parsing notification:', error);
           }
         });
       });
@@ -100,10 +99,10 @@ export class NotificationService {
         this.ngZone.run(() => {
           try {
             const data = JSON.parse(event.data);
-            console.log('Unread count updated via SSE:', data.unreadCount);
+            console.log('🔢 SSE unread-count event received:', data.unreadCount);
             this.unreadCountSubject.next(data.unreadCount);
           } catch (error) {
-            console.error('Error parsing unread count:', error);
+            console.error('❌ Error parsing unread count:', error);
           }
         });
       });
