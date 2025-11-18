@@ -46,8 +46,8 @@ export class BankingService {
       map(response => ({
         success: response.success,
         message: response.message,
-        data: response.account ? this.mapGrpcAccountToModel(response.account) : null
-      })),
+        data: response.account ? this.mapGrpcAccountToModel(response.account) : {} as Account
+      } as ApiResponse<Account>)),
       catchError(this.handleError)
     );
   }
@@ -85,8 +85,8 @@ export class BankingService {
       map(response => ({
         success: response.success,
         message: response.message,
-        data: response.account ? this.mapGrpcAccountToModel(response.account) : null
-      })),
+        data: response.account ? this.mapGrpcAccountToModel(response.account) : {} as Account
+      } as ApiResponse<Account>)),
       catchError(this.handleError)
     );
   }
@@ -121,8 +121,8 @@ export class BankingService {
       map(response => ({
         success: response.success,
         message: response.message,
-        data: response.account ? this.mapGrpcAccountToModel(response.account) : null
-      })),
+        data: response.account ? this.mapGrpcAccountToModel(response.account) : {} as Account
+      } as ApiResponse<Account>)),
       catchError(this.handleError)
     );
   }
@@ -171,8 +171,8 @@ export class BankingService {
       map(response => ({
         success: response.success,
         message: response.message,
-        data: response.account ? this.mapGrpcAccountToModel(response.account) : null
-      })),
+        data: response.account ? this.mapGrpcAccountToModel(response.account) : {} as Account
+      } as ApiResponse<Account>)),
       catchError(this.handleError)
     );
   }
@@ -199,8 +199,8 @@ export class BankingService {
       map(response => ({
         success: response.success,
         message: response.message,
-        data: response.account ? this.mapGrpcAccountToModel(response.account) : null
-      })),
+        data: response.account ? this.mapGrpcAccountToModel(response.account) : {} as Account
+      } as ApiResponse<Account>)),
       catchError(this.handleError)
     );
   }
@@ -309,18 +309,19 @@ export class BankingService {
       map(response => ({
         success: response.success,
         message: response.message,
-        data: response.account ? {
-          account: this.mapGrpcAccountToModel(response.account),
+        data: {
+          account: response.account ? this.mapGrpcAccountToModel(response.account) : {} as Account,
+          startDate: startDate,
+          endDate: endDate,
           transactions: response.transactions ? response.transactions.map((t: any) => this.mapGrpcTransactionToModel(t)) : [],
-          summary: response.summary ? {
-            openingBalance: parseFloat(response.summary.opening_balance),
-            closingBalance: parseFloat(response.summary.closing_balance),
-            totalDeposits: parseFloat(response.summary.total_deposits),
-            totalWithdrawals: parseFloat(response.summary.total_withdrawals),
-            transactionCount: response.summary.transaction_count
-          } : null
-        } : null
-      })),
+          openingBalance: response.summary ? parseFloat(response.summary.opening_balance) : 0,
+          closingBalance: response.summary ? parseFloat(response.summary.closing_balance) : 0,
+          totalDeposits: response.summary ? parseFloat(response.summary.total_deposits) : 0,
+          totalWithdrawals: response.summary ? parseFloat(response.summary.total_withdrawals) : 0,
+          netChange: response.summary ? (parseFloat(response.summary.closing_balance) - parseFloat(response.summary.opening_balance)) : 0,
+          transactionCount: response.summary ? response.summary.transaction_count : 0
+        }
+      } as ApiResponse<AccountStatement>)),
       catchError(this.handleError)
     );
   }
@@ -349,9 +350,10 @@ export class BankingService {
           accountId: response.account_id,
           transactionType: response.transaction_type,
           categories: response.categories || [],
-          totalAmount: parseFloat(response.total_amount || '0')
+          totalAmount: parseFloat(response.total_amount || '0'),
+          totalTransactions: response.total_transactions || 0
         }
-      })),
+      } as ApiResponse<CategoryReport>)),
       catchError(this.handleError)
     );
   }
@@ -364,7 +366,6 @@ export class BankingService {
   private mapGrpcAccountToModel(grpcAccount: any): Account {
     return {
       id: grpcAccount.id,
-      userId: grpcAccount.user_id,
       accountNumber: grpcAccount.account_number,
       firstName: grpcAccount.first_name,
       lastName: grpcAccount.last_name,
@@ -386,8 +387,7 @@ export class BankingService {
       amount: parseFloat(grpcTransaction.amount),
       type: grpcTransaction.type,
       description: grpcTransaction.description,
-      categoryId: grpcTransaction.category_id,
-      categoryName: grpcTransaction.category_name,
+      categoryId: grpcTransaction.category_id || null,
       balanceAfter: parseFloat(grpcTransaction.balance_after),
       createdAt: grpcTransaction.created_at
     };
