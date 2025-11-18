@@ -208,11 +208,10 @@ export class AdminService {
       email: grpcUser.email,
       firstName: grpcUser.first_name,
       lastName: grpcUser.last_name,
-      role: grpcUser.role,
-      status: grpcUser.status,
-      accountNonLocked: grpcUser.account_non_locked,
+      role: grpcUser.role as 'USER' | 'ADMIN',
+      status: grpcUser.status as 'ACTIVE' | 'SUSPENDED' | 'LOCKED',
       createdAt: grpcUser.created_at,
-      lastLogin: grpcUser.last_login
+      updatedAt: grpcUser.created_at // Using created_at as fallback for updatedAt
     };
   }
 
@@ -222,14 +221,16 @@ export class AdminService {
   private mapGrpcAccountToModel(grpcAccount: GrpcAccountResponse): Account {
     return {
       id: grpcAccount.id,
+      userId: '', // Not provided by gRPC response
       accountNumber: grpcAccount.account_number,
       firstName: grpcAccount.first_name,
       lastName: grpcAccount.last_name,
       nationality: grpcAccount.nationality,
       accountType: grpcAccount.account_type,
       balance: parseFloat(grpcAccount.balance),
-      status: grpcAccount.status,
-      createdAt: grpcAccount.created_at
+      createdAt: grpcAccount.created_at,
+      lastTransactionDate: null, // Not provided by gRPC response
+      transactionCount: 0 // Not provided by gRPC response
     };
   }
 }

@@ -69,11 +69,11 @@ export class AuthService {
       map(response => ({
         success: response.success,
         message: response.message,
-        data: response.user ? {
+        data: {
           token: response.token,
           type: 'Bearer',
           user: this.mapGrpcUserToModel(response.user)
-        } : null
+        }
       }))
     );
   }
@@ -137,11 +137,10 @@ export class AuthService {
       email: grpcUser.email,
       firstName: grpcUser.first_name,
       lastName: grpcUser.last_name,
-      role: grpcUser.role,
-      status: grpcUser.status,
-      accountNonLocked: grpcUser.account_non_locked,
+      role: grpcUser.role as 'USER' | 'ADMIN',
+      status: grpcUser.status as 'ACTIVE' | 'SUSPENDED' | 'LOCKED',
       createdAt: grpcUser.created_at,
-      lastLogin: grpcUser.last_login
+      updatedAt: grpcUser.created_at // Using created_at as fallback for updatedAt
     };
   }
 }
