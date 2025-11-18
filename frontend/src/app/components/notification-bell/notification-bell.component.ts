@@ -27,6 +27,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     // Subscribe to unread count updates
     const unreadSub = this.notificationService.unreadCount$.subscribe({
       next: (count) => {
+        console.log('Unread count updated:', count);
         this.unreadCount = count;
       },
       error: (error) => {
@@ -34,6 +35,21 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       }
     });
     this.subscriptions.push(unreadSub);
+
+    // Subscribe to new notifications (for real-time updates)
+    const newNotificationSub = this.notificationService.newNotification$.subscribe({
+      next: (notification) => {
+        console.log('New notification received in bell component:', notification);
+        // If dropdown is open, reload notifications to show the new one
+        if (this.isOpen) {
+          this.loadNotifications();
+        }
+      },
+      error: (error) => {
+        console.error('Error receiving new notification:', error);
+      }
+    });
+    this.subscriptions.push(newNotificationSub);
 
     // Subscribe to notifications updated event
     const updateSub = this.notificationService.notificationsUpdated$.subscribe({

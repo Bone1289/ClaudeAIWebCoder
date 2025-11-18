@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { LoginRequest, SignUpRequest, LoginResponse, UserResponse } from '../models/auth.model';
 import { ApiResponse } from '../models/api-response.model';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,8 +15,22 @@ export class AuthService {
 
   private currentUserSubject = new BehaviorSubject<UserResponse | null>(this.getCurrentUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
+  private notificationService?: NotificationService;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private injector: Injector
+  ) {}
+
+  /**
+   * Get NotificationService (lazy injection to avoid circular dependency)
+   */
+  private getNotificationService(): NotificationService {
+    if (!this.notificationService) {
+      this.notificationService = this.injector.get(NotificationService);
+    }
+    return this.notificationService;
+  }
 
   /**
    * Sign up a new user
@@ -36,6 +51,11 @@ export class AuthService {
             this.setToken(response.data.token);
             this.setCurrentUser(response.data.user);
             this.currentUserSubject.next(response.data.user);
+
+            // Connect to SSE for real-time notifications
+            setTimeout(() => {
+              this.getNotificationService().reconnectSSE();
+            }, 100);
           }
         })
       );
@@ -45,6 +65,9 @@ export class AuthService {
    * Logout the current user
    */
   logout(): void {
+    // Disconnect SSE before clearing auth data
+    this.getNotificationService().disconnectSSE();
+
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     this.currentUserSubject.next(null);

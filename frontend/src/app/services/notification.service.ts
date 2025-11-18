@@ -62,8 +62,8 @@ export class NotificationService {
    * Connect to Server-Sent Events (SSE) stream for real-time notifications
    */
   private connectToSSE(): void {
-    // Get auth token from localStorage
-    const token = localStorage.getItem('token');
+    // Get auth token from localStorage (check both possible keys)
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     if (!token) {
       console.warn('No auth token found, cannot connect to SSE');
       return;
@@ -88,6 +88,8 @@ export class NotificationService {
             console.log('New notification received via SSE:', notification);
             this.newNotificationSubject.next(notification);
             this.notificationsUpdatedSubject.next();
+            // Refresh unread count when new notification arrives
+            this.refreshUnreadCount();
           } catch (error) {
             console.error('Error parsing notification:', error);
           }
