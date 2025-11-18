@@ -33,6 +33,20 @@ import {
 export class BankingService {
   constructor(private apollo: Apollo) { }
 
+  /**
+   * Safely extract data from GraphQL result with null checking
+   */
+  private extractData<T>(result: any, key: string): T {
+    if (!result || !result.data) {
+      throw new Error('GraphQL response is null or undefined');
+    }
+    const data = result.data[key];
+    if (data === undefined || data === null) {
+      throw new Error(`GraphQL response missing expected field: ${key}`);
+    }
+    return data;
+  }
+
   // ========== Account Operations ==========
 
   /**
@@ -50,7 +64,7 @@ export class BankingService {
         }
       }
     }).pipe(
-      map(result => (result.data as any).createAccount),
+      map(result => this.extractData<Account>(result, 'createAccount')),
       catchError(this.handleError)
     );
   }
@@ -63,7 +77,7 @@ export class BankingService {
       query: GET_ACCOUNTS,
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).accounts),
+      map(result => this.extractData<Account[]>(result, 'accounts')),
       catchError(this.handleError)
     );
   }
@@ -77,7 +91,7 @@ export class BankingService {
       variables: { id },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).account),
+      map(result => this.extractData<Account>(result, 'account')),
       catchError(this.handleError)
     );
   }
@@ -95,7 +109,7 @@ export class BankingService {
         }
       }
     }).pipe(
-      map(result => (result.data as any).updateAccount),
+      map(result => this.extractData<Account>(result, 'updateAccount')),
       catchError(this.handleError)
     );
   }
@@ -108,7 +122,7 @@ export class BankingService {
       mutation: DELETE_ACCOUNT,
       variables: { id }
     }).pipe(
-      map(result => (result.data as any).deleteAccount),
+      map(result => this.extractData<boolean>(result, 'deleteAccount')),
       catchError(this.handleError)
     );
   }
@@ -130,7 +144,7 @@ export class BankingService {
         }
       }
     }).pipe(
-      map(result => (result.data as any).deposit),
+      map(result => this.extractData<Transaction>(result, 'deposit')),
       catchError(this.handleError)
     );
   }
@@ -150,7 +164,7 @@ export class BankingService {
         }
       }
     }).pipe(
-      map(result => (result.data as any).withdraw),
+      map(result => this.extractData<Transaction>(result, 'withdraw')),
       catchError(this.handleError)
     );
   }
@@ -170,7 +184,7 @@ export class BankingService {
         }
       }
     }).pipe(
-      map(result => (result.data as any).transfer),
+      map(result => this.extractData<Transaction>(result, 'transfer')),
       catchError(this.handleError)
     );
   }
@@ -184,7 +198,7 @@ export class BankingService {
       variables: { accountId },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).transactionHistory),
+      map(result => this.extractData<Transaction[]>(result, 'transactionHistory')),
       catchError(this.handleError)
     );
   }
@@ -197,7 +211,7 @@ export class BankingService {
       query: GET_ALL_TRANSACTIONS,
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).transactions),
+      map(result => this.extractData<Transaction[]>(result, 'transactions')),
       catchError(this.handleError)
     );
   }
@@ -217,7 +231,7 @@ export class BankingService {
       },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).accountStatement),
+      map(result => this.extractData<AccountStatement>(result, 'accountStatement')),
       catchError(this.handleError)
     );
   }
@@ -234,7 +248,7 @@ export class BankingService {
       },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).categoryReport),
+      map(result => this.extractData<CategoryReport[]>(result, 'categoryReport')),
       catchError(this.handleError)
     );
   }

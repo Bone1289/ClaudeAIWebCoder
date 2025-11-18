@@ -22,6 +22,20 @@ export class AuthService {
   ) {}
 
   /**
+   * Safely extract data from GraphQL result with null checking
+   */
+  private extractData<T>(result: any, key: string): T {
+    if (!result || !result.data) {
+      throw new Error('GraphQL response is null or undefined');
+    }
+    const data = result.data[key];
+    if (data === undefined || data === null) {
+      throw new Error(`GraphQL response missing expected field: ${key}`);
+    }
+    return data;
+  }
+
+  /**
    * Get NotificationService (lazy injection to avoid circular dependency)
    */
   private getNotificationService(): NotificationService {
@@ -48,14 +62,12 @@ export class AuthService {
       }
     }).pipe(
       map(result => {
-        if (result.data) {
-          const authData = (result.data as any).signUp;
-          // Store token and user
-          this.setToken(authData.token);
-          this.setCurrentUser(authData.user);
-          this.currentUserSubject.next(authData.user);
-        }
-        return result.data;
+        const authData = this.extractData<any>(result, 'signUp');
+        // Store token and user
+        this.setToken(authData.token);
+        this.setCurrentUser(authData.user);
+        this.currentUserSubject.next(authData.user);
+        return authData;
       })
     );
   }
@@ -74,19 +86,17 @@ export class AuthService {
       }
     }).pipe(
       map(result => {
-        if (result.data) {
-          const authData = (result.data as any).login;
-          // Store token and user
-          this.setToken(authData.token);
-          this.setCurrentUser(authData.user);
-          this.currentUserSubject.next(authData.user);
+        const authData = this.extractData<any>(result, 'login');
+        // Store token and user
+        this.setToken(authData.token);
+        this.setCurrentUser(authData.user);
+        this.currentUserSubject.next(authData.user);
 
-          // Connect to SSE for real-time notifications
-          setTimeout(() => {
-            this.getNotificationService().reconnectSSE();
-          }, 100);
-        }
-        return result.data;
+        // Connect to SSE for real-time notifications
+        setTimeout(() => {
+          this.getNotificationService().reconnectSSE();
+        }, 100);
+        return authData;
       })
     );
   }
@@ -95,17 +105,22 @@ export class AuthService {
    * Logout the current user
    */
   logout(): Observable<any> {
-    // Disconnect SSE before clearing auth data
-    this.getNotificationService().disconnectSSE();
+    // Disconnect SSE before clearing auth data (handle errors gracefully)
+    try {
+      this.getNotificationService().disconnectSSE();
+    } catch (error) {
+      console.warn('Failed to disconnect SSE during logout:', error);
+    }
 
     return this.apollo.mutate({
       mutation: LOGOUT
     }).pipe(
       map(result => {
+        // Clear auth data regardless of mutation result
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.USER_KEY);
         this.currentUserSubject.next(null);
-        return result.data;
+        return result.data || true;
       })
     );
   }
@@ -119,11 +134,9 @@ export class AuthService {
       fetchPolicy: 'network-only'
     }).pipe(
       map(result => {
-        const user = (result.data as any).me;
-        if (user) {
-          this.setCurrentUser(user);
-          this.currentUserSubject.next(user);
-        }
+        const user = this.extractData<UserResponse>(result, 'me');
+        this.setCurrentUser(user);
+        this.currentUserSubject.next(user);
         return user;
       })
     );

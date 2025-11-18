@@ -32,6 +32,20 @@ export class CategoryService {
   }
 
   /**
+   * Safely extract data from GraphQL result with null checking
+   */
+  private extractData<T>(result: any, key: string): T {
+    if (!result || !result.data) {
+      throw new Error('GraphQL response is null or undefined');
+    }
+    const data = result.data[key];
+    if (data === undefined || data === null) {
+      throw new Error(`GraphQL response missing expected field: ${key}`);
+    }
+    return data;
+  }
+
+  /**
    * Load all active categories
    */
   loadCategories(activeOnly: boolean = true): Observable<Category[]> {
@@ -43,7 +57,7 @@ export class CategoryService {
       },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).categories),
+      map(result => this.extractData<Category[]>(result, 'categories')),
       tap((categories: Category[]) => {
         this.categoriesCache$.next(categories);
       })
@@ -62,7 +76,7 @@ export class CategoryService {
       },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).categories)
+      map(result => this.extractData<Category[]>(result, 'categories'))
     );
   }
 
@@ -75,7 +89,7 @@ export class CategoryService {
       variables: { id },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).category)
+      map(result => this.extractData<Category>(result, 'category'))
     );
   }
 
@@ -94,7 +108,7 @@ export class CategoryService {
         }
       }
     }).pipe(
-      map(result => (result.data as any).createCategory),
+      map(result => this.extractData<Category>(result, 'createCategory')),
       tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
@@ -115,7 +129,7 @@ export class CategoryService {
         }
       }
     }).pipe(
-      map(result => (result.data as any).updateCategory),
+      map(result => this.extractData<Category>(result, 'updateCategory')),
       tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
@@ -128,7 +142,7 @@ export class CategoryService {
       mutation: DEACTIVATE_CATEGORY,
       variables: { id }
     }).pipe(
-      map(result => (result.data as any).deactivateCategory),
+      map(result => this.extractData<Category>(result, 'deactivateCategory')),
       tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
@@ -141,7 +155,7 @@ export class CategoryService {
       mutation: DELETE_CATEGORY,
       variables: { id }
     }).pipe(
-      map(result => (result.data as any).deleteCategory),
+      map(result => this.extractData<boolean>(result, 'deleteCategory')),
       tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }

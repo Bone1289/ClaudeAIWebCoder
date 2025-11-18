@@ -10,6 +10,20 @@ export class ApiService {
   constructor(private apollo: Apollo) { }
 
   /**
+   * Safely extract data from GraphQL result with null checking
+   */
+  private extractData<T>(result: any, key: string): T {
+    if (!result || !result.data) {
+      throw new Error('GraphQL response is null or undefined');
+    }
+    const data = result.data[key];
+    if (data === undefined || data === null) {
+      throw new Error(`GraphQL response missing expected field: ${key}`);
+    }
+    return data;
+  }
+
+  /**
    * Get a personalized hello message from the backend
    */
   getHello(name: string): Observable<string> {
@@ -17,7 +31,7 @@ export class ApiService {
       query: GET_HELLO,
       variables: { name }
     }).pipe(
-      map(result => (result.data as any).hello),
+      map(result => this.extractData<string>(result, 'hello')),
       catchError(this.handleError)
     );
   }
@@ -29,7 +43,7 @@ export class ApiService {
     return this.apollo.query({
       query: GET_HEALTH
     }).pipe(
-      map(result => (result.data as any).health),
+      map(result => this.extractData<any>(result, 'health')),
       catchError(this.handleError)
     );
   }

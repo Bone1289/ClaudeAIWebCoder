@@ -62,6 +62,20 @@ export class NotificationService {
   }
 
   /**
+   * Safely extract data from GraphQL result with null checking
+   */
+  private extractData<T>(result: any, key: string): T {
+    if (!result || !result.data) {
+      throw new Error('GraphQL response is null or undefined');
+    }
+    const data = result.data[key];
+    if (data === undefined || data === null) {
+      throw new Error(`GraphQL response missing expected field: ${key}`);
+    }
+    return data;
+  }
+
+  /**
    * Connect to Server-Sent Events (SSE) stream for real-time notifications
    */
   private connectToSSE(): void {
@@ -175,7 +189,7 @@ export class NotificationService {
       variables: { page, size },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).notifications)
+      map(result => this.extractData<PagedNotifications>(result, 'notifications'))
     );
   }
 
@@ -188,7 +202,7 @@ export class NotificationService {
       variables: { page, size },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).unreadNotifications)
+      map(result => this.extractData<PagedNotifications>(result, 'unreadNotifications'))
     );
   }
 
@@ -201,7 +215,7 @@ export class NotificationService {
       variables: { page, size },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).readNotifications)
+      map(result => this.extractData<PagedNotifications>(result, 'readNotifications'))
     );
   }
 
@@ -214,7 +228,7 @@ export class NotificationService {
       variables: { days, page, size },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).recentNotifications)
+      map(result => this.extractData<PagedNotifications>(result, 'recentNotifications'))
     );
   }
 
@@ -226,7 +240,7 @@ export class NotificationService {
       query: GET_UNREAD_COUNT,
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).unreadCount)
+      map(result => this.extractData<number>(result, 'unreadCount'))
     );
   }
 
@@ -239,7 +253,7 @@ export class NotificationService {
       variables: { id },
       fetchPolicy: 'network-only'
     }).pipe(
-      map(result => (result.data as any).notification)
+      map(result => this.extractData<Notification>(result, 'notification'))
     );
   }
 
@@ -251,7 +265,7 @@ export class NotificationService {
       mutation: MARK_AS_READ,
       variables: { id }
     }).pipe(
-      map(result => (result.data as any).markNotificationAsRead),
+      map(result => this.extractData<Notification>(result, 'markNotificationAsRead')),
       tap(() => {
         this.refreshUnreadCount();
         this.notificationsUpdatedSubject.next();
@@ -267,7 +281,7 @@ export class NotificationService {
       mutation: MARK_AS_READ,
       variables: { id }
     }).pipe(
-      map(result => (result.data as any).markNotificationAsUnread),
+      map(result => this.extractData<Notification>(result, 'markNotificationAsUnread')),
       tap(() => {
         this.refreshUnreadCount();
         this.notificationsUpdatedSubject.next();
@@ -282,7 +296,7 @@ export class NotificationService {
     return this.apollo.mutate({
       mutation: MARK_ALL_AS_READ
     }).pipe(
-      map(result => (result.data as any).markAllNotificationsAsRead),
+      map(result => this.extractData<boolean>(result, 'markAllNotificationsAsRead')),
       tap(() => {
         this.refreshUnreadCount();
         this.notificationsUpdatedSubject.next();
@@ -298,7 +312,7 @@ export class NotificationService {
       mutation: DELETE_NOTIFICATION,
       variables: { id }
     }).pipe(
-      map(result => (result.data as any).deleteNotification),
+      map(result => this.extractData<boolean>(result, 'deleteNotification')),
       tap(() => {
         this.refreshUnreadCount();
         this.notificationsUpdatedSubject.next();
@@ -313,7 +327,7 @@ export class NotificationService {
     return this.apollo.mutate({
       mutation: DELETE_ALL_NOTIFICATIONS
     }).pipe(
-      map(result => (result.data as any).deleteAllNotifications),
+      map(result => this.extractData<boolean>(result, 'deleteAllNotifications')),
       tap(() => {
         this.refreshUnreadCount();
         this.notificationsUpdatedSubject.next();
@@ -329,7 +343,7 @@ export class NotificationService {
       mutation: DELETE_ALL_NOTIFICATIONS,
       variables: { daysOld }
     }).pipe(
-      map(result => (result.data as any).cleanupOldNotifications),
+      map(result => this.extractData<number>(result, 'cleanupOldNotifications')),
       tap(() => {
         this.notificationsUpdatedSubject.next();
       })
