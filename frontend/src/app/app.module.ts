@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { NotificationBellComponent } from './components/notification-bell/notification-bell.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    NotificationBellComponent
   ],
   providers: [
     {

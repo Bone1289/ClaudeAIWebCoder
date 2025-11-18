@@ -10,6 +10,7 @@ import com.example.demo.domain.AuditLog;
 import com.example.demo.domain.Transaction;
 import com.example.demo.domain.TransactionCategory;
 import com.example.demo.domain.User;
+import com.example.demo.domain.notification.Notification;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,17 +44,20 @@ public class BankingService implements
     private final CategoryRepository categoryRepository;
     private final AuditService auditService;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public BankingService(AccountRepository accountRepository,
                          TransactionRepository transactionRepository,
                          CategoryRepository categoryRepository,
                          AuditService auditService,
-                         UserRepository userRepository) {
+                         UserRepository userRepository,
+                         NotificationService notificationService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
         this.auditService = auditService;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -80,6 +84,22 @@ public class BankingService implements
             );
         } catch (Exception e) {
             // Don't fail account creation if audit logging fails
+            e.printStackTrace();
+        }
+
+        // Send notification for account creation
+        try {
+            notificationService.createAndSendAsync(
+                    userId,
+                    Notification.NotificationType.ACCOUNT_CREATED,
+                    Notification.NotificationChannel.IN_APP,
+                    "Account Created Successfully",
+                    String.format("Your %s account (****%s) has been created successfully!",
+                            accountType, accountNumber.substring(accountNumber.length() - 4)),
+                    Notification.NotificationPriority.MEDIUM
+            );
+        } catch (Exception e) {
+            // Don't fail account creation if notification fails
             e.printStackTrace();
         }
 
@@ -208,6 +228,23 @@ public class BankingService implements
             e.printStackTrace();
         }
 
+        // Send notification for deposit
+        try {
+            notificationService.createAndSendAsync(
+                    savedAccount.getUserId(),
+                    Notification.NotificationType.TRANSACTION_COMPLETED,
+                    Notification.NotificationChannel.IN_APP,
+                    "Deposit Successful",
+                    String.format("$%s deposited to account ****%s. New balance: $%s",
+                            amount, savedAccount.getAccountNumber().substring(savedAccount.getAccountNumber().length() - 4),
+                            savedAccount.getBalance()),
+                    Notification.NotificationPriority.LOW
+            );
+        } catch (Exception e) {
+            // Don't fail transaction if notification fails
+            e.printStackTrace();
+        }
+
         return savedAccount;
     }
 
@@ -256,6 +293,23 @@ public class BankingService implements
             );
         } catch (Exception e) {
             // Don't fail transaction if audit logging fails
+            e.printStackTrace();
+        }
+
+        // Send notification for withdrawal
+        try {
+            notificationService.createAndSendAsync(
+                    savedAccount.getUserId(),
+                    Notification.NotificationType.TRANSACTION_COMPLETED,
+                    Notification.NotificationChannel.IN_APP,
+                    "Withdrawal Successful",
+                    String.format("$%s withdrawn from account ****%s. New balance: $%s",
+                            amount, savedAccount.getAccountNumber().substring(savedAccount.getAccountNumber().length() - 4),
+                            savedAccount.getBalance()),
+                    Notification.NotificationPriority.LOW
+            );
+        } catch (Exception e) {
+            // Don't fail transaction if notification fails
             e.printStackTrace();
         }
 
@@ -325,6 +379,44 @@ public class BankingService implements
             );
         } catch (Exception e) {
             // Don't fail transaction if audit logging fails
+            e.printStackTrace();
+        }
+
+        // Send notification to sender (money sent)
+        try {
+            notificationService.createAndSendAsync(
+                    savedFromAccount.getUserId(),
+                    Notification.NotificationType.TRANSACTION_COMPLETED,
+                    Notification.NotificationChannel.IN_APP,
+                    "Transfer Sent",
+                    String.format("$%s transferred from account ****%s to ****%s. New balance: $%s",
+                            amount,
+                            savedFromAccount.getAccountNumber().substring(savedFromAccount.getAccountNumber().length() - 4),
+                            savedToAccount.getAccountNumber().substring(savedToAccount.getAccountNumber().length() - 4),
+                            savedFromAccount.getBalance()),
+                    Notification.NotificationPriority.LOW
+            );
+        } catch (Exception e) {
+            // Don't fail transaction if notification fails
+            e.printStackTrace();
+        }
+
+        // Send notification to receiver (money received)
+        try {
+            notificationService.createAndSendAsync(
+                    savedToAccount.getUserId(),
+                    Notification.NotificationType.TRANSACTION_COMPLETED,
+                    Notification.NotificationChannel.IN_APP,
+                    "Transfer Received",
+                    String.format("$%s received in account ****%s from ****%s. New balance: $%s",
+                            amount,
+                            savedToAccount.getAccountNumber().substring(savedToAccount.getAccountNumber().length() - 4),
+                            savedFromAccount.getAccountNumber().substring(savedFromAccount.getAccountNumber().length() - 4),
+                            savedToAccount.getBalance()),
+                    Notification.NotificationPriority.LOW
+            );
+        } catch (Exception e) {
+            // Don't fail transaction if notification fails
             e.printStackTrace();
         }
     }

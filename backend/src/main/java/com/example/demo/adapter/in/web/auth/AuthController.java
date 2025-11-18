@@ -9,9 +9,11 @@ import com.example.demo.application.ports.in.GetCurrentUserUseCase;
 import com.example.demo.application.ports.in.LoginUseCase;
 import com.example.demo.application.ports.in.RegisterUserUseCase;
 import com.example.demo.application.service.AuditService;
+import com.example.demo.application.service.NotificationService;
 import com.example.demo.config.security.JwtUtil;
 import com.example.demo.domain.AuditLog;
 import com.example.demo.domain.User;
+import com.example.demo.domain.notification.Notification;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -31,17 +33,20 @@ public class AuthController {
     private final GetCurrentUserUseCase getCurrentUserUseCase;
     private final JwtUtil jwtUtil;
     private final AuditService auditService;
+    private final NotificationService notificationService;
 
     public AuthController(RegisterUserUseCase registerUserUseCase,
                          LoginUseCase loginUseCase,
                          GetCurrentUserUseCase getCurrentUserUseCase,
                          JwtUtil jwtUtil,
-                         AuditService auditService) {
+                         AuditService auditService,
+                         NotificationService notificationService) {
         this.registerUserUseCase = registerUserUseCase;
         this.loginUseCase = loginUseCase;
         this.getCurrentUserUseCase = getCurrentUserUseCase;
         this.jwtUtil = jwtUtil;
         this.auditService = auditService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -115,6 +120,22 @@ public class AuthController {
                     String.format("User logged in: username=%s, role=%s", user.getUsername(), user.getRole()),
                     httpRequest
             );
+
+            // Send notification for successful login
+            try {
+                String ipAddress = httpRequest != null ? httpRequest.getRemoteAddr() : "unknown";
+                notificationService.createAndSendAsync(
+                        user.getId(),
+                        Notification.NotificationType.SECURITY_ALERT,
+                        Notification.NotificationChannel.IN_APP,
+                        "New Login Detected",
+                        String.format("Your account was accessed from IP: %s", ipAddress),
+                        Notification.NotificationPriority.MEDIUM
+                );
+            } catch (Exception e) {
+                // Don't fail login if notification fails
+                e.printStackTrace();
+            }
 
             // Create response
             LoginResponse loginResponse = new LoginResponse(token, UserResponse.fromDomain(user));

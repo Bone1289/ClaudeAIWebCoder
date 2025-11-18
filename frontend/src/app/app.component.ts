@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { UserResponse } from './models/auth.model';
 import { Observable } from 'rxjs';
+import { NotificationBellComponent } from './components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-root',
