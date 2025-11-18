@@ -54,8 +54,9 @@ export class NotificationService {
     private http: HttpClient,
     private ngZone: NgZone
   ) {
-    // Start SSE connection for real-time updates
-    this.connectToSSE();
+    // SSE disabled - migrating to gRPC streaming
+    // TODO: Implement gRPC streaming for real-time notifications
+    // this.connectToSSE();
   }
 
   /**
@@ -147,6 +148,8 @@ export class NotificationService {
    * Disconnect from SSE stream (call on logout or service destroy)
    */
   disconnectSSE(): void {
+    // SSE disabled - no action needed
+    // TODO: Implement gRPC streaming disconnect
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
@@ -158,9 +161,11 @@ export class NotificationService {
    * Reconnect to SSE stream (call after login)
    */
   reconnectSSE(): void {
-    this.disconnectSSE();
-    this.reconnectAttempts = 0;
-    this.connectToSSE();
+    // SSE disabled - no action needed
+    // TODO: Implement gRPC streaming reconnect
+    // this.disconnectSSE();
+    // this.reconnectAttempts = 0;
+    // this.connectToSSE();
   }
 
   /**
