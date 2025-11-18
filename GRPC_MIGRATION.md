@@ -1,5 +1,37 @@
 # gRPC Migration Guide
 
+## ⚠️ IMPORTANT: Frontend Migration Status
+
+**Backend Status**: ✅ Fully migrated to gRPC-only (REST removed)
+**Frontend Status**: ❌ Still using REST API calls (needs migration)
+
+### Current Issue: 302 Login Error
+
+The frontend is still trying to use REST API endpoints (`/api/auth/login`), but the backend now only supports gRPC. The 302 error occurs because:
+
+1. Frontend makes HTTP POST to `/api/auth/login` (REST endpoint)
+2. Backend has no REST endpoints anymore (all removed)
+3. Spring HTTP security is disabled to prevent redirects
+
+### Required Actions
+
+To complete the migration, the frontend needs to be updated to use gRPC-Web:
+
+1. **Install gRPC-Web packages**: See "Frontend Setup" section below
+2. **Generate TypeScript client code** from `.proto` files
+3. **Replace HttpClient calls** with gRPC-Web client calls in all services:
+   - `auth.service.ts`
+   - `banking.service.ts`
+   - `notification.service.ts`
+   - `category.service.ts`
+   - `admin.service.ts`
+
+4. **Update all HTTP requests** to use gRPC-Web endpoint: `http://localhost:8081` (Envoy proxy)
+
+See the "Frontend Integration" section below for detailed examples.
+
+---
+
 ## Overview
 
 This application has been migrated from REST to gRPC with gRPC-Web support for browser clients. This document provides comprehensive information about the migration and how to use the new gRPC APIs.
@@ -18,9 +50,9 @@ Spring Boot Backend (Port 9090)
 
 ### Ports
 
-- **8080**: REST API (deprecated, will be removed in future versions)
 - **8081**: gRPC-Web proxy (Envoy) - **Use this for browser clients**
-- **9090**: gRPC server (native gRPC, for backend-to-backend communication)
+- **9090**: gRPC server (native gRPC, for backend-to-backend communication or direct gRPC clients)
+- **9091**: Prometheus metrics
 - **9901**: Envoy admin interface
 
 ## gRPC Services
