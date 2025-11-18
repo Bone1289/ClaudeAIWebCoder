@@ -13,8 +13,8 @@ export class CategoryReportsComponent implements OnInit {
   account: Account | null = null;
   accountId: string | null = null;
 
-  incomeReport: CategoryReport | null = null;
-  expenseReport: CategoryReport | null = null;
+  incomeReport: CategoryReport[] = [];
+  expenseReport: CategoryReport[] = [];
 
   selectedType: TransactionType = TransactionType.WITHDRAWAL;
   transactionTypes = TransactionType;
