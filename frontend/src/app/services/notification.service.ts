@@ -69,10 +69,12 @@ export class NotificationService {
       return;
     }
 
-    // EventSource doesn't support custom headers, so we need to pass token as query param or cookie
-    // For now, we'll rely on the cookie-based auth
+    // EventSource doesn't support custom headers, so we pass token as query parameter
+    // Backend JwtAuthenticationFilter has been updated to accept tokens from query params for SSE endpoints
+    const sseUrlWithToken = `${this.sseUrl}?token=${encodeURIComponent(token)}`;
+
     this.ngZone.runOutsideAngular(() => {
-      this.eventSource = new EventSource(this.sseUrl, { withCredentials: true });
+      this.eventSource = new EventSource(sseUrlWithToken);
 
       this.eventSource.addEventListener('connected', (event: MessageEvent) => {
         this.ngZone.run(() => {
