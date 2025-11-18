@@ -123,7 +123,7 @@ services:
     image: prom/prometheus:latest
     container_name: virtualbank-prometheus
     ports:
-      - "9090:9090"
+      - "9091:9090"
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
