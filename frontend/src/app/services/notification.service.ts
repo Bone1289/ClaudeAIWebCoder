@@ -1,8 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { Observable, Subject, timer, EMPTY } from 'rxjs';
+import { tap, map, switchMap, catchError } from 'rxjs/operators';
+import { GrpcClientService } from '../grpc/grpc-client.service';
 
 export interface Notification {
   id: string;
@@ -35,332 +34,354 @@ export interface ApiResponse<T> {
   providedIn: 'root'
 })
 export class NotificationService {
-  private apiUrl = `${environment.apiUrl}/notifications`;
-  private sseUrl = `${environment.apiUrl}/notifications/stream`;
-  private eventSource: EventSource | null = null;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 2000; // 2 seconds
-
+  private readonly SERVICE_NAME = 'com.example.demo.grpc.NotificationService';
+  private readonly POLL_INTERVAL = 10000; // Poll every 10 seconds
+  
   private unreadCountSubject = new Subject<number>();
   private notificationsUpdatedSubject = new Subject<void>();
   private newNotificationSubject = new Subject<Notification>();
+  private pollingSubscription: any = null;
 
   unreadCount$ = this.unreadCountSubject.asObservable();
   notificationsUpdated$ = this.notificationsUpdatedSubject.asObservable();
   newNotification$ = this.newNotificationSubject.asObservable();
 
   constructor(
-    private http: HttpClient,
+    private grpcClient: GrpcClientService,
     private ngZone: NgZone
   ) {
-    // SSE disabled - migrating to gRPC streaming
-    // TODO: Implement gRPC streaming for real-time notifications
-    // this.connectToSSE();
+    // Start polling for real-time updates
+    this.startPolling();
   }
 
   /**
-   * Connect to Server-Sent Events (SSE) stream for real-time notifications
+   * Start polling for new notifications (replaces SSE)
    */
-  private connectToSSE(): void {
-    // Get auth token from localStorage (check both possible keys)
-    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
-    if (!token) {
-      console.warn('No auth token found, cannot connect to SSE');
-      return;
-    }
-
-    // EventSource doesn't support custom headers, so we need to pass token as query param or cookie
-    // For now, we'll rely on the cookie-based auth
+  private startPolling(): void {
     this.ngZone.runOutsideAngular(() => {
-      this.eventSource = new EventSource(this.sseUrl, { withCredentials: true });
-
-      this.eventSource.addEventListener('connected', (event: MessageEvent) => {
-        this.ngZone.run(() => {
-          console.log('SSE connected:', event.data);
-          this.reconnectAttempts = 0; // Reset reconnect counter on successful connection
-        });
-      });
-
-      this.eventSource.addEventListener('notification', (event: MessageEvent) => {
-        this.ngZone.run(() => {
-          try {
-            const notification: Notification = JSON.parse(event.data);
-            console.log('📩 SSE notification event received:', notification);
-            this.newNotificationSubject.next(notification);
-            this.notificationsUpdatedSubject.next();
-            // Note: Don't call refreshUnreadCount() here - backend sends 'unread-count' event separately
-          } catch (error) {
-            console.error('❌ Error parsing notification:', error);
-          }
-        });
-      });
-
-      this.eventSource.addEventListener('unread-count', (event: MessageEvent) => {
-        this.ngZone.run(() => {
-          try {
-            const data = JSON.parse(event.data);
-            console.log('🔢 SSE unread-count event received:', data.unreadCount);
-            this.unreadCountSubject.next(data.unreadCount);
-          } catch (error) {
-            console.error('❌ Error parsing unread count:', error);
-          }
-        });
-      });
-
-      this.eventSource.addEventListener('heartbeat', (event: MessageEvent) => {
-        // Heartbeat received - connection is alive
-        console.debug('SSE heartbeat received');
-      });
-
-      this.eventSource.onerror = (error) => {
-        this.ngZone.run(() => {
-          console.error('SSE connection error:', error);
-          this.handleSSEError();
-        });
-      };
+      this.pollingSubscription = timer(0, this.POLL_INTERVAL)
+        .pipe(
+          switchMap(() => this.refreshUnreadCount()),
+          catchError(error => {
+            console.error('Polling error:', error);
+            return EMPTY;
+          })
+        )
+        .subscribe();
     });
   }
 
   /**
-   * Handle SSE connection errors and attempt reconnection
+   * Stop polling
    */
-  private handleSSEError(): void {
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
-    }
-
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      const delay = this.reconnectDelay * this.reconnectAttempts;
-      console.log(`Attempting to reconnect SSE (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms...`);
-
-      setTimeout(() => {
-        this.connectToSSE();
-      }, delay);
-    } else {
-      console.error('Max SSE reconnect attempts reached. Please refresh the page.');
+  private stopPolling(): void {
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+      this.pollingSubscription = null;
     }
   }
 
   /**
-   * Disconnect from SSE stream (call on logout or service destroy)
+   * Disconnect from notification updates (call on logout)
    */
   disconnectSSE(): void {
-    // SSE disabled - no action needed
-    // TODO: Implement gRPC streaming disconnect
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
-      console.log('SSE connection closed');
-    }
+    this.stopPolling();
+    console.log('Notification polling stopped');
   }
 
   /**
-   * Reconnect to SSE stream (call after login)
+   * Reconnect to notification updates (call after login)
    */
   reconnectSSE(): void {
-    // SSE disabled - no action needed
-    // TODO: Implement gRPC streaming reconnect
-    // this.disconnectSSE();
-    // this.reconnectAttempts = 0;
-    // this.connectToSSE();
+    this.stopPolling();
+    this.startPolling();
+    console.log('Notification polling started');
   }
 
   /**
    * Get all notifications for current user (paginated)
    */
   getNotifications(page: number = 0, size: number = 20): Observable<ApiResponse<PagedNotifications>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+    const grpcRequest = {
+      pagination: {
+        page: page,
+        size: size,
+        sort_by: 'createdAt',
+        sort_direction: 'DESC'
+      }
+    };
 
-    return this.http.get<ApiResponse<PagedNotifications>>(this.apiUrl, { params });
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'GetAllNotifications',
+      grpcRequest
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: {
+          content: response.notifications ? response.notifications.map((n: any) => this.mapGrpcNotificationToModel(n)) : [],
+          totalElements: response.pagination?.total_elements || 0,
+          totalPages: response.pagination?.total_pages || 0,
+          size: response.pagination?.size || size,
+          number: response.pagination?.page || page
+        }
+      }))
+    );
   }
 
   /**
    * Get unread notifications
    */
   getUnreadNotifications(page: number = 0, size: number = 20): Observable<ApiResponse<PagedNotifications>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+    const grpcRequest = {
+      page: page,
+      size: size,
+      sort_by: 'createdAt',
+      sort_direction: 'DESC'
+    };
 
-    return this.http.get<ApiResponse<PagedNotifications>>(`${this.apiUrl}/unread`, { params });
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'GetUnreadNotifications',
+      grpcRequest
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: {
+          content: response.notifications ? response.notifications.map((n: any) => this.mapGrpcNotificationToModel(n)) : [],
+          totalElements: response.pagination?.total_elements || 0,
+          totalPages: response.pagination?.total_pages || 0,
+          size: response.pagination?.size || size,
+          number: response.pagination?.page || page
+        }
+      }))
+    );
   }
 
   /**
    * Get read notifications
    */
   getReadNotifications(page: number = 0, size: number = 20): Observable<ApiResponse<PagedNotifications>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+    const grpcRequest = {
+      page: page,
+      size: size,
+      sort_by: 'createdAt',
+      sort_direction: 'DESC'
+    };
 
-    return this.http.get<ApiResponse<PagedNotifications>>(`${this.apiUrl}/read`, { params });
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'GetReadNotifications',
+      grpcRequest
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: {
+          content: response.notifications ? response.notifications.map((n: any) => this.mapGrpcNotificationToModel(n)) : [],
+          totalElements: response.pagination?.total_elements || 0,
+          totalPages: response.pagination?.total_pages || 0,
+          size: response.pagination?.size || size,
+          number: response.pagination?.page || page
+        }
+      }))
+    );
   }
 
   /**
    * Get recent notifications (last N days)
    */
-  getRecentNotifications(days: number = 7, page: number = 0, size: number = 20): Observable<ApiResponse<PagedNotifications>> {
-    const params = new HttpParams()
-      .set('days', days.toString())
-      .set('page', page.toString())
-      .set('size', size.toString());
+  getRecentNotifications(days: number = 7): Observable<ApiResponse<Notification[]>> {
+    const grpcRequest = {
+      days: days
+    };
 
-    return this.http.get<ApiResponse<PagedNotifications>>(`${this.apiUrl}/recent`, { params });
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'GetRecentNotifications',
+      grpcRequest
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.notifications ? response.notifications.map((n: any) => this.mapGrpcNotificationToModel(n)) : []
+      }))
+    );
   }
 
   /**
    * Get unread notification count
    */
-  getUnreadCount(): Observable<ApiResponse<number>> {
-    return this.http.get<ApiResponse<number>>(`${this.apiUrl}/unread-count`);
+  getUnreadCount(): Observable<number> {
+    return this.grpcClient.call<{}, any>(
+      this.SERVICE_NAME,
+      'GetUnreadCount',
+      {}
+    ).pipe(
+      map(response => Number(response.count || 0))
+    );
   }
 
   /**
-   * Get a specific notification by ID
+   * Refresh unread count and notify subscribers
    */
-  getNotification(id: string): Observable<ApiResponse<Notification>> {
-    return this.http.get<ApiResponse<Notification>>(`${this.apiUrl}/${id}`);
+  refreshUnreadCount(): Observable<void> {
+    return this.getUnreadCount().pipe(
+      tap(count => {
+        this.ngZone.run(() => {
+          this.unreadCountSubject.next(count);
+        });
+      }),
+      map(() => void 0)
+    );
   }
 
   /**
    * Mark notification as read
    */
-  markAsRead(id: string): Observable<ApiResponse<Notification>> {
-    return this.http.put<ApiResponse<Notification>>(`${this.apiUrl}/${id}/read`, {})
-      .pipe(
-        tap(() => {
-          this.refreshUnreadCount();
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  markAsRead(notificationId: string): Observable<ApiResponse<Notification>> {
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'MarkAsRead',
+      { id: notificationId }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.notification ? this.mapGrpcNotificationToModel(response.notification) : {} as Notification
+      } as ApiResponse<Notification>)),
+      tap(() => {
+        this.notificationsUpdatedSubject.next();
+        this.refreshUnreadCount().subscribe();
+      })
+    );
   }
 
   /**
    * Mark notification as unread
    */
-  markAsUnread(id: string): Observable<ApiResponse<Notification>> {
-    return this.http.put<ApiResponse<Notification>>(`${this.apiUrl}/${id}/unread`, {})
-      .pipe(
-        tap(() => {
-          this.refreshUnreadCount();
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  markAsUnread(notificationId: string): Observable<ApiResponse<Notification>> {
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'MarkAsUnread',
+      { id: notificationId }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.notification ? this.mapGrpcNotificationToModel(response.notification) : {} as Notification
+      } as ApiResponse<Notification>)),
+      tap(() => {
+        this.notificationsUpdatedSubject.next();
+        this.refreshUnreadCount().subscribe();
+      })
+    );
   }
 
   /**
    * Mark all notifications as read
    */
-  markAllAsRead(): Observable<ApiResponse<number>> {
-    return this.http.put<ApiResponse<number>>(`${this.apiUrl}/mark-all-read`, {})
-      .pipe(
-        tap(() => {
-          this.refreshUnreadCount();
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  markAllAsRead(): Observable<ApiResponse<{count: number}>> {
+    return this.grpcClient.call<{}, any>(
+      this.SERVICE_NAME,
+      'MarkAllAsRead',
+      {}
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: { count: response.updated_count || 0 }
+      })),
+      tap(() => {
+        this.notificationsUpdatedSubject.next();
+        this.refreshUnreadCount().subscribe();
+      })
+    );
   }
 
   /**
    * Delete a notification
    */
-  deleteNotification(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`)
-      .pipe(
-        tap(() => {
-          this.refreshUnreadCount();
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  deleteNotification(notificationId: string): Observable<ApiResponse<void>> {
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'DeleteNotification',
+      { id: notificationId }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: undefined
+      })),
+      tap(() => {
+        this.notificationsUpdatedSubject.next();
+        this.refreshUnreadCount().subscribe();
+      })
+    );
   }
 
   /**
    * Delete all notifications
    */
-  deleteAllNotifications(): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/all`)
-      .pipe(
-        tap(() => {
-          this.refreshUnreadCount();
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  deleteAllNotifications(): Observable<ApiResponse<{count: number}>> {
+    return this.grpcClient.call<{}, any>(
+      this.SERVICE_NAME,
+      'DeleteAllNotifications',
+      {}
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: { count: response.deleted_count || 0 }
+      })),
+      tap(() => {
+        this.notificationsUpdatedSubject.next();
+        this.refreshUnreadCount().subscribe();
+      })
+    );
   }
 
   /**
-   * Delete old read notifications (cleanup)
+   * Clean up old notifications (older than N days)
    */
-  cleanupOldNotifications(daysOld: number = 30): Observable<ApiResponse<number>> {
-    const params = new HttpParams().set('daysOld', daysOld.toString());
+  cleanupOldNotifications(daysOld: number = 30): Observable<ApiResponse<{count: number}>> {
+    const grpcRequest = {
+      days_old: daysOld
+    };
 
-    return this.http.delete<ApiResponse<number>>(`${this.apiUrl}/cleanup`, { params })
-      .pipe(
-        tap(() => {
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'CleanupOldNotifications',
+      grpcRequest
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: { count: response.deleted_count || 0 }
+      })),
+      tap(() => {
+        this.notificationsUpdatedSubject.next();
+      })
+    );
   }
 
   /**
-   * Manually refresh unread count
+   * Map gRPC notification response to Angular model
    */
-  refreshUnreadCount(): void {
-    this.getUnreadCount().subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.unreadCountSubject.next(response.data);
-        }
-      },
-      error: (error) => {
-        console.error('Error refreshing unread count:', error);
-      }
-    });
-  }
-
-  /**
-   * Get priority color class
-   */
-  getPriorityColor(priority: string): string {
-    switch (priority) {
-      case 'URGENT':
-        return 'text-red-600';
-      case 'HIGH':
-        return 'text-orange-600';
-      case 'MEDIUM':
-        return 'text-yellow-600';
-      case 'LOW':
-        return 'text-green-600';
-      default:
-        return 'text-gray-600';
-    }
-  }
-
-  /**
-   * Get notification type icon
-   */
-  getTypeIcon(type: string): string {
-    switch (type) {
-      case 'ACCOUNT_CREATED':
-        return '🎉';
-      case 'TRANSACTION_COMPLETED':
-        return '✅';
-      case 'TRANSACTION_FAILED':
-        return '❌';
-      case 'SECURITY_ALERT':
-        return '🔒';
-      case 'SYSTEM_ANNOUNCEMENT':
-        return '📢';
-      case 'ACCOUNT_SUSPENDED':
-        return '⚠️';
-      case 'ACCOUNT_ACTIVATED':
-        return '✅';
-      default:
-        return '📬';
-    }
+  private mapGrpcNotificationToModel(grpcNotification: any): Notification {
+    return {
+      id: grpcNotification.id,
+      userId: grpcNotification.user_id,
+      type: grpcNotification.type,
+      channel: grpcNotification.channel,
+      title: grpcNotification.title,
+      message: grpcNotification.message,
+      priority: grpcNotification.priority,
+      read: grpcNotification.read,
+      createdAt: grpcNotification.created_at || new Date().toISOString(),
+      readAt: grpcNotification.read_at
+    };
   }
 }
