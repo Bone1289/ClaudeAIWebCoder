@@ -6,6 +6,8 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,14 +20,19 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
- * Kafka configuration for async notification processing
+ * Kafka configuration for async notification processing using Java 21 Virtual Threads
  * Creates topics, producers, and consumers for the notification system
+ * Virtual Threads enable massive concurrency for Kafka consumers without thread pool limitations
  */
 @Configuration
 @EnableKafka
 public class KafkaConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(KafkaConfig.class);
 
     @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
     private String bootstrapServers;
@@ -102,15 +109,29 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(config);
     }
 
+    /**
+     * Virtual Thread executor for Kafka notification consumers
+     * Provides unlimited scalability for handling high-volume notification processing
+     */
+    @Bean
+    public Executor kafkaNotificationExecutor() {
+        Executor executor = Executors.newVirtualThreadPerTaskExecutor();
+        log.info("Kafka notification executor initialized with Virtual Threads");
+        return executor;
+    }
+
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Notification> notificationKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Notification> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(notificationConsumerFactory());
-        factory.setConcurrency(3); // 3 concurrent consumers
+        factory.setConcurrency(10); // Increased from 3 - Virtual Threads enable higher concurrency
         factory.getContainerProperties().setAckMode(
                 org.springframework.kafka.listener.ContainerProperties.AckMode.MANUAL_IMMEDIATE
         );
+        // Use Virtual Threads for listener execution
+        factory.getContainerProperties().setListenerTaskExecutor(kafkaNotificationExecutor());
+        log.info("Notification Kafka listener factory configured with Virtual Threads (concurrency: 10)");
         return factory;
     }
 
@@ -146,15 +167,29 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(config);
     }
 
+    /**
+     * Virtual Thread executor for Kafka email consumers
+     * Provides unlimited scalability for handling high-volume email processing
+     */
+    @Bean
+    public Executor kafkaEmailExecutor() {
+        Executor executor = Executors.newVirtualThreadPerTaskExecutor();
+        log.info("Kafka email executor initialized with Virtual Threads");
+        return executor;
+    }
+
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> emailKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(emailConsumerFactory());
-        factory.setConcurrency(2); // 2 concurrent email processors
+        factory.setConcurrency(5); // Increased from 2 - Virtual Threads enable higher concurrency
         factory.getContainerProperties().setAckMode(
                 org.springframework.kafka.listener.ContainerProperties.AckMode.MANUAL_IMMEDIATE
         );
+        // Use Virtual Threads for listener execution
+        factory.getContainerProperties().setListenerTaskExecutor(kafkaEmailExecutor());
+        log.info("Email Kafka listener factory configured with Virtual Threads (concurrency: 5)");
         return factory;
     }
 }

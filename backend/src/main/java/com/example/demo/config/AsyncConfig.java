@@ -6,14 +6,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Configuration for asynchronous task execution and scheduled tasks
+ * Configuration for asynchronous task execution and scheduled tasks using Java 21 Virtual Threads
  * Enables @Async annotation for non-blocking operations like email sending
  * Enables @Scheduled annotation for periodic tasks like SSE heartbeats
+ *
+ * Virtual Threads provide lightweight, scalable concurrency without the overhead of traditional thread pools
  */
 @Configuration
 @EnableAsync
@@ -23,40 +27,36 @@ public class AsyncConfig {
     private static final Logger log = LoggerFactory.getLogger(AsyncConfig.class);
 
     /**
-     * Thread pool executor for async email sending
+     * Virtual thread executor for async email sending
+     * Uses Java 21 Virtual Threads - extremely lightweight, millions can be created
+     * No need for pool sizes or queue capacities
      */
     @Bean(name = "emailTaskExecutor")
     public Executor emailTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(5);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("email-async-");
-        executor.setRejectedExecutionHandler((r, executor1) ->
-                log.warn("Email task rejected - queue full. Task: {}", r.toString())
-        );
-        executor.initialize();
+        ThreadFactory factory = Thread.ofVirtual()
+                .name("email-virtual-", 0)
+                .factory();
 
-        log.info("Email task executor initialized: corePoolSize=2, maxPoolSize=5, queueCapacity=100");
+        Executor executor = Executors.newThreadPerTaskExecutor(factory);
+
+        log.info("Email task executor initialized with Virtual Threads (unlimited scalability)");
         return executor;
     }
 
     /**
-     * Thread pool executor for general async tasks
+     * Virtual thread executor for general async tasks
+     * Uses Java 21 Virtual Threads - extremely lightweight, millions can be created
+     * No need for pool sizes or queue capacities
      */
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(200);
-        executor.setThreadNamePrefix("async-");
-        executor.setRejectedExecutionHandler((r, executor1) ->
-                log.warn("Async task rejected - queue full. Task: {}", r.toString())
-        );
-        executor.initialize();
+        ThreadFactory factory = Thread.ofVirtual()
+                .name("async-virtual-", 0)
+                .factory();
 
-        log.info("General task executor initialized: corePoolSize=5, maxPoolSize=10, queueCapacity=200");
+        Executor executor = Executors.newThreadPerTaskExecutor(factory);
+
+        log.info("General task executor initialized with Virtual Threads (unlimited scalability)");
         return executor;
     }
 }
