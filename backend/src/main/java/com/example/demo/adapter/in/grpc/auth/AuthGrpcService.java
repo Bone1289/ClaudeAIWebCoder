@@ -49,8 +49,16 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
             );
 
             // Log the registration
-            auditService.logAudit(user.getId(), AuditLog.AuditAction.USER_REGISTERED,
-                    "User registered via gRPC: " + user.getEmail());
+            AuditLog auditLog = AuditLog.builder()
+                    .action(AuditLog.AuditAction.USER_REGISTERED)
+                    .userId(user.getId().getMostSignificantBits())
+                    .username(user.getUsername())
+                    .entityType("User")
+                    .entityId(user.getId().toString())
+                    .details("User registered via gRPC: " + user.getEmail())
+                    .status(AuditLog.AuditStatus.SUCCESS)
+                    .build();
+            auditService.logAsync(auditLog);
 
             // Build response
             SignUpResponse response = SignUpResponse.newBuilder()
@@ -87,8 +95,16 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
             String token = jwtUtil.generateToken(user);
 
             // Log the login
-            auditService.logAudit(user.getId(), AuditLog.AuditAction.LOGIN,
-                    "User logged in via gRPC: " + user.getEmail());
+            AuditLog loginAuditLog = AuditLog.builder()
+                    .action(AuditLog.AuditAction.LOGIN)
+                    .userId(user.getId().getMostSignificantBits())
+                    .username(user.getUsername())
+                    .entityType("User")
+                    .entityId(user.getId().toString())
+                    .details("User logged in via gRPC: " + user.getEmail())
+                    .status(AuditLog.AuditStatus.SUCCESS)
+                    .build();
+            auditService.logAsync(loginAuditLog);
 
             // Build response
             LoginResponse response = LoginResponse.newBuilder()
@@ -152,8 +168,16 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
             logger.info("gRPC Logout request for user: {}", user.getId());
 
             // Log the logout
-            auditService.logAudit(user.getId(), AuditLog.AuditAction.LOGOUT,
-                    "User logged out via gRPC: " + user.getEmail());
+            AuditLog logoutAuditLog = AuditLog.builder()
+                    .action(AuditLog.AuditAction.LOGOUT)
+                    .userId(user.getId().getMostSignificantBits())
+                    .username(user.getUsername())
+                    .entityType("User")
+                    .entityId(user.getId().toString())
+                    .details("User logged out via gRPC: " + user.getEmail())
+                    .status(AuditLog.AuditStatus.SUCCESS)
+                    .build();
+            auditService.logAsync(logoutAuditLog);
 
             // Build response
             LogoutResponse response = LogoutResponse.newBuilder()

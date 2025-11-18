@@ -409,7 +409,7 @@ public class BankingGrpcService extends BankingServiceGrpc.BankingServiceImplBas
                     ZoneOffset.UTC
             );
 
-            var statement = reportingService.generateAccountStatement(
+            var statement = reportingService.generateStatement(
                     UUID.fromString(request.getAccountId()),
                     startDate,
                     endDate
@@ -448,19 +448,12 @@ public class BankingGrpcService extends BankingServiceGrpc.BankingServiceImplBas
         try {
             logger.info("gRPC GetCategoryReport request for account: {}", request.getAccountId());
 
-            LocalDateTime startDate = LocalDateTime.ofInstant(
-                    Instant.ofEpochSecond(request.getStartDate().getSeconds()),
-                    ZoneOffset.UTC
-            );
-            LocalDateTime endDate = LocalDateTime.ofInstant(
-                    Instant.ofEpochSecond(request.getEndDate().getSeconds()),
-                    ZoneOffset.UTC
-            );
-
+            // Note: The current implementation only supports Transaction.TransactionType
+            // For now, we default to EXPENSE type (most common use case for category reports)
+            // The date range in the request is currently ignored by the service
             var report = reportingService.generateCategoryReport(
                     UUID.fromString(request.getAccountId()),
-                    startDate,
-                    endDate
+                    Transaction.TransactionType.WITHDRAWAL  // WITHDRAWAL represents expenses
             );
 
             GetCategoryReportResponse response = GetCategoryReportResponse.newBuilder()
