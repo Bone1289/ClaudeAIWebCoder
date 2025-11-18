@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package com.example.demo.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.example.demo.grpc.admin";
+option java_outer_classname = "AdminServiceProto";
+
+import "common.proto";
+import "banking_service.proto";
+
+// Admin Service (requires ADMIN role)
+service AdminService {
+  // User Management
+  rpc GetAllUsers(Empty) returns (GetAllUsersResponse);
+  rpc GetUser(IdRequest) returns (GetUserResponse);
+  rpc SuspendUser(IdRequest) returns (SuspendUserResponse);
+  rpc ActivateUser(IdRequest) returns (ActivateUserResponse);
+  rpc LockUser(IdRequest) returns (LockUserResponse);
+  rpc DeleteUser(IdRequest) returns (DeleteUserResponse);
+
+  // Account Management
+  rpc GetAllAdminAccounts(Empty) returns (GetAllAdminAccountsResponse);
+  rpc GetAdminAccount(IdRequest) returns (GetAdminAccountResponse);
+  rpc GetUserAccounts(IdRequest) returns (GetUserAccountsResponse);
+}
+
+// User Management Messages
+message GetAllUsersResponse {
+  bool success = 1;
+  string message = 2;
+  repeated UserResponse users = 3;
+}
+
+message GetUserResponse {
+  bool success = 1;
+  string message = 2;
+  UserResponse user = 3;
+}
+
+message SuspendUserResponse {
+  bool success = 1;
+  string message = 2;
+  UserResponse user = 3;
+}
+
+message ActivateUserResponse {
+  bool success = 1;
+  string message = 2;
+  UserResponse user = 3;
+}
+
+message LockUserResponse {
+  bool success = 1;
+  string message = 2;
+  UserResponse user = 3;
+}
+
+message DeleteUserResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Account Management Messages
+message GetAllAdminAccountsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated AccountResponse accounts = 3;
+}
+
+message GetAdminAccountResponse {
+  bool success = 1;
+  string message = 2;
+  AccountResponse account = 3;
+}
+
+message GetUserAccountsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated AccountResponse accounts = 3;
+}

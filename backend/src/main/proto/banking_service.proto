@@ -1,0 +1,194 @@
+syntax = "proto3";
+
+package com.example.demo.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.example.demo.grpc.banking";
+option java_outer_classname = "BankingServiceProto";
+
+import "common.proto";
+import "google/protobuf/timestamp.proto";
+
+// Banking Service
+service BankingService {
+  // Account Management
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
+  rpc GetAccount(IdRequest) returns (GetAccountResponse);
+  rpc GetAllAccounts(Empty) returns (GetAllAccountsResponse);
+  rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse);
+  rpc DeleteAccount(IdRequest) returns (DeleteAccountResponse);
+
+  // Transaction Operations
+  rpc Deposit(TransactionRequest) returns (TransactionResponse);
+  rpc Withdraw(TransactionRequest) returns (TransactionResponse);
+  rpc Transfer(TransferRequest) returns (TransferResponse);
+
+  // Transaction History
+  rpc GetAccountTransactions(GetAccountTransactionsRequest) returns (GetAccountTransactionsResponse);
+  rpc GetAllTransactions(PaginationRequest) returns (GetAllTransactionsResponse);
+
+  // Reports
+  rpc GetAccountStatement(GetAccountStatementRequest) returns (GetAccountStatementResponse);
+  rpc GetCategoryReport(GetCategoryReportRequest) returns (GetCategoryReportResponse);
+}
+
+// Account Messages
+message CreateAccountRequest {
+  string first_name = 1;
+  string last_name = 2;
+  string nationality = 3;
+  string account_type = 4; // SAVINGS, CHECKING, etc.
+}
+
+message CreateAccountResponse {
+  bool success = 1;
+  string message = 2;
+  AccountResponse account = 3;
+}
+
+message AccountResponse {
+  string id = 1;
+  string user_id = 2;
+  string account_number = 3;
+  string first_name = 4;
+  string last_name = 5;
+  string nationality = 6;
+  string account_type = 7;
+  string balance = 8; // String representation of BigDecimal
+  string status = 9; // ACTIVE, SUSPENDED, CLOSED
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message GetAccountResponse {
+  bool success = 1;
+  string message = 2;
+  AccountResponse account = 3;
+}
+
+message GetAllAccountsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated AccountResponse accounts = 3;
+}
+
+message UpdateAccountRequest {
+  string id = 1;
+  string account_type = 2;
+}
+
+message UpdateAccountResponse {
+  bool success = 1;
+  string message = 2;
+  AccountResponse account = 3;
+}
+
+message DeleteAccountResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Transaction Messages
+message TransactionRequest {
+  string account_id = 1;
+  string amount = 2; // String representation of BigDecimal
+  string description = 3;
+  string category_id = 4; // Optional
+}
+
+message TransactionResponse {
+  bool success = 1;
+  string message = 2;
+  TransactionDetail transaction = 3;
+  AccountResponse account = 4;
+}
+
+message TransactionDetail {
+  string id = 1;
+  string account_id = 2;
+  string type = 3; // DEPOSIT, WITHDRAWAL, TRANSFER_IN, TRANSFER_OUT
+  string amount = 4;
+  string balance_after = 5;
+  string description = 6;
+  string category_id = 7;
+  string related_account_id = 8; // For transfers
+  google.protobuf.Timestamp timestamp = 9;
+}
+
+message TransferRequest {
+  string from_account_id = 1;
+  string to_account_id = 2;
+  string amount = 3;
+  string description = 4;
+}
+
+message TransferResponse {
+  bool success = 1;
+  string message = 2;
+  TransactionDetail from_transaction = 3;
+  TransactionDetail to_transaction = 4;
+  AccountResponse from_account = 5;
+  AccountResponse to_account = 6;
+}
+
+// Transaction History Messages
+message GetAccountTransactionsRequest {
+  string account_id = 1;
+  PaginationRequest pagination = 2;
+}
+
+message GetAccountTransactionsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated TransactionDetail transactions = 3;
+  PaginationMetadata pagination = 4;
+}
+
+message GetAllTransactionsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated TransactionDetail transactions = 3;
+  PaginationMetadata pagination = 4;
+}
+
+// Report Messages
+message GetAccountStatementRequest {
+  string account_id = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+
+message GetAccountStatementResponse {
+  bool success = 1;
+  string message = 2;
+  AccountResponse account = 3;
+  repeated TransactionDetail transactions = 4;
+  StatementSummary summary = 5;
+}
+
+message StatementSummary {
+  string opening_balance = 1;
+  string closing_balance = 2;
+  string total_deposits = 3;
+  string total_withdrawals = 4;
+  int32 transaction_count = 5;
+}
+
+message GetCategoryReportRequest {
+  string account_id = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+
+message GetCategoryReportResponse {
+  bool success = 1;
+  string message = 2;
+  repeated CategorySpending categories = 3;
+}
+
+message CategorySpending {
+  string category_id = 1;
+  string category_name = 2;
+  string total_amount = 3;
+  int32 transaction_count = 4;
+  double percentage = 5;
+}

@@ -25,7 +25,7 @@ services:
       - virtualbank-network
     restart: unless-stopped
 
-  # Spring Boot Backend
+  # Spring Boot Backend (now with gRPC)
   backend:
     build:
       context: ./backend
@@ -41,8 +41,10 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_KAFKA_CONSUMER_GROUP_ID: virtualbank-notifications
       SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET: earliest
+      GRPC_SERVER_PORT: 9090
     ports:
-      - "8080:8080"
+      - "8080:8080"  # REST API (deprecated, will be removed)
+      - "9090:9090"  # gRPC server
     depends_on:
       mysql:
         condition: service_healthy
@@ -54,6 +56,22 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+    networks:
+      - virtualbank-network
+    restart: unless-stopped
+
+  # Envoy Proxy - gRPC-Web support for browser clients
+  envoy:
+    image: envoyproxy/envoy:v1.28-latest
+    container_name: virtualbank-envoy
+    ports:
+      - "8081:8080"  # gRPC-Web proxy
+      - "9901:9901"  # Envoy admin interface
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+    command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml
+    depends_on:
+      - backend
     networks:
       - virtualbank-network
     restart: unless-stopped
