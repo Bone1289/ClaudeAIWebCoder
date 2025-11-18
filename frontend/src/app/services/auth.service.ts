@@ -141,9 +141,9 @@ export class AuthService {
           this.setCurrentUser(user);
           this.currentUserSubject.next(user);
 
-          // Connect to gRPC streaming for real-time notifications
+          // Connect to SSE for real-time notifications
           setTimeout(() => {
-            this.getNotificationService().reconnectStream();
+            this.getNotificationService().reconnectSSE();
           }, 100);
         }
       }),
@@ -152,6 +152,7 @@ export class AuthService {
         message: response.message,
         data: response.user ? {
           token: response.token,
+          type: 'Bearer',
           user: this.mapGrpcUserToResponse(response.user)
         } : null
       }))
@@ -162,8 +163,8 @@ export class AuthService {
    * Logout the current user
    */
   logout(): void {
-    // Disconnect gRPC stream before clearing auth data
-    this.getNotificationService().disconnectStream();
+    // Disconnect SSE before clearing auth data
+    this.getNotificationService().disconnectSSE();
 
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
