@@ -53,17 +53,13 @@ export class LoginComponent {
     this.loading = true;
 
     this.authService.login(this.loginForm.value).subscribe({
-      next: (response) => {
-        if (response.success) {
-          // Login successful, navigate to return URL or dashboard
-          this.router.navigate([this.returnUrl]);
-        } else {
-          this.errorMessage = response.message || 'Login failed';
-          this.loading = false;
-        }
+      next: (authData) => {
+        // Login successful - authData contains { token, user }
+        // Navigate to return URL or dashboard
+        this.router.navigate([this.returnUrl]);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'An error occurred during login';
+        this.errorMessage = error.message || 'An error occurred during login';
         this.loading = false;
       }
     });

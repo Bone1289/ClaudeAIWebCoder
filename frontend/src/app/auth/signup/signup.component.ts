@@ -72,19 +72,16 @@ export class SignUpComponent {
     const { confirmPassword, ...signUpRequest } = this.signUpForm.value;
 
     this.authService.signUp(signUpRequest).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.successMessage = 'Account created successfully! Redirecting to login...';
-          setTimeout(() => {
-            this.router.navigate(['/auth/login']);
-          }, 2000);
-        } else {
-          this.errorMessage = response.message || 'Sign up failed';
-          this.loading = false;
-        }
+      next: (authData) => {
+        // Sign up successful - authData contains { token, user }
+        // User is now logged in, redirect to banking dashboard
+        this.successMessage = 'Account created successfully! Redirecting...';
+        setTimeout(() => {
+          this.router.navigate(['/banking']);
+        }, 1500);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'An error occurred during sign up';
+        this.errorMessage = error.message || 'An error occurred during sign up';
         this.loading = false;
       }
     });

@@ -5,6 +5,7 @@ import graphql.scalars.ExtendedScalars;
 import graphql.schema.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.graphql.execution.RuntimeWiringConfigurer;
 
 import java.time.LocalDateTime;
@@ -19,8 +20,10 @@ public class GraphQLConfig {
     /**
      * Configure custom scalars for GraphQL.
      * Adds support for Date, DateTime, and Decimal types.
+     * Using @Order to ensure our custom scalars override any auto-configured ones.
      */
     @Bean
+    @Order(0) // Highest precedence to override auto-configuration
     public RuntimeWiringConfigurer runtimeWiringConfigurer() {
         return wiringBuilder -> wiringBuilder
                 .scalar(ExtendedScalars.Date)
