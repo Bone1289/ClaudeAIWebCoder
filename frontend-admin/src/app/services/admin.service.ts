@@ -1,52 +1,235 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { User, ApiResponse } from '../models/user.model';
 import { Account } from '../models/account.model';
+import { GrpcClientService } from '../grpc/grpc-client.service';
+import { GRPC_CONFIG } from '../grpc/grpc-client.config';
+
+interface GrpcUserResponse {
+  id: string;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  status: string;
+  account_non_locked: boolean;
+  created_at: string;
+  last_login?: string;
+}
+
+interface GrpcAccountResponse {
+  id: string;
+  account_number: string;
+  first_name: string;
+  last_name: string;
+  nationality: string;
+  account_type: string;
+  balance: string;
+  status: string;
+  created_at: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminService {
-  private readonly API_URL = 'http://localhost:8080/api/admin';
+  private readonly SERVICE_NAME = GRPC_CONFIG.ADMIN_SERVICE;
 
-  constructor(private http: HttpClient) {}
+  constructor(private grpcClient: GrpcClientService) {}
 
-  // User management
+  // ========== User Management ==========
+
+  /**
+   * Get all users
+   */
   getAllUsers(): Observable<ApiResponse<User[]>> {
-    return this.http.get<ApiResponse<User[]>>(`${this.API_URL}/users`);
+    return this.grpcClient.call<{}, any>(
+      this.SERVICE_NAME,
+      'GetAllUsers',
+      {}
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.users ? response.users.map((u: any) => this.mapGrpcUserToModel(u)) : []
+      }))
+    );
   }
 
+  /**
+   * Get user by ID
+   */
   getUserById(id: string): Observable<ApiResponse<User>> {
-    return this.http.get<ApiResponse<User>>(`${this.API_URL}/users/${id}`);
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'GetUser',
+      { id }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.user ? this.mapGrpcUserToModel(response.user) : {} as User
+      } as ApiResponse<User>))
+    );
   }
 
+  /**
+   * Suspend user
+   */
   suspendUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.put<ApiResponse<User>>(`${this.API_URL}/users/${id}/suspend`, {});
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'SuspendUser',
+      { id }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.user ? this.mapGrpcUserToModel(response.user) : {} as User
+      } as ApiResponse<User>))
+    );
   }
 
+  /**
+   * Activate user
+   */
   activateUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.put<ApiResponse<User>>(`${this.API_URL}/users/${id}/activate`, {});
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'ActivateUser',
+      { id }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.user ? this.mapGrpcUserToModel(response.user) : {} as User
+      } as ApiResponse<User>))
+    );
   }
 
+  /**
+   * Lock user
+   */
   lockUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.put<ApiResponse<User>>(`${this.API_URL}/users/${id}/lock`, {});
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'LockUser',
+      { id }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.user ? this.mapGrpcUserToModel(response.user) : {} as User
+      } as ApiResponse<User>))
+    );
   }
 
+  /**
+   * Delete user
+   */
   deleteUser(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API_URL}/users/${id}`);
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'DeleteUser',
+      { id }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: undefined
+      }))
+    );
   }
 
-  // Account management
+  // ========== Account Management ==========
+
+  /**
+   * Get all accounts (admin view)
+   */
   getAllAccounts(): Observable<ApiResponse<Account[]>> {
-    return this.http.get<ApiResponse<Account[]>>(`${this.API_URL}/accounts`);
+    return this.grpcClient.call<{}, any>(
+      this.SERVICE_NAME,
+      'GetAllAdminAccounts',
+      {}
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.accounts ? response.accounts.map((a: any) => this.mapGrpcAccountToModel(a)) : []
+      }))
+    );
   }
 
+  /**
+   * Get account by ID (admin view)
+   */
   getAccountById(id: string): Observable<ApiResponse<Account>> {
-    return this.http.get<ApiResponse<Account>>(`${this.API_URL}/accounts/${id}`);
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'GetAdminAccount',
+      { id }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.account ? this.mapGrpcAccountToModel(response.account) : {} as Account
+      } as ApiResponse<Account>))
+    );
   }
 
+  /**
+   * Get accounts by user ID
+   */
   getAccountsByUserId(userId: string): Observable<ApiResponse<Account[]>> {
-    return this.http.get<ApiResponse<Account[]>>(`${this.API_URL}/users/${userId}/accounts`);
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'GetUserAccounts',
+      { id: userId }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.accounts ? response.accounts.map((a: any) => this.mapGrpcAccountToModel(a)) : []
+      }))
+    );
+  }
+
+  // ========== Mapping Functions ==========
+
+  /**
+   * Map gRPC user response to Angular model
+   */
+  private mapGrpcUserToModel(grpcUser: GrpcUserResponse): User {
+    return {
+      id: grpcUser.id,
+      username: grpcUser.username,
+      email: grpcUser.email,
+      firstName: grpcUser.first_name,
+      lastName: grpcUser.last_name,
+      role: grpcUser.role,
+      status: grpcUser.status,
+      accountNonLocked: grpcUser.account_non_locked,
+      createdAt: grpcUser.created_at,
+      lastLogin: grpcUser.last_login
+    };
+  }
+
+  /**
+   * Map gRPC account response to Angular model
+   */
+  private mapGrpcAccountToModel(grpcAccount: GrpcAccountResponse): Account {
+    return {
+      id: grpcAccount.id,
+      accountNumber: grpcAccount.account_number,
+      firstName: grpcAccount.first_name,
+      lastName: grpcAccount.last_name,
+      nationality: grpcAccount.nationality,
+      accountType: grpcAccount.account_type,
+      balance: parseFloat(grpcAccount.balance),
+      status: grpcAccount.status,
+      createdAt: grpcAccount.created_at
+    };
   }
 }
