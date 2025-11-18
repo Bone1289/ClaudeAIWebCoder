@@ -3,7 +3,7 @@ package com.example.demo.adapter.in.web;
 import com.example.demo.application.ports.in.GetNotificationsUseCase;
 import com.example.demo.application.service.NotificationService;
 import com.example.demo.domain.notification.Notification;
-import com.example.demo.security.util.SecurityUtil;
+import com.example.demo.config.security.SecurityUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
