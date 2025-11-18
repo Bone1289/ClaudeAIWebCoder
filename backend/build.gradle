@@ -38,6 +38,11 @@ dependencies {
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
+    // GraphQL
+    implementation 'org.springframework.boot:spring-boot-starter-graphql'
+    implementation 'com.graphql-java:graphql-java-extended-scalars:21.0'
+    testImplementation 'org.springframework.graphql:spring-graphql-test'
+
     // Monitoring - Prometheus
     implementation 'io.micrometer:micrometer-registry-prometheus'
 

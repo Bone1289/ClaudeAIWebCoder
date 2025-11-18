@@ -59,6 +59,10 @@ public class SecurityConfig {
                         // Allow public access to actuator endpoints
                         .requestMatchers("/actuator/**").permitAll()
 
+                        // Allow GraphQL endpoint (authentication handled by resolvers with @PreAuthorize)
+                        .requestMatchers("/graphql").permitAll()
+                        .requestMatchers("/graphiql").permitAll() // GraphQL playground (for development)
+
                         // Require ADMIN role for admin endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 

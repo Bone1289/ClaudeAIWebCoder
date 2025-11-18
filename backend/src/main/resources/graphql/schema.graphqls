@@ -1,0 +1,323 @@
+# GraphQL Schema for Banking Application
+
+# ==================== Scalars ====================
+scalar Date
+scalar DateTime
+scalar Decimal
+
+# ==================== Enums ====================
+enum UserRole {
+    USER
+    ADMIN
+}
+
+enum UserStatus {
+    ACTIVE
+    SUSPENDED
+    LOCKED
+}
+
+enum AccountStatus {
+    ACTIVE
+    SUSPENDED
+    CLOSED
+}
+
+enum TransactionType {
+    DEPOSIT
+    WITHDRAWAL
+    TRANSFER_IN
+    TRANSFER_OUT
+}
+
+enum CategoryType {
+    INCOME
+    EXPENSE
+}
+
+enum NotificationType {
+    ACCOUNT_CREATED
+    TRANSACTION_COMPLETED
+    TRANSACTION_FAILED
+    SECURITY_ALERT
+    SYSTEM_NOTIFICATION
+    ACCOUNT_STATUS_CHANGED
+    LOW_BALANCE
+}
+
+enum NotificationChannel {
+    IN_APP
+    EMAIL
+    BOTH
+}
+
+enum NotificationPriority {
+    LOW
+    MEDIUM
+    HIGH
+    URGENT
+}
+
+# ==================== Types ====================
+
+type User {
+    id: ID!
+    email: String!
+    username: String!
+    firstName: String
+    lastName: String
+    role: UserRole!
+    status: UserStatus!
+    createdAt: DateTime!
+    updatedAt: DateTime
+}
+
+type AuthResponse {
+    token: String!
+    user: User!
+}
+
+type Account {
+    id: ID!
+    userId: ID!
+    accountNumber: String!
+    firstName: String!
+    lastName: String!
+    nationality: String
+    accountType: String!
+    balance: Decimal!
+    status: AccountStatus!
+    createdAt: DateTime!
+    updatedAt: DateTime
+    transactions: [Transaction!]
+}
+
+type Transaction {
+    id: ID!
+    accountId: ID!
+    type: TransactionType!
+    categoryId: ID
+    category: TransactionCategory
+    amount: Decimal!
+    balanceAfter: Decimal!
+    description: String
+    relatedAccountId: ID
+    createdAt: DateTime!
+}
+
+type TransactionCategory {
+    id: ID!
+    name: String!
+    description: String
+    type: CategoryType!
+    color: String
+    active: Boolean!
+    createdAt: DateTime!
+}
+
+type Notification {
+    id: ID!
+    userId: ID!
+    type: NotificationType!
+    channel: NotificationChannel!
+    title: String!
+    message: String!
+    priority: NotificationPriority!
+    read: Boolean!
+    createdAt: DateTime!
+    readAt: DateTime
+}
+
+type NotificationPage {
+    notifications: [Notification!]!
+    currentPage: Int!
+    totalPages: Int!
+    totalItems: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
+
+type AccountStatement {
+    account: Account!
+    startDate: Date!
+    endDate: Date!
+    transactions: [Transaction!]!
+    totalDeposits: Decimal!
+    totalWithdrawals: Decimal!
+    netChange: Decimal!
+    startingBalance: Decimal!
+    endingBalance: Decimal!
+}
+
+type CategoryReport {
+    categoryId: ID!
+    categoryName: String!
+    categoryType: CategoryType!
+    totalAmount: Decimal!
+    transactionCount: Int!
+    percentage: Float!
+    transactions: [Transaction!]!
+}
+
+type HealthCheck {
+    status: String!
+    timestamp: DateTime!
+}
+
+# ==================== Input Types ====================
+
+input SignUpInput {
+    email: String!
+    username: String!
+    password: String!
+    firstName: String
+    lastName: String
+}
+
+input LoginInput {
+    username: String!
+    password: String!
+}
+
+input CreateAccountInput {
+    firstName: String!
+    lastName: String!
+    nationality: String
+    accountType: String!
+}
+
+input UpdateAccountInput {
+    firstName: String
+    lastName: String
+    nationality: String
+    accountType: String
+}
+
+input DepositInput {
+    amount: Decimal!
+    description: String
+    categoryId: ID
+}
+
+input WithdrawInput {
+    amount: Decimal!
+    description: String
+    categoryId: ID
+}
+
+input TransferInput {
+    toAccountId: ID!
+    amount: Decimal!
+    description: String
+    categoryId: ID
+}
+
+input CreateCategoryInput {
+    name: String!
+    description: String
+    type: CategoryType!
+    color: String
+}
+
+input UpdateCategoryInput {
+    name: String
+    description: String
+    type: CategoryType
+    color: String
+}
+
+input CreateNotificationInput {
+    userId: ID!
+    type: NotificationType!
+    channel: NotificationChannel!
+    title: String!
+    message: String!
+    priority: NotificationPriority!
+}
+
+# ==================== Queries ====================
+
+type Query {
+    # Authentication
+    me: User!
+
+    # Health Check
+    health: HealthCheck!
+    hello(name: String): String!
+
+    # Accounts
+    accounts: [Account!]!
+    account(id: ID!): Account
+
+    # Transactions
+    transactions: [Transaction!]!
+    transactionHistory(accountId: ID!): [Transaction!]!
+
+    # Account Reports
+    accountStatement(accountId: ID!, startDate: Date!, endDate: Date!): AccountStatement!
+    categoryReport(accountId: ID!, type: CategoryType): [CategoryReport!]!
+
+    # Categories
+    categories(activeOnly: Boolean, type: CategoryType): [TransactionCategory!]!
+    category(id: ID!): TransactionCategory
+
+    # Notifications
+    notifications(page: Int, size: Int): NotificationPage!
+    unreadNotifications(page: Int, size: Int): NotificationPage!
+    readNotifications(page: Int, size: Int): NotificationPage!
+    recentNotifications(days: Int, page: Int, size: Int): NotificationPage!
+    notification(id: ID!): Notification
+    unreadCount: Int!
+
+    # Admin Queries
+    adminUsers: [User!]!
+    adminUser(id: ID!): User
+    adminAccounts: [Account!]!
+    adminAccount(id: ID!): Account
+    adminUserAccounts(userId: ID!): [Account!]!
+}
+
+# ==================== Mutations ====================
+
+type Mutation {
+    # Authentication
+    signUp(input: SignUpInput!): AuthResponse!
+    login(input: LoginInput!): AuthResponse!
+    logout: Boolean!
+
+    # Account Management
+    createAccount(input: CreateAccountInput!): Account!
+    updateAccount(id: ID!, input: UpdateAccountInput!): Account!
+    deleteAccount(id: ID!): Boolean!
+
+    # Banking Operations
+    deposit(accountId: ID!, input: DepositInput!): Transaction!
+    withdraw(accountId: ID!, input: WithdrawInput!): Transaction!
+    transfer(fromAccountId: ID!, input: TransferInput!): Transaction!
+
+    # Category Management
+    createCategory(input: CreateCategoryInput!): TransactionCategory!
+    updateCategory(id: ID!, input: UpdateCategoryInput!): TransactionCategory!
+    deactivateCategory(id: ID!): TransactionCategory!
+    activateCategory(id: ID!): TransactionCategory!
+    deleteCategory(id: ID!): Boolean!
+
+    # Notification Management
+    createNotification(input: CreateNotificationInput!): Notification!
+    markNotificationAsRead(id: ID!): Notification!
+    markNotificationAsUnread(id: ID!): Notification!
+    markAllNotificationsAsRead: Boolean!
+    deleteNotification(id: ID!): Boolean!
+    deleteAllNotifications: Boolean!
+    cleanupOldNotifications(daysOld: Int!): Int!
+
+    # Admin Mutations
+    adminSuspendUser(id: ID!): User!
+    adminActivateUser(id: ID!): User!
+    adminLockUser(id: ID!): User!
+    adminDeleteUser(id: ID!): Boolean!
+}
+
+# ==================== Subscriptions ====================
+# Note: SSE is currently used for real-time notifications
+# This can be migrated to GraphQL subscriptions if needed
