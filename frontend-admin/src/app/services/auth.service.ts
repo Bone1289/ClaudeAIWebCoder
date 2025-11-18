@@ -24,7 +24,7 @@ export class AuthService {
       mutation: LOGIN,
       variables: {
         input: {
-          username: request.emailOrUsername || request.email,
+          username: request.emailOrUsername,
           password: request.password
         }
       }

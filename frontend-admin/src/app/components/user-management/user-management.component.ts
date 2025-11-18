@@ -26,14 +26,12 @@ export class UserManagementComponent implements OnInit {
     this.errorMessage = '';
 
     this.adminService.getAllUsers().subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.users = response.data;
-        }
+      next: (users) => {
+        this.users = users;
         this.isLoading = false;
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to load users';
+        this.errorMessage = error.message || 'Failed to load users';
         this.isLoading = false;
       }
     });
@@ -49,7 +47,7 @@ export class UserManagementComponent implements OnInit {
         this.loadUsers();
       },
       error: (error) => {
-        alert('Failed to suspend user: ' + (error.error?.message || 'Unknown error'));
+        alert('Failed to suspend user: ' + (error.message || 'Unknown error'));
       }
     });
   }
@@ -60,7 +58,7 @@ export class UserManagementComponent implements OnInit {
         this.loadUsers();
       },
       error: (error) => {
-        alert('Failed to activate user: ' + (error.error?.message || 'Unknown error'));
+        alert('Failed to activate user: ' + (error.message || 'Unknown error'));
       }
     });
   }
@@ -75,7 +73,7 @@ export class UserManagementComponent implements OnInit {
         this.loadUsers();
       },
       error: (error) => {
-        alert('Failed to lock user: ' + (error.error?.message || 'Unknown error'));
+        alert('Failed to lock user: ' + (error.message || 'Unknown error'));
       }
     });
   }
@@ -90,7 +88,7 @@ export class UserManagementComponent implements OnInit {
         this.loadUsers();
       },
       error: (error) => {
-        alert('Failed to delete user: ' + (error.error?.message || 'Unknown error'));
+        alert('Failed to delete user: ' + (error.message || 'Unknown error'));
       }
     });
   }

@@ -26,14 +26,12 @@ export class AccountManagementComponent implements OnInit {
     this.errorMessage = '';
 
     this.adminService.getAllAccounts().subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.accounts = response.data;
-        }
+      next: (accounts) => {
+        this.accounts = accounts;
         this.isLoading = false;
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to load accounts';
+        this.errorMessage = error.message || 'Failed to load accounts';
         this.isLoading = false;
       }
     });
