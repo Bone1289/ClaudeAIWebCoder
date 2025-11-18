@@ -116,7 +116,7 @@ export class NotificationService {
           console.error('SSE connection error:', error);
           this.handleSSEError();
         });
-      });
+      };
     });
   }
 
