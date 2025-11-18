@@ -57,9 +57,8 @@ export class NotificationService {
     private apollo: Apollo,
     private ngZone: NgZone
   ) {
-    // SSE is disabled - REST endpoint was removed during GraphQL migration
-    // TODO: Implement GraphQL subscriptions for real-time notifications
-    // this.connectToSSE();
+    // Start SSE connection for real-time updates
+    this.connectToSSE();
   }
 
   /**

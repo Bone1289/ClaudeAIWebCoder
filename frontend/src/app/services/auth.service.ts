@@ -90,11 +90,10 @@ export class AuthService {
         this.setCurrentUser(authData.user);
         this.currentUserSubject.next(authData.user);
 
-        // SSE is disabled - REST endpoint was removed during GraphQL migration
-        // TODO: Implement GraphQL subscriptions for real-time notifications
-        // setTimeout(() => {
-        //   this.getNotificationService().reconnectSSE();
-        // }, 100);
+        // Connect to SSE for real-time notifications
+        setTimeout(() => {
+          this.getNotificationService().reconnectSSE();
+        }, 100);
         return authData;
       })
     );
@@ -104,13 +103,12 @@ export class AuthService {
    * Logout the current user
    */
   logout(): Observable<any> {
-    // SSE is disabled - REST endpoint was removed during GraphQL migration
     // Disconnect SSE before clearing auth data (handle errors gracefully)
-    // try {
-    //   this.getNotificationService().disconnectSSE();
-    // } catch (error) {
-    //   console.warn('Failed to disconnect SSE during logout:', error);
-    // }
+    try {
+      this.getNotificationService().disconnectSSE();
+    } catch (error) {
+      console.warn('Failed to disconnect SSE during logout:', error);
+    }
 
     return this.apollo.mutate({
       mutation: LOGOUT
