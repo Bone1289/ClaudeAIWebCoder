@@ -1,10 +1,16 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, map } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { ApiResponse } from '../models/api-response.model';
+import { Apollo } from 'apollo-angular';
 import { Category, CategoryType } from '../models/banking.model';
-import { environment } from '../../environments/environment';
+import {
+  GET_CATEGORIES,
+  GET_CATEGORY,
+  CREATE_CATEGORY,
+  UPDATE_CATEGORY,
+  DEACTIVATE_CATEGORY,
+  DELETE_CATEGORY
+} from '../graphql/graphql.operations';
 
 export interface CategoryRequest {
   name: string;
@@ -17,87 +23,126 @@ export interface CategoryRequest {
   providedIn: 'root'
 })
 export class CategoryService {
-  private apiUrl = `${environment.apiUrl}/categories`;
-
   // Cache categories for better performance
   private categoriesCache$ = new BehaviorSubject<Category[]>([]);
   public categories$ = this.categoriesCache$.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private apollo: Apollo) {
     this.loadCategories();
   }
 
   /**
    * Load all active categories
    */
-  loadCategories(activeOnly: boolean = true): Observable<ApiResponse<Category[]>> {
-    let params = new HttpParams();
-    if (activeOnly) {
-      params = params.set('activeOnly', 'true');
-    }
-
-    return this.http.get<ApiResponse<Category[]>>(this.apiUrl, { params }).pipe(
-      tap((response: ApiResponse<Category[]>) => {
-        if (response.success && response.data) {
-          this.categoriesCache$.next(response.data);
-        }
+  loadCategories(activeOnly: boolean = true): Observable<Category[]> {
+    return this.apollo.query({
+      query: GET_CATEGORIES,
+      variables: {
+        activeOnly,
+        type: null
+      },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).categories),
+      tap((categories: Category[]) => {
+        this.categoriesCache$.next(categories);
       })
     );
   }
 
   /**
-   * Get categories by type (INCOME, EXPENSE, OTHER)
+   * Get categories by type (INCOME or EXPENSE)
    */
-  getCategoriesByType(type: CategoryType, activeOnly: boolean = true): Observable<ApiResponse<Category[]>> {
-    let params = new HttpParams();
-    params = params.set('type', type);
-    if (activeOnly) {
-      params = params.set('activeOnly', 'true');
-    }
-
-    return this.http.get<ApiResponse<Category[]>>(this.apiUrl, { params });
+  getCategoriesByType(type: CategoryType, activeOnly: boolean = true): Observable<Category[]> {
+    return this.apollo.query({
+      query: GET_CATEGORIES,
+      variables: {
+        activeOnly,
+        type
+      },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).categories)
+    );
   }
 
   /**
    * Get a specific category by ID
    */
-  getCategoryById(id: string): Observable<ApiResponse<Category>> {
-    return this.http.get<ApiResponse<Category>>(`${this.apiUrl}/${id}`);
+  getCategoryById(id: string): Observable<Category> {
+    return this.apollo.query({
+      query: GET_CATEGORY,
+      variables: { id },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).category)
+    );
   }
 
   /**
    * Create a new category
    */
-  createCategory(request: CategoryRequest): Observable<ApiResponse<Category>> {
-    return this.http.post<ApiResponse<Category>>(this.apiUrl, request).pipe(
-      tap(() => this.loadCategories()) // Refresh cache
+  createCategory(request: CategoryRequest): Observable<Category> {
+    return this.apollo.mutate({
+      mutation: CREATE_CATEGORY,
+      variables: {
+        input: {
+          name: request.name,
+          description: request.description,
+          type: request.type,
+          color: request.color
+        }
+      }
+    }).pipe(
+      map(result => (result.data as any).createCategory),
+      tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
 
   /**
    * Update an existing category
    */
-  updateCategory(id: string, request: Partial<CategoryRequest>): Observable<ApiResponse<Category>> {
-    return this.http.put<ApiResponse<Category>>(`${this.apiUrl}/${id}`, request).pipe(
-      tap(() => this.loadCategories()) // Refresh cache
+  updateCategory(id: string, request: Partial<CategoryRequest>): Observable<Category> {
+    return this.apollo.mutate({
+      mutation: UPDATE_CATEGORY,
+      variables: {
+        id,
+        input: {
+          name: request.name,
+          description: request.description,
+          type: request.type,
+          color: request.color
+        }
+      }
+    }).pipe(
+      map(result => (result.data as any).updateCategory),
+      tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
 
   /**
    * Deactivate a category (soft delete)
    */
-  deactivateCategory(id: string): Observable<ApiResponse<Category>> {
-    return this.http.patch<ApiResponse<Category>>(`${this.apiUrl}/${id}/deactivate`, {}).pipe(
-      tap(() => this.loadCategories()) // Refresh cache
+  deactivateCategory(id: string): Observable<Category> {
+    return this.apollo.mutate({
+      mutation: DEACTIVATE_CATEGORY,
+      variables: { id }
+    }).pipe(
+      map(result => (result.data as any).deactivateCategory),
+      tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
 
   /**
    * Delete a category
    */
-  deleteCategory(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`).pipe(
-      tap(() => this.loadCategories()) // Refresh cache
+  deleteCategory(id: string): Observable<boolean> {
+    return this.apollo.mutate({
+      mutation: DELETE_CATEGORY,
+      variables: { id }
+    }).pipe(
+      map(result => (result.data as any).deleteCategory),
+      tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
 

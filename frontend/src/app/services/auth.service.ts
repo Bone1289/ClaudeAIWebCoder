@@ -1,15 +1,14 @@
 import { Injectable, Injector } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { LoginRequest, SignUpRequest, LoginResponse, UserResponse } from '../models/auth.model';
-import { ApiResponse } from '../models/api-response.model';
+import { BehaviorSubject, Observable, map } from 'rxjs';
+import { Apollo } from 'apollo-angular';
+import { LoginRequest, SignUpRequest, UserResponse } from '../models/auth.model';
 import { NotificationService } from './notification.service';
+import { SIGN_UP, LOGIN, GET_CURRENT_USER, LOGOUT } from '../graphql/graphql.operations';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = '/api/auth';
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'current_user';
 
@@ -18,7 +17,7 @@ export class AuthService {
   private notificationService?: NotificationService;
 
   constructor(
-    private http: HttpClient,
+    private apollo: Apollo,
     private injector: Injector
   ) {}
 
@@ -35,57 +34,99 @@ export class AuthService {
   /**
    * Sign up a new user
    */
-  signUp(request: SignUpRequest): Observable<ApiResponse<UserResponse>> {
-    return this.http.post<ApiResponse<UserResponse>>(`${this.API_URL}/signup`, request);
+  signUp(request: SignUpRequest): Observable<any> {
+    return this.apollo.mutate({
+      mutation: SIGN_UP,
+      variables: {
+        input: {
+          email: request.email,
+          username: request.username,
+          password: request.password,
+          firstName: request.firstName,
+          lastName: request.lastName
+        }
+      }
+    }).pipe(
+      map(result => {
+        if (result.data) {
+          const authData = (result.data as any).signUp;
+          // Store token and user
+          this.setToken(authData.token);
+          this.setCurrentUser(authData.user);
+          this.currentUserSubject.next(authData.user);
+        }
+        return result.data;
+      })
+    );
   }
 
   /**
    * Login with email/username and password
    */
-  login(request: LoginRequest): Observable<ApiResponse<LoginResponse>> {
-    return this.http.post<ApiResponse<LoginResponse>>(`${this.API_URL}/login`, request)
-      .pipe(
-        tap(response => {
-          if (response.success && response.data) {
-            // Store token and user
-            this.setToken(response.data.token);
-            this.setCurrentUser(response.data.user);
-            this.currentUserSubject.next(response.data.user);
+  login(request: LoginRequest): Observable<any> {
+    return this.apollo.mutate({
+      mutation: LOGIN,
+      variables: {
+        input: {
+          username: request.emailOrUsername,
+          password: request.password
+        }
+      }
+    }).pipe(
+      map(result => {
+        if (result.data) {
+          const authData = (result.data as any).login;
+          // Store token and user
+          this.setToken(authData.token);
+          this.setCurrentUser(authData.user);
+          this.currentUserSubject.next(authData.user);
 
-            // Connect to SSE for real-time notifications
-            setTimeout(() => {
-              this.getNotificationService().reconnectSSE();
-            }, 100);
-          }
-        })
-      );
+          // Connect to SSE for real-time notifications
+          setTimeout(() => {
+            this.getNotificationService().reconnectSSE();
+          }, 100);
+        }
+        return result.data;
+      })
+    );
   }
 
   /**
    * Logout the current user
    */
-  logout(): void {
+  logout(): Observable<any> {
     // Disconnect SSE before clearing auth data
     this.getNotificationService().disconnectSSE();
 
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-    this.currentUserSubject.next(null);
+    return this.apollo.mutate({
+      mutation: LOGOUT
+    }).pipe(
+      map(result => {
+        localStorage.removeItem(this.TOKEN_KEY);
+        localStorage.removeItem(this.USER_KEY);
+        this.currentUserSubject.next(null);
+        return result.data;
+      })
+    );
   }
 
   /**
    * Get current authenticated user from API
    */
-  getCurrentUser(): Observable<ApiResponse<UserResponse>> {
-    return this.http.get<ApiResponse<UserResponse>>(`${this.API_URL}/me`)
-      .pipe(
-        tap(response => {
-          if (response.success && response.data) {
-            this.setCurrentUser(response.data);
-            this.currentUserSubject.next(response.data);
-          }
-        })
-      );
+  getCurrentUser(): Observable<UserResponse> {
+    return this.apollo.query({
+      query: GET_CURRENT_USER,
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => {
+        const user = (result.data as any).me;
+        if (user) {
+          this.setCurrentUser(user);
+          this.currentUserSubject.next(user);
+        }
+        return user;
+      })
+    );
   }
 
   /**

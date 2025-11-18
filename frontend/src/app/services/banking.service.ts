@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
-import { ApiResponse } from '../models/api-response.model';
+import { Observable, map, catchError, throwError } from 'rxjs';
+import { Apollo } from 'apollo-angular';
 import {
   Account,
   Transaction,
@@ -13,79 +12,106 @@ import {
   UpdateAccountRequest,
   TransactionType
 } from '../models/banking.model';
+import {
+  CREATE_ACCOUNT,
+  GET_ACCOUNTS,
+  GET_ACCOUNT,
+  UPDATE_ACCOUNT,
+  DELETE_ACCOUNT,
+  DEPOSIT,
+  WITHDRAW,
+  TRANSFER,
+  GET_TRANSACTION_HISTORY,
+  GET_ALL_TRANSACTIONS,
+  GET_ACCOUNT_STATEMENT,
+  GET_CATEGORY_REPORT
+} from '../graphql/graphql.operations';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BankingService {
-  private apiUrl = '/api/banking';
-
-  constructor(private http: HttpClient) { }
+  constructor(private apollo: Apollo) { }
 
   // ========== Account Operations ==========
 
   /**
    * Create a new account
-   * @param request - Account creation request
-   * @returns Observable<ApiResponse<Account>> - Created account
    */
-  createAccount(request: CreateAccountRequest): Observable<ApiResponse<Account>> {
-    return this.http.post<ApiResponse<Account>>(`${this.apiUrl}/accounts`, request).pipe(
+  createAccount(request: CreateAccountRequest): Observable<Account> {
+    return this.apollo.mutate({
+      mutation: CREATE_ACCOUNT,
+      variables: {
+        input: {
+          firstName: request.firstName,
+          lastName: request.lastName,
+          nationality: request.nationality,
+          accountType: request.accountType
+        }
+      }
+    }).pipe(
+      map(result => (result.data as any).createAccount),
       catchError(this.handleError)
     );
   }
 
   /**
    * Get all accounts
-   * @returns Observable<ApiResponse<Account[]>> - List of all accounts
    */
-  getAllAccounts(): Observable<ApiResponse<Account[]>> {
-    return this.http.get<ApiResponse<Account[]>>(`${this.apiUrl}/accounts`).pipe(
+  getAllAccounts(): Observable<Account[]> {
+    return this.apollo.query({
+      query: GET_ACCOUNTS,
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).accounts),
       catchError(this.handleError)
     );
   }
 
   /**
    * Get account by ID
-   * @param id - Account ID
-   * @returns Observable<ApiResponse<Account>> - Account object
    */
-  getAccountById(id: string): Observable<ApiResponse<Account>> {
-    return this.http.get<ApiResponse<Account>>(`${this.apiUrl}/accounts/${id}`).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  /**
-   * Get accounts by customer ID
-   * @param customerId - Customer ID
-   * @returns Observable<ApiResponse<Account[]>> - List of customer accounts
-   */
-  getAccountsByCustomerId(customerId: string): Observable<ApiResponse<Account[]>> {
-    return this.http.get<ApiResponse<Account[]>>(`${this.apiUrl}/accounts/customer/${customerId}`).pipe(
+  getAccountById(id: string): Observable<Account> {
+    return this.apollo.query({
+      query: GET_ACCOUNT,
+      variables: { id },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).account),
       catchError(this.handleError)
     );
   }
 
   /**
    * Update an account
-   * @param id - Account ID
-   * @param request - Update account request
-   * @returns Observable<ApiResponse<Account>> - Updated account
    */
-  updateAccount(id: string, request: UpdateAccountRequest): Observable<ApiResponse<Account>> {
-    return this.http.put<ApiResponse<Account>>(`${this.apiUrl}/accounts/${id}`, request).pipe(
+  updateAccount(id: string, request: UpdateAccountRequest): Observable<Account> {
+    return this.apollo.mutate({
+      mutation: UPDATE_ACCOUNT,
+      variables: {
+        id,
+        input: {
+          firstName: request.firstName,
+          lastName: request.lastName,
+          nationality: request.nationality,
+          accountType: request.accountType
+        }
+      }
+    }).pipe(
+      map(result => (result.data as any).updateAccount),
       catchError(this.handleError)
     );
   }
 
   /**
    * Delete an account
-   * @param id - Account ID
-   * @returns Observable<ApiResponse<void>> - Delete confirmation
    */
-  deleteAccount(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/accounts/${id}`).pipe(
+  deleteAccount(id: string): Observable<boolean> {
+    return this.apollo.mutate({
+      mutation: DELETE_ACCOUNT,
+      variables: { id }
+    }).pipe(
+      map(result => (result.data as any).deleteAccount),
       catchError(this.handleError)
     );
   }
@@ -94,57 +120,88 @@ export class BankingService {
 
   /**
    * Deposit money into an account
-   * @param accountId - Account ID
-   * @param request - Transaction request with amount and description
-   * @returns Observable<ApiResponse<Account>> - Updated account
    */
-  deposit(accountId: string, request: TransactionRequest): Observable<ApiResponse<Account>> {
-    return this.http.post<ApiResponse<Account>>(`${this.apiUrl}/accounts/${accountId}/deposit`, request).pipe(
+  deposit(accountId: string, request: TransactionRequest): Observable<Transaction> {
+    return this.apollo.mutate({
+      mutation: DEPOSIT,
+      variables: {
+        accountId,
+        input: {
+          amount: request.amount,
+          description: request.description,
+          categoryId: request.categoryId
+        }
+      }
+    }).pipe(
+      map(result => (result.data as any).deposit),
       catchError(this.handleError)
     );
   }
 
   /**
    * Withdraw money from an account
-   * @param accountId - Account ID
-   * @param request - Transaction request with amount and description
-   * @returns Observable<ApiResponse<Account>> - Updated account
    */
-  withdraw(accountId: string, request: TransactionRequest): Observable<ApiResponse<Account>> {
-    return this.http.post<ApiResponse<Account>>(`${this.apiUrl}/accounts/${accountId}/withdraw`, request).pipe(
+  withdraw(accountId: string, request: TransactionRequest): Observable<Transaction> {
+    return this.apollo.mutate({
+      mutation: WITHDRAW,
+      variables: {
+        accountId,
+        input: {
+          amount: request.amount,
+          description: request.description,
+          categoryId: request.categoryId
+        }
+      }
+    }).pipe(
+      map(result => (result.data as any).withdraw),
       catchError(this.handleError)
     );
   }
 
   /**
    * Transfer money between accounts
-   * @param fromAccountId - Source account ID
-   * @param request - Transfer request with destination account, amount, and description
-   * @returns Observable<ApiResponse<void>> - Transfer confirmation
    */
-  transfer(fromAccountId: string, request: TransferRequest): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/accounts/${fromAccountId}/transfer`, request).pipe(
+  transfer(fromAccountId: string, request: TransferRequest): Observable<Transaction> {
+    return this.apollo.mutate({
+      mutation: TRANSFER,
+      variables: {
+        fromAccountId,
+        input: {
+          toAccountId: request.toAccountId,
+          amount: request.amount,
+          description: request.description,
+          categoryId: request.categoryId
+        }
+      }
+    }).pipe(
+      map(result => (result.data as any).transfer),
       catchError(this.handleError)
     );
   }
 
   /**
    * Get transaction history for an account
-   * @param accountId - Account ID
-   * @returns Observable<ApiResponse<Transaction[]>> - List of transactions
    */
-  getTransactionHistory(accountId: string): Observable<ApiResponse<Transaction[]>> {
-    return this.http.get<ApiResponse<Transaction[]>>(`${this.apiUrl}/accounts/${accountId}/transactions`).pipe(
+  getTransactionHistory(accountId: string): Observable<Transaction[]> {
+    return this.apollo.query({
+      query: GET_TRANSACTION_HISTORY,
+      variables: { accountId },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).transactionHistory),
       catchError(this.handleError)
     );
   }
 
   /**
    * Get all transactions
-   * @returns Observable<ApiResponse<Transaction[]>> - List of all transactions
    */
-  getAllTransactions(): Observable<ApiResponse<Transaction[]>> {
-    return this.http.get<ApiResponse<Transaction[]>>(`${this.apiUrl}/transactions`).pipe(
+  getAllTransactions(): Observable<Transaction[]> {
+    return this.apollo.query({
+      query: GET_ALL_TRANSACTIONS,
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).transactions),
       catchError(this.handleError)
     );
   }
@@ -153,61 +210,54 @@ export class BankingService {
 
   /**
    * Generate account statement for a date range
-   * @param accountId - Account ID
-   * @param startDate - Start date (ISO string)
-   * @param endDate - End date (ISO string)
-   * @returns Observable<ApiResponse<AccountStatement>> - Account statement
    */
-  getAccountStatement(accountId: string, startDate: string, endDate: string): Observable<ApiResponse<AccountStatement>> {
-    const params = new HttpParams()
-      .set('startDate', startDate)
-      .set('endDate', endDate);
-
-    return this.http.get<ApiResponse<AccountStatement>>(
-      `${this.apiUrl}/accounts/${accountId}/statement`,
-      { params }
-    ).pipe(
+  getAccountStatement(accountId: string, startDate: string, endDate: string): Observable<AccountStatement> {
+    return this.apollo.query({
+      query: GET_ACCOUNT_STATEMENT,
+      variables: {
+        accountId,
+        startDate,
+        endDate
+      },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).accountStatement),
       catchError(this.handleError)
     );
   }
 
   /**
    * Generate category report for an account
-   * @param accountId - Account ID
-   * @param transactionType - Type of transactions (DEPOSIT or WITHDRAWAL)
-   * @returns Observable<ApiResponse<CategoryReport>> - Category report
    */
-  getCategoryReport(accountId: string, transactionType: TransactionType): Observable<ApiResponse<CategoryReport>> {
-    const params = new HttpParams().set('type', transactionType);
-
-    return this.http.get<ApiResponse<CategoryReport>>(
-      `${this.apiUrl}/accounts/${accountId}/category-report`,
-      { params }
-    ).pipe(
+  getCategoryReport(accountId: string, type: string): Observable<CategoryReport[]> {
+    return this.apollo.query({
+      query: GET_CATEGORY_REPORT,
+      variables: {
+        accountId,
+        type
+      },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).categoryReport),
       catchError(this.handleError)
     );
   }
 
   /**
-   * Handle HTTP errors
-   * @param error - The error object
-   * @returns Observable<never> - An observable that errors
+   * Handle GraphQL errors
    */
   private handleError(error: any): Observable<never> {
     let errorMessage = 'An unknown error occurred';
 
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = `Error: ${error.error.message}`;
-    } else if (error.error && error.error.message) {
-      // Server-side error with message
-      errorMessage = error.error.message;
-    } else {
-      // Server-side error without message
-      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+    if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+      errorMessage = error.graphQLErrors.map((e: any) => e.message).join(', ');
+    } else if (error.networkError) {
+      errorMessage = `Network error: ${error.networkError.message}`;
+    } else if (error.message) {
+      errorMessage = error.message;
     }
 
-    console.error(errorMessage);
+    console.error('GraphQL Error:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
 }
