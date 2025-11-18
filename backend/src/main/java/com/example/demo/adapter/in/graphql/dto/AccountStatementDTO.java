@@ -20,17 +20,17 @@ public record AccountStatementDTO(
 ) {
     public static AccountStatementDTO fromDomain(AccountStatement statement) {
         return new AccountStatementDTO(
-                AccountDTO.fromDomain(statement.getAccount()),
-                statement.getStartDate().toLocalDate(),
-                statement.getEndDate().toLocalDate(),
-                statement.getTransactions().stream()
+                AccountDTO.fromDomain(statement.account()),
+                statement.startDate().toLocalDate(),
+                statement.endDate().toLocalDate(),
+                statement.transactions().stream()
                         .map(TransactionDTO::fromDomain)
                         .collect(Collectors.toList()),
-                statement.getTotalDeposits(),
-                statement.getTotalWithdrawals(),
-                statement.getNetChange(),
-                statement.getStartingBalance(),
-                statement.getEndingBalance()
+                statement.totalDeposits(),
+                statement.totalWithdrawals(),
+                statement.netChange(),
+                statement.openingBalance(),
+                statement.closingBalance()
         );
     }
 }
