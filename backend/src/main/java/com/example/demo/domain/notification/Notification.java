@@ -1,5 +1,8 @@
 package com.example.demo.domain.notification;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -42,9 +45,18 @@ public class Notification {
         URGENT
     }
 
-    private Notification(UUID id, UUID userId, NotificationType type, NotificationChannel channel,
-                        String title, String message, NotificationPriority priority,
-                        boolean read, LocalDateTime createdAt, LocalDateTime readAt) {
+    @JsonCreator
+    private Notification(
+            @JsonProperty("id") UUID id,
+            @JsonProperty("userId") UUID userId,
+            @JsonProperty("type") NotificationType type,
+            @JsonProperty("channel") NotificationChannel channel,
+            @JsonProperty("title") String title,
+            @JsonProperty("message") String message,
+            @JsonProperty("priority") NotificationPriority priority,
+            @JsonProperty("read") boolean read,
+            @JsonProperty("createdAt") LocalDateTime createdAt,
+            @JsonProperty("readAt") LocalDateTime readAt) {
         this.id = id;
         this.userId = userId;
         this.type = type;
