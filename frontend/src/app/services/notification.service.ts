@@ -384,4 +384,36 @@ export class NotificationService {
       readAt: grpcNotification.read_at
     };
   }
+
+  /**
+   * Get icon for notification type
+   */
+  getTypeIcon(type: string): string {
+    const iconMap: { [key: string]: string } = {
+      'TRANSACTION_COMPLETED': 'check_circle',
+      'SECURITY_ALERT': 'warning',
+      'ACCOUNT_CREATED': 'account_circle',
+      'ACCOUNT_UPDATED': 'edit',
+      'DEPOSIT': 'arrow_downward',
+      'WITHDRAWAL': 'arrow_upward',
+      'TRANSFER': 'swap_horiz',
+      'LOW_BALANCE': 'account_balance_wallet',
+      'SYSTEM': 'info',
+      'PAYMENT': 'payment'
+    };
+    return iconMap[type] || 'notifications';
+  }
+
+  /**
+   * Get color for notification priority
+   */
+  getPriorityColor(priority: string): string {
+    const colorMap: { [key: string]: string } = {
+      'LOW': '#4CAF50',      // green
+      'MEDIUM': '#2196F3',   // blue
+      'HIGH': '#FF9800',     // orange
+      'URGENT': '#F44336'    // red
+    };
+    return colorMap[priority] || '#757575'; // gray as default
+  }
 }
