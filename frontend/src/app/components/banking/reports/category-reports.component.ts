@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { BankingService } from '../../../services/banking.service';
 import { CategoryReport, TransactionType, Account } from '../../../models/banking.model';
-import { ApiResponse } from '../../../models/api-response.model';
+
 
 @Component({
   selector: 'app-category-reports',
@@ -42,8 +42,8 @@ export class CategoryReportsComponent implements OnInit {
     if (!this.accountId) return;
 
     this.bankingService.getAccountById(this.accountId).subscribe({
-      next: (response: ApiResponse<Account>) => {
-        this.account = response.data;
+      next: (account: Account) => {
+        this.account = account;
       },
       error: () => {
         // Silently fail - not critical
@@ -59,8 +59,8 @@ export class CategoryReportsComponent implements OnInit {
 
     // Load both reports
     this.bankingService.getCategoryReport(this.accountId, TransactionType.DEPOSIT).subscribe({
-      next: (response: ApiResponse<CategoryReport>) => {
-        this.incomeReport = response.data;
+      next: (categoryReports: CategoryReport[]) => {
+        this.incomeReport = categoryReports;
       },
       error: (error: any) => {
         this.error = 'Failed to load income report: ' + error.message;
@@ -68,8 +68,8 @@ export class CategoryReportsComponent implements OnInit {
     });
 
     this.bankingService.getCategoryReport(this.accountId, TransactionType.WITHDRAWAL).subscribe({
-      next: (response: ApiResponse<CategoryReport>) => {
-        this.expenseReport = response.data;
+      next: (categoryReports: CategoryReport[]) => {
+        this.expenseReport = categoryReports;
         this.loading = false;
       },
       error: (error: any) => {

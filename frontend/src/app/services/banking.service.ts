@@ -91,9 +91,6 @@ export class BankingService {
       variables: {
         id,
         input: {
-          firstName: request.firstName,
-          lastName: request.lastName,
-          nationality: request.nationality,
           accountType: request.accountType
         }
       }
@@ -169,8 +166,7 @@ export class BankingService {
         input: {
           toAccountId: request.toAccountId,
           amount: request.amount,
-          description: request.description,
-          categoryId: request.categoryId
+          description: request.description
         }
       }
     }).pipe(

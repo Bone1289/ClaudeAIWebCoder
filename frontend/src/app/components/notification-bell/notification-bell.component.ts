@@ -83,10 +83,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   loadNotifications(): void {
     this.loading = true;
     this.notificationService.getUnreadNotifications(0, 10).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.notifications = response.data.content;
-        }
+      next: (pagedNotifications) => {
+        this.notifications = pagedNotifications.notifications || [];
         this.loading = false;
       },
       error: (error) => {

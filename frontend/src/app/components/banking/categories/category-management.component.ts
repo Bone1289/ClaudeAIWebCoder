@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CategoryService } from '../../../services/category.service';
 import { Category, CategoryType } from '../../../models/banking.model';
-import { ApiResponse } from '../../../models/api-response.model';
 
 interface CategoryForm {
   name: string;
@@ -69,8 +68,8 @@ export class CategoryManagementComponent implements OnInit {
     this.error = null;
 
     this.categoryService.loadCategories(false).subscribe({
-      next: (response: ApiResponse<Category[]>) => {
-        this.categories = response.data || [];
+      next: (categories: Category[]) => {
+        this.categories = categories || [];
         this.filterCategories();
         this.loading = false;
       },
@@ -109,7 +108,7 @@ export class CategoryManagementComponent implements OnInit {
     this.error = null;
 
     this.categoryService.createCategory(this.categoryForm).subscribe({
-      next: (response: ApiResponse<Category>) => {
+      next: (category: Category) => {
         this.loading = false;
         this.showAddModal = false;
         this.successMessage = `Category "${this.categoryForm.name}" created successfully!`;
@@ -150,7 +149,7 @@ export class CategoryManagementComponent implements OnInit {
     this.error = null;
 
     this.categoryService.updateCategory(this.editingCategory.id, this.categoryForm).subscribe({
-      next: (response: ApiResponse<Category>) => {
+      next: (category: Category) => {
         this.loading = false;
         this.showEditModal = false;
         this.successMessage = 'Category updated successfully!';
@@ -185,7 +184,7 @@ export class CategoryManagementComponent implements OnInit {
     this.error = null;
 
     this.categoryService.deleteCategory(this.categoryToDelete.id).subscribe({
-      next: (response: ApiResponse<void>) => {
+      next: (success: boolean) => {
         this.loading = false;
         this.showDeleteModal = false;
         this.successMessage = 'Category deleted successfully!';

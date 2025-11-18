@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, Params } from '@angular/router';
 import { BankingService } from '../../../services/banking.service';
 import { CategoryService } from '../../../services/category.service';
 import { Account, Category, CategoryType, TransactionRequest, TransferRequest } from '../../../models/banking.model';
-import { ApiResponse } from '../../../models/api-response.model';
+
 
 @Component({
   selector: 'app-transaction-forms',
@@ -92,8 +92,8 @@ export class TransactionFormsComponent implements OnInit {
     if (!this.accountId) return;
 
     this.bankingService.getAccountById(this.accountId).subscribe({
-      next: (response: ApiResponse<Account>) => {
-        this.account = response.data;
+      next: (account: Account) => {
+        this.account = account;
       },
       error: (error: any) => {
         this.error = 'Failed to load account: ' + error.message;
@@ -103,8 +103,8 @@ export class TransactionFormsComponent implements OnInit {
 
   loadAccounts(): void {
     this.bankingService.getAllAccounts().subscribe({
-      next: (response: ApiResponse<Account[]>) => {
-        this.accounts = (response.data || []).filter((acc: Account) => acc.id !== this.accountId);
+      next: (accounts: Account[]) => {
+        this.accounts = (accounts || []).filter((acc: Account) => acc.id !== this.accountId);
       },
       error: () => {
         // Silently fail - not critical
@@ -130,10 +130,10 @@ export class TransactionFormsComponent implements OnInit {
     };
 
     this.bankingService.deposit(this.accountId, request).subscribe({
-      next: (response: ApiResponse<Account>) => {
-        this.account = response.data;
+      next: (transaction) => {
         this.success = 'Deposit successful!';
         this.resetDepositForm();
+        this.loadAccount(); // Reload account to get updated balance
         this.loading = false;
       },
       error: (error: any) => {
@@ -156,10 +156,10 @@ export class TransactionFormsComponent implements OnInit {
     };
 
     this.bankingService.withdraw(this.accountId, request).subscribe({
-      next: (response: ApiResponse<Account>) => {
-        this.account = response.data;
+      next: (transaction) => {
         this.success = 'Withdrawal successful!';
         this.resetWithdrawForm();
+        this.loadAccount(); // Reload account to get updated balance
         this.loading = false;
       },
       error: (error: any) => {
@@ -182,7 +182,7 @@ export class TransactionFormsComponent implements OnInit {
     };
 
     this.bankingService.transfer(this.accountId, request).subscribe({
-      next: (response: ApiResponse<void>) => {
+      next: (transaction) => {
         this.success = 'Transfer successful!';
         this.resetTransferForm();
         this.loadAccount(); // Reload account to get updated balance
@@ -284,9 +284,9 @@ export class TransactionFormsComponent implements OnInit {
     };
 
     this.categoryService.createCategory(newCategory).subscribe({
-      next: (response: ApiResponse<Category>) => {
-        if (response.success && response.data) {
-          this.selectDepositCategory(response.data);
+      next: (category: Category) => {
+        if (response.success && accounts) {
+          this.selectDepositCategory(accounts);
           this.success = `Category "${input}" created successfully!`;
           setTimeout(() => this.success = null, 3000);
         }
@@ -353,9 +353,9 @@ export class TransactionFormsComponent implements OnInit {
     };
 
     this.categoryService.createCategory(newCategory).subscribe({
-      next: (response: ApiResponse<Category>) => {
-        if (response.success && response.data) {
-          this.selectWithdrawCategory(response.data);
+      next: (category: Category) => {
+        if (response.success && accounts) {
+          this.selectWithdrawCategory(accounts);
           this.success = `Category "${input}" created successfully!`;
           setTimeout(() => this.success = null, 3000);
         }

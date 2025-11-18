@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BankingService } from '../../../services/banking.service';
 import { Account, CreateAccountRequest, UpdateAccountRequest } from '../../../models/banking.model';
-import { ApiResponse } from '../../../models/api-response.model';
 import { COUNTRIES, Country } from '../../../data/countries';
 
 @Component({
@@ -102,8 +101,8 @@ export class BankingDashboardComponent implements OnInit {
     this.error = null;
 
     this.bankingService.getAllAccounts().subscribe({
-      next: (response: ApiResponse<Account[]>) => {
-        this.accounts = response.data || [];
+      next: (accounts: Account[]) => {
+        this.accounts = accounts || [];
         this.loading = false;
       },
       error: (error: any) => {
@@ -174,7 +173,7 @@ export class BankingDashboardComponent implements OnInit {
     this.error = null;
 
     this.bankingService.createAccount(this.newAccount).subscribe({
-      next: (response: ApiResponse<Account>) => {
+      next: (account: Account) => {
         this.loading = false;
         this.showAddModal = false;
         this.successMessage = 'Account created successfully!';
@@ -214,7 +213,7 @@ export class BankingDashboardComponent implements OnInit {
     };
 
     this.bankingService.updateAccount(this.editingAccount.id, request).subscribe({
-      next: (response: ApiResponse<Account>) => {
+      next: (account: Account) => {
         this.loading = false;
         this.showEditModal = false;
         this.successMessage = 'Account updated successfully!';
@@ -249,7 +248,7 @@ export class BankingDashboardComponent implements OnInit {
     this.error = null;
 
     this.bankingService.deleteAccount(this.accountToDelete.id).subscribe({
-      next: (response: ApiResponse<void>) => {
+      next: (success: boolean) => {
         this.loading = false;
         this.showDeleteModal = false;
         this.successMessage = 'Account deleted successfully!';

@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, Params } from '@angular/router';
 import { BankingService } from '../../../services/banking.service';
 import { CategoryService } from '../../../services/category.service';
 import { AccountStatement, Category } from '../../../models/banking.model';
-import { ApiResponse } from '../../../models/api-response.model';
+
 
 @Component({
   selector: 'app-account-statement',
@@ -65,8 +65,8 @@ export class AccountStatementComponent implements OnInit {
     const end = new Date(this.endDate + 'T23:59:59').toISOString();
 
     this.bankingService.getAccountStatement(this.accountId, start, end).subscribe({
-      next: (response: ApiResponse<AccountStatement>) => {
-        this.statement = response.data;
+      next: (statement: AccountStatement) => {
+        this.statement = statement;
         this.loading = false;
       },
       error: (error: any) => {
