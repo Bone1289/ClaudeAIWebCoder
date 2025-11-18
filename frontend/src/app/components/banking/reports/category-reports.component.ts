@@ -79,19 +79,19 @@ export class CategoryReportsComponent implements OnInit {
     });
   }
 
-  getActiveReport(): CategoryReport | null {
+  getActiveReport(): CategoryReport[] {
     return this.selectedType === TransactionType.DEPOSIT ? this.incomeReport : this.expenseReport;
   }
 
   getChartData(): { category: string; amount: number; percentage: number; color: string }[] {
     const report = this.getActiveReport();
-    if (!report) return [];
+    if (!report || report.length === 0) return [];
 
-    return report.categories.map((cat) => ({
-      category: cat.category.name,
-      amount: cat.amount,
-      percentage: cat.percentage,
-      color: cat.category.color
+    return report.map((categoryReport) => ({
+      category: categoryReport.categoryName,
+      amount: categoryReport.totalAmount,
+      percentage: categoryReport.percentage,
+      color: '#3498db' // Default color, can be customized
     }));
   }
 
