@@ -4,9 +4,7 @@ import com.example.demo.domain.CategoryReport;
 import com.example.demo.domain.TransactionCategory;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public record CategoryReportDTO(
         UUID categoryId,
@@ -14,20 +12,16 @@ public record CategoryReportDTO(
         TransactionCategory.CategoryType categoryType,
         BigDecimal totalAmount,
         int transactionCount,
-        double percentage,
-        List<TransactionDTO> transactions
+        double percentage
 ) {
-    public static CategoryReportDTO fromDomain(CategoryReport.CategoryItem item) {
+    public static CategoryReportDTO fromDomain(CategoryReport.CategorySummary summary) {
         return new CategoryReportDTO(
-                item.getCategoryId(),
-                item.getCategoryName(),
-                item.getCategoryType(),
-                item.getTotalAmount(),
-                item.getTransactionCount(),
-                item.getPercentage(),
-                item.getTransactions().stream()
-                        .map(TransactionDTO::fromDomain)
-                        .collect(Collectors.toList())
+                summary.category().getId(),
+                summary.category().getName(),
+                summary.category().getType(),
+                summary.amount(),
+                summary.count(),
+                summary.percentage().doubleValue()
         );
     }
 }

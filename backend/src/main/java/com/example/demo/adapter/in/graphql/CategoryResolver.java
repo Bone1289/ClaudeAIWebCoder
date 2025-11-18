@@ -3,7 +3,7 @@ package com.example.demo.adapter.in.graphql;
 import com.example.demo.adapter.in.graphql.dto.CreateCategoryInputDTO;
 import com.example.demo.adapter.in.graphql.dto.TransactionCategoryDTO;
 import com.example.demo.adapter.in.graphql.dto.UpdateCategoryInputDTO;
-import com.example.demo.application.ports.in.*;
+import com.example.demo.application.ports.in.ManageCategoryUseCase;
 import com.example.demo.domain.TransactionCategory;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -21,19 +21,10 @@ import java.util.stream.Collectors;
 @Controller
 public class CategoryResolver {
 
-    private final CreateCategoryUseCase createCategoryUseCase;
-    private final GetCategoryUseCase getCategoryUseCase;
-    private final UpdateCategoryUseCase updateCategoryUseCase;
-    private final DeleteCategoryUseCase deleteCategoryUseCase;
+    private final ManageCategoryUseCase manageCategoryUseCase;
 
-    public CategoryResolver(CreateCategoryUseCase createCategoryUseCase,
-                           GetCategoryUseCase getCategoryUseCase,
-                           UpdateCategoryUseCase updateCategoryUseCase,
-                           DeleteCategoryUseCase deleteCategoryUseCase) {
-        this.createCategoryUseCase = createCategoryUseCase;
-        this.getCategoryUseCase = getCategoryUseCase;
-        this.updateCategoryUseCase = updateCategoryUseCase;
-        this.deleteCategoryUseCase = deleteCategoryUseCase;
+    public CategoryResolver(ManageCategoryUseCase manageCategoryUseCase) {
+        this.manageCategoryUseCase = manageCategoryUseCase;
     }
 
     // ==================== Queries ====================
@@ -45,20 +36,32 @@ public class CategoryResolver {
         boolean active = activeOnly != null && activeOnly;
 
         if (type != null) {
-            return getCategoryUseCase.getCategoriesByType(type, active).stream()
-                    .map(TransactionCategoryDTO::fromDomain)
-                    .collect(Collectors.toList());
+            if (active) {
+                return manageCategoryUseCase.getActiveCategoriesByType(type).stream()
+                        .map(TransactionCategoryDTO::fromDomain)
+                        .collect(Collectors.toList());
+            } else {
+                return manageCategoryUseCase.getCategoriesByType(type).stream()
+                        .map(TransactionCategoryDTO::fromDomain)
+                        .collect(Collectors.toList());
+            }
         } else {
-            return getCategoryUseCase.getAllCategories(active).stream()
-                    .map(TransactionCategoryDTO::fromDomain)
-                    .collect(Collectors.toList());
+            if (active) {
+                return manageCategoryUseCase.getActiveCategories().stream()
+                        .map(TransactionCategoryDTO::fromDomain)
+                        .collect(Collectors.toList());
+            } else {
+                return manageCategoryUseCase.getAllCategories().stream()
+                        .map(TransactionCategoryDTO::fromDomain)
+                        .collect(Collectors.toList());
+            }
         }
     }
 
     @QueryMapping
     @PreAuthorize("isAuthenticated()")
     public TransactionCategoryDTO category(@Argument UUID id) {
-        return getCategoryUseCase.getCategoryById(id)
+        return manageCategoryUseCase.getCategoryById(id)
                 .map(TransactionCategoryDTO::fromDomain)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
     }
@@ -68,7 +71,7 @@ public class CategoryResolver {
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public TransactionCategoryDTO createCategory(@Argument CreateCategoryInputDTO input) {
-        TransactionCategory category = createCategoryUseCase.createCategory(
+        TransactionCategory category = manageCategoryUseCase.createCategory(
                 input.name(),
                 input.description(),
                 input.type(),
@@ -80,35 +83,34 @@ public class CategoryResolver {
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public TransactionCategoryDTO updateCategory(@Argument UUID id, @Argument UpdateCategoryInputDTO input) {
-        TransactionCategory category = updateCategoryUseCase.updateCategory(
+        // Note: ManageCategoryUseCase.updateCategory doesn't take a type parameter
+        TransactionCategory category = manageCategoryUseCase.updateCategory(
                 id,
                 input.name(),
                 input.description(),
-                input.type(),
                 input.color()
-        ).orElseThrow(() -> new RuntimeException("Category not found"));
+        );
         return TransactionCategoryDTO.fromDomain(category);
     }
 
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public TransactionCategoryDTO deactivateCategory(@Argument UUID id) {
-        TransactionCategory category = updateCategoryUseCase.deactivateCategory(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+        TransactionCategory category = manageCategoryUseCase.deactivateCategory(id);
         return TransactionCategoryDTO.fromDomain(category);
     }
 
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public TransactionCategoryDTO activateCategory(@Argument UUID id) {
-        TransactionCategory category = updateCategoryUseCase.activateCategory(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+        TransactionCategory category = manageCategoryUseCase.activateCategory(id);
         return TransactionCategoryDTO.fromDomain(category);
     }
 
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public Boolean deleteCategory(@Argument UUID id) {
-        return deleteCategoryUseCase.deleteCategory(id);
+        manageCategoryUseCase.deleteCategory(id);
+        return true;
     }
 }

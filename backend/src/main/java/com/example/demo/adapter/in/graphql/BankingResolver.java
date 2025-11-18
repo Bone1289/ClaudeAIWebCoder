@@ -37,7 +37,7 @@ public class BankingResolver {
     private final GetTransactionHistoryUseCase getTransactionHistoryUseCase;
     private final GenerateAccountStatementUseCase generateAccountStatementUseCase;
     private final GenerateCategoryReportUseCase generateCategoryReportUseCase;
-    private final GetCategoryUseCase getCategoryUseCase;
+    private final ManageCategoryUseCase manageCategoryUseCase;
 
     public BankingResolver(CreateAccountUseCase createAccountUseCase,
                           GetAccountUseCase getAccountUseCase,
@@ -49,7 +49,7 @@ public class BankingResolver {
                           GetTransactionHistoryUseCase getTransactionHistoryUseCase,
                           GenerateAccountStatementUseCase generateAccountStatementUseCase,
                           GenerateCategoryReportUseCase generateCategoryReportUseCase,
-                          GetCategoryUseCase getCategoryUseCase) {
+                          ManageCategoryUseCase manageCategoryUseCase) {
         this.createAccountUseCase = createAccountUseCase;
         this.getAccountUseCase = getAccountUseCase;
         this.updateAccountUseCase = updateAccountUseCase;
@@ -60,7 +60,7 @@ public class BankingResolver {
         this.getTransactionHistoryUseCase = getTransactionHistoryUseCase;
         this.generateAccountStatementUseCase = generateAccountStatementUseCase;
         this.generateCategoryReportUseCase = generateCategoryReportUseCase;
-        this.getCategoryUseCase = getCategoryUseCase;
+        this.manageCategoryUseCase = manageCategoryUseCase;
     }
 
     // ==================== Queries ====================
@@ -122,7 +122,7 @@ public class BankingResolver {
                 : Transaction.TransactionType.WITHDRAWAL;
 
         CategoryReport report = generateCategoryReportUseCase.generateCategoryReport(accountId, transactionType);
-        return report.getItemsByCategory().stream()
+        return report.categories().stream()
                 .map(CategoryReportDTO::fromDomain)
                 .collect(Collectors.toList());
     }
@@ -212,7 +212,7 @@ public class BankingResolver {
             return null;
         }
 
-        return getCategoryUseCase.getCategoryById(transaction.categoryId())
+        return manageCategoryUseCase.getCategoryById(transaction.categoryId())
                 .map(TransactionCategoryDTO::fromDomain)
                 .orElse(null);
     }

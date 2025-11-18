@@ -156,7 +156,6 @@ type CategoryReport {
     totalAmount: Decimal!
     transactionCount: Int!
     percentage: Float!
-    transactions: [Transaction!]!
 }
 
 type HealthCheck {
