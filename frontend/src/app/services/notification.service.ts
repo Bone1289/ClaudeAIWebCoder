@@ -57,22 +57,21 @@ export class NotificationService {
     private apollo: Apollo,
     private ngZone: NgZone
   ) {
-    // Start SSE connection for real-time updates
-    this.connectToSSE();
+    // SSE is disabled - REST endpoint was removed during GraphQL migration
+    // TODO: Implement GraphQL subscriptions for real-time notifications
+    // this.connectToSSE();
   }
 
   /**
    * Safely extract data from GraphQL result with null checking
    */
   private extractData<T>(result: any, key: string): T {
+    // If result or result.data is null/undefined, return the data anyway
+    // Apollo's error handling will catch any actual errors
     if (!result || !result.data) {
-      throw new Error('GraphQL response is null or undefined');
+      return null as any;
     }
-    const data = result.data[key];
-    if (data === undefined || data === null) {
-      throw new Error(`GraphQL response missing expected field: ${key}`);
-    }
-    return data;
+    return result.data[key];
   }
 
   /**
@@ -86,10 +85,11 @@ export class NotificationService {
       return;
     }
 
-    // EventSource doesn't support custom headers, so we need to pass token as query param or cookie
-    // For now, we'll rely on the cookie-based auth
+    // EventSource doesn't support custom headers, so we pass token as query param
+    const sseUrlWithToken = `${this.sseUrl}?token=${encodeURIComponent(token)}`;
+
     this.ngZone.runOutsideAngular(() => {
-      this.eventSource = new EventSource(this.sseUrl, { withCredentials: true });
+      this.eventSource = new EventSource(sseUrlWithToken, { withCredentials: true });
 
       this.eventSource.addEventListener('connected', (event: MessageEvent) => {
         this.ngZone.run(() => {

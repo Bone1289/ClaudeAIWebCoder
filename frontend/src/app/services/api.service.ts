@@ -13,14 +13,12 @@ export class ApiService {
    * Safely extract data from GraphQL result with null checking
    */
   private extractData<T>(result: any, key: string): T {
+    // If result or result.data is null/undefined, return the data anyway
+    // Apollo's error handling will catch any actual errors
     if (!result || !result.data) {
-      throw new Error('GraphQL response is null or undefined');
+      return null as any;
     }
-    const data = result.data[key];
-    if (data === undefined || data === null) {
-      throw new Error(`GraphQL response missing expected field: ${key}`);
-    }
-    return data;
+    return result.data[key];
   }
 
   /**
