@@ -1,6 +1,7 @@
 package com.example.demo.adapter.in.graphql;
 
 import graphql.scalars.ExtendedScalars;
+import graphql.schema.GraphQLScalarType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.graphql.execution.RuntimeWiringConfigurer;
@@ -20,6 +21,11 @@ public class GraphQLConfig {
         return wiringBuilder -> wiringBuilder
                 .scalar(ExtendedScalars.Date)
                 .scalar(ExtendedScalars.DateTime)
-                .scalar(ExtendedScalars.GraphQLBigDecimal);
+                // Register BigDecimal scalar with the name "Decimal" to match our schema
+                .scalar(GraphQLScalarType.newScalar()
+                        .name("Decimal")
+                        .description("A custom scalar that handles arbitrary precision decimal numbers")
+                        .coercing(ExtendedScalars.GraphQLBigDecimal.getCoercing())
+                        .build());
     }
 }
