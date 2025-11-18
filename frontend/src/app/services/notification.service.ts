@@ -62,8 +62,8 @@ export class NotificationService {
    * Connect to Server-Sent Events (SSE) stream for real-time notifications
    */
   private connectToSSE(): void {
-    // Get auth token from localStorage
-    const token = localStorage.getItem('token');
+    // Get auth token from localStorage (check both possible keys)
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     if (!token) {
       console.warn('No auth token found, cannot connect to SSE');
       return;
@@ -85,11 +85,12 @@ export class NotificationService {
         this.ngZone.run(() => {
           try {
             const notification: Notification = JSON.parse(event.data);
-            console.log('New notification received via SSE:', notification);
+            console.log('📩 SSE notification event received:', notification);
             this.newNotificationSubject.next(notification);
             this.notificationsUpdatedSubject.next();
+            // Note: Don't call refreshUnreadCount() here - backend sends 'unread-count' event separately
           } catch (error) {
-            console.error('Error parsing notification:', error);
+            console.error('❌ Error parsing notification:', error);
           }
         });
       });
@@ -98,10 +99,10 @@ export class NotificationService {
         this.ngZone.run(() => {
           try {
             const data = JSON.parse(event.data);
-            console.log('Unread count updated via SSE:', data.unreadCount);
+            console.log('🔢 SSE unread-count event received:', data.unreadCount);
             this.unreadCountSubject.next(data.unreadCount);
           } catch (error) {
-            console.error('Error parsing unread count:', error);
+            console.error('❌ Error parsing unread count:', error);
           }
         });
       });
@@ -116,7 +117,7 @@ export class NotificationService {
           console.error('SSE connection error:', error);
           this.handleSSEError();
         });
-      });
+      };
     });
   }
 
