@@ -53,16 +53,15 @@ services:
       - virtualbank-network
     restart: unless-stopped
 
-  # Envoy Proxy - gRPC-Web support for browser clients
+  # Envoy Proxy - gRPC-Web support for browser clients with JSON transcoding
   envoy:
-    image: envoyproxy/envoy:v1.28-latest
+    build:
+      context: .
+      dockerfile: envoy.Dockerfile
     container_name: virtualbank-envoy
     ports:
       - "8081:8080"  # gRPC-Web proxy
       - "9901:9901"  # Envoy admin interface
-    volumes:
-      - ./envoy.yaml:/etc/envoy/envoy.yaml
-    command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml
     depends_on:
       - backend
     networks:

@@ -35,6 +35,25 @@ static_resources:
                 max_age: "1728000"
                 expose_headers: grpc-status,grpc-message,grpc-status-details-bin
           http_filters:
+          # JSON to gRPC transcoding filter (must be before grpc_web)
+          - name: envoy.filters.http.grpc_json_transcoder
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_json_transcoder.v3.GrpcJsonTranscoder
+              proto_descriptor: "/etc/envoy/proto_descriptor.pb"
+              services:
+                - "com.example.demo.grpc.AuthService"
+                - "com.example.demo.grpc.BankingService"
+                - "com.example.demo.grpc.NotificationService"
+                - "com.example.demo.grpc.CategoryService"
+                - "com.example.demo.grpc.AdminService"
+              print_options:
+                add_whitespace: true
+                always_print_primitive_fields: true
+                always_print_enums_as_ints: false
+                preserve_proto_field_names: true
+              auto_mapping: true
+              ignore_unknown_query_parameters: true
+              convert_grpc_status: true
           - name: envoy.filters.http.grpc_web
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb
