@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
+import { GrpcClientService } from '../grpc/grpc-client.service';
 import { ApiResponse } from '../models/api-response.model';
 import { Category, CategoryType } from '../models/banking.model';
-import { environment } from '../../environments/environment';
 
 export interface CategoryRequest {
   name: string;
@@ -17,26 +16,35 @@ export interface CategoryRequest {
   providedIn: 'root'
 })
 export class CategoryService {
-  private apiUrl = `${environment.apiUrl}/categories`;
+  private readonly SERVICE_NAME = 'com.example.demo.grpc.CategoryService';
 
   // Cache categories for better performance
   private categoriesCache$ = new BehaviorSubject<Category[]>([]);
   public categories$ = this.categoriesCache$.asObservable();
 
-  constructor(private http: HttpClient) {
-    this.loadCategories();
+  constructor(private grpcClient: GrpcClientService) {
+    this.loadCategories().subscribe();
   }
 
   /**
    * Load all active categories
    */
   loadCategories(activeOnly: boolean = true): Observable<ApiResponse<Category[]>> {
-    let params = new HttpParams();
-    if (activeOnly) {
-      params = params.set('activeOnly', 'true');
-    }
+    const grpcRequest = {
+      active_only: activeOnly,
+      type: '' // Empty means all types
+    };
 
-    return this.http.get<ApiResponse<Category[]>>(this.apiUrl, { params }).pipe(
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'GetAllCategories',
+      grpcRequest
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.categories ? response.categories.map((c: any) => this.mapGrpcCategoryToModel(c)) : []
+      })),
       tap((response: ApiResponse<Category[]>) => {
         if (response.success && response.data) {
           this.categoriesCache$.next(response.data);
@@ -49,28 +57,63 @@ export class CategoryService {
    * Get categories by type (INCOME, EXPENSE, OTHER)
    */
   getCategoriesByType(type: CategoryType, activeOnly: boolean = true): Observable<ApiResponse<Category[]>> {
-    let params = new HttpParams();
-    params = params.set('type', type);
-    if (activeOnly) {
-      params = params.set('activeOnly', 'true');
-    }
+    const grpcRequest = {
+      active_only: activeOnly,
+      type: type
+    };
 
-    return this.http.get<ApiResponse<Category[]>>(this.apiUrl, { params });
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'GetAllCategories',
+      grpcRequest
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.categories ? response.categories.map((c: any) => this.mapGrpcCategoryToModel(c)) : []
+      }))
+    );
   }
 
   /**
    * Get a specific category by ID
    */
   getCategoryById(id: string): Observable<ApiResponse<Category>> {
-    return this.http.get<ApiResponse<Category>>(`${this.apiUrl}/${id}`);
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'GetCategory',
+      { id }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.category ? this.mapGrpcCategoryToModel(response.category) : {} as Category
+      } as ApiResponse<Category>))
+    );
   }
 
   /**
    * Create a new category
    */
   createCategory(request: CategoryRequest): Observable<ApiResponse<Category>> {
-    return this.http.post<ApiResponse<Category>>(this.apiUrl, request).pipe(
-      tap(() => this.loadCategories()) // Refresh cache
+    const grpcRequest = {
+      name: request.name,
+      description: request.description,
+      type: request.type,
+      color: request.color || '#000000'
+    };
+
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'CreateCategory',
+      grpcRequest
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.category ? this.mapGrpcCategoryToModel(response.category) : {} as Category
+      } as ApiResponse<Category>)),
+      tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
 
@@ -78,8 +121,28 @@ export class CategoryService {
    * Update an existing category
    */
   updateCategory(id: string, request: Partial<CategoryRequest>): Observable<ApiResponse<Category>> {
-    return this.http.put<ApiResponse<Category>>(`${this.apiUrl}/${id}`, request).pipe(
-      tap(() => this.loadCategories()) // Refresh cache
+    // Get existing category from cache to fill missing fields
+    const existingCategory = this.getCategoryFromCache(id);
+
+    const grpcRequest = {
+      id: id,
+      name: request.name || existingCategory?.name || '',
+      description: request.description || existingCategory?.description || '',
+      type: request.type || existingCategory?.type || CategoryType.OTHER,
+      color: request.color || existingCategory?.color || '#000000'
+    };
+
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'UpdateCategory',
+      grpcRequest
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.category ? this.mapGrpcCategoryToModel(response.category) : {} as Category
+      } as ApiResponse<Category>)),
+      tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
 
@@ -87,8 +150,17 @@ export class CategoryService {
    * Deactivate a category (soft delete)
    */
   deactivateCategory(id: string): Observable<ApiResponse<Category>> {
-    return this.http.patch<ApiResponse<Category>>(`${this.apiUrl}/${id}/deactivate`, {}).pipe(
-      tap(() => this.loadCategories()) // Refresh cache
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'DeactivateCategory',
+      { id }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: response.category ? this.mapGrpcCategoryToModel(response.category) : {} as Category
+      } as ApiResponse<Category>)),
+      tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
 
@@ -96,8 +168,17 @@ export class CategoryService {
    * Delete a category
    */
   deleteCategory(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`).pipe(
-      tap(() => this.loadCategories()) // Refresh cache
+    return this.grpcClient.call<any, any>(
+      this.SERVICE_NAME,
+      'DeleteCategory',
+      { id }
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message,
+        data: undefined
+      })),
+      tap(() => this.loadCategories().subscribe()) // Refresh cache
     );
   }
 
@@ -127,5 +208,20 @@ export class CategoryService {
    */
   getExpenseCategoriesFromCache(): Category[] {
     return this.categoriesCache$.value.filter((cat: Category) => cat.type === CategoryType.EXPENSE && cat.active);
+  }
+
+  /**
+   * Map gRPC category response to Angular model
+   */
+  private mapGrpcCategoryToModel(grpcCategory: any): Category {
+    return {
+      id: grpcCategory.id,
+      name: grpcCategory.name,
+      description: grpcCategory.description,
+      type: grpcCategory.type as CategoryType,
+      color: grpcCategory.color,
+      active: grpcCategory.active,
+      createdAt: grpcCategory.created_at || new Date().toISOString()
+    };
   }
 }
