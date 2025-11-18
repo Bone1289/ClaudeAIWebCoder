@@ -72,11 +72,12 @@ export interface CategorySummary {
 }
 
 export interface CategoryReport {
-  accountId: string;
-  transactionType: TransactionType;
-  categories: CategorySummary[];
+  categoryId: string;
+  categoryName: string;
+  categoryType: string;
   totalAmount: number;
-  totalTransactions: number;
+  transactionCount: number;
+  percentage: number;
 }
 
 export interface TransactionRequest {
