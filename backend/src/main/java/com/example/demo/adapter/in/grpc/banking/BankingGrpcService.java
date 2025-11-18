@@ -211,7 +211,7 @@ public class BankingGrpcService extends BankingServiceGrpc.BankingServiceImplBas
                             request.getDescription());
 
             // Get the latest transaction
-            List<Transaction> transactions = bankingService.getTransactionsByAccountId(account.getId());
+            List<Transaction> transactions = bankingService.getTransactionHistory(account.getId());
             Transaction latestTransaction = transactions.get(0); // Most recent
 
             TransactionResponse response = TransactionResponse.newBuilder()
@@ -255,7 +255,7 @@ public class BankingGrpcService extends BankingServiceGrpc.BankingServiceImplBas
                             request.getDescription());
 
             // Get the latest transaction
-            List<Transaction> transactions = bankingService.getTransactionsByAccountId(account.getId());
+            List<Transaction> transactions = bankingService.getTransactionHistory(account.getId());
             Transaction latestTransaction = transactions.get(0);
 
             TransactionResponse response = TransactionResponse.newBuilder()
@@ -287,19 +287,26 @@ public class BankingGrpcService extends BankingServiceGrpc.BankingServiceImplBas
             logger.info("gRPC Transfer request from: {} to: {}",
                     request.getFromAccountId(), request.getToAccountId());
 
-            var accounts = bankingService.transfer(
-                    UUID.fromString(request.getFromAccountId()),
-                    UUID.fromString(request.getToAccountId()),
+            UUID fromAccountId = UUID.fromString(request.getFromAccountId());
+            UUID toAccountId = UUID.fromString(request.getToAccountId());
+
+            // Execute transfer
+            bankingService.transfer(
+                    fromAccountId,
+                    toAccountId,
                     new BigDecimal(request.getAmount()),
                     request.getDescription()
             );
 
-            Account fromAccount = accounts.get(0);
-            Account toAccount = accounts.get(1);
+            // Fetch updated accounts
+            Account fromAccount = bankingService.getAccountById(fromAccountId)
+                    .orElseThrow(() -> new IllegalStateException("Source account not found after transfer"));
+            Account toAccount = bankingService.getAccountById(toAccountId)
+                    .orElseThrow(() -> new IllegalStateException("Destination account not found after transfer"));
 
             // Get transactions for both accounts
-            List<Transaction> fromTransactions = bankingService.getTransactionsByAccountId(fromAccount.getId());
-            List<Transaction> toTransactions = bankingService.getTransactionsByAccountId(toAccount.getId());
+            List<Transaction> fromTransactions = bankingService.getTransactionHistory(fromAccount.getId());
+            List<Transaction> toTransactions = bankingService.getTransactionHistory(toAccount.getId());
 
             TransferResponse response = TransferResponse.newBuilder()
                     .setSuccess(true)
@@ -332,7 +339,7 @@ public class BankingGrpcService extends BankingServiceGrpc.BankingServiceImplBas
         try {
             logger.info("gRPC GetAccountTransactions request for account: {}", request.getAccountId());
 
-            List<Transaction> transactions = bankingService.getTransactionsByAccountId(
+            List<Transaction> transactions = bankingService.getTransactionHistory(
                     UUID.fromString(request.getAccountId())
             );
 
@@ -362,7 +369,11 @@ public class BankingGrpcService extends BankingServiceGrpc.BankingServiceImplBas
             User currentUser = SecurityUtil.getCurrentUser();
             logger.info("gRPC GetAllTransactions request for user: {}", currentUser.getId());
 
-            List<Transaction> transactions = bankingService.getAllTransactionsByUserId(currentUser.getId());
+            // Get all transactions for all user's accounts
+            List<Account> userAccounts = bankingService.getAccountsByUserId(currentUser.getId());
+            List<Transaction> transactions = userAccounts.stream()
+                    .flatMap(account -> bankingService.getTransactionHistory(account.getId()).stream())
+                    .collect(Collectors.toList());
 
             GetAllTransactionsResponse response = GetAllTransactionsResponse.newBuilder()
                     .setSuccess(true)
@@ -510,8 +521,8 @@ public class BankingGrpcService extends BankingServiceGrpc.BankingServiceImplBas
                 .setBalanceAfter(transaction.getBalanceAfter().toString())
                 .setDescription(transaction.getDescription())
                 .setTimestamp(Timestamp.newBuilder()
-                        .setSeconds(transaction.getTimestamp().toEpochSecond(ZoneOffset.UTC))
-                        .setNanos(transaction.getTimestamp().getNano())
+                        .setSeconds(transaction.getCreatedAt().toEpochSecond(ZoneOffset.UTC))
+                        .setNanos(transaction.getCreatedAt().getNano())
                         .build());
 
         if (transaction.getCategoryId() != null) {

@@ -49,7 +49,7 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
             );
 
             // Log the registration
-            auditService.logAudit(user.getId(), AuditLog.Action.USER_REGISTRATION,
+            auditService.logAudit(user.getId(), AuditLog.AuditAction.USER_REGISTERED,
                     "User registered via gRPC: " + user.getEmail());
 
             // Build response
@@ -87,7 +87,7 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
             String token = jwtUtil.generateToken(user);
 
             // Log the login
-            auditService.logAudit(user.getId(), AuditLog.Action.USER_LOGIN,
+            auditService.logAudit(user.getId(), AuditLog.AuditAction.LOGIN,
                     "User logged in via gRPC: " + user.getEmail());
 
             // Build response
@@ -152,7 +152,7 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
             logger.info("gRPC Logout request for user: {}", user.getId());
 
             // Log the logout
-            auditService.logAudit(user.getId(), AuditLog.Action.USER_LOGOUT,
+            auditService.logAudit(user.getId(), AuditLog.AuditAction.LOGOUT,
                     "User logged out via gRPC: " + user.getEmail());
 
             // Build response

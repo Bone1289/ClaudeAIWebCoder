@@ -56,7 +56,7 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
                     ? currentUser.getId()
                     : UUID.fromString(request.getUserId());
 
-            Notification notification = notificationService.createAndSend(
+            Notification notification = notificationService.createNotification(
                     targetUserId,
                     Notification.NotificationType.valueOf(request.getType()),
                     Notification.NotificationChannel.valueOf(request.getChannel()),
@@ -93,9 +93,11 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
     @Override
     public void getNotification(IdRequest request, StreamObserver<GetNotificationResponse> responseObserver) {
         try {
+            User currentUser = SecurityUtil.getCurrentUser();
             logger.info("gRPC GetNotification request for id: {}", request.getId());
 
-            Notification notification = notificationService.getNotificationById(UUID.fromString(request.getId()))
+            Notification notification = notificationService.getNotification(
+                    UUID.fromString(request.getId()), currentUser.getId())
                     .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
 
             GetNotificationResponse response = GetNotificationResponse.newBuilder()
@@ -128,7 +130,7 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
             logger.info("gRPC GetAllNotifications request for user: {}", currentUser.getId());
 
             Pageable pageable = createPageable(request.getPagination());
-            Page<Notification> notificationPage = notificationService.getAllNotifications(currentUser.getId(), pageable);
+            Page<Notification> notificationPage = notificationService.getUserNotifications(currentUser.getId(), pageable);
 
             GetAllNotificationsResponse response = GetAllNotificationsResponse.newBuilder()
                     .setSuccess(true)
@@ -211,7 +213,8 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
             User currentUser = SecurityUtil.getCurrentUser();
             logger.info("gRPC MarkAsRead request for notification: {}", request.getId());
 
-            Notification notification = notificationService.markAsRead(UUID.fromString(request.getId()));
+            Notification notification = notificationService.markAsRead(
+                    UUID.fromString(request.getId()), currentUser.getId());
 
             MarkAsReadResponse response = MarkAsReadResponse.newBuilder()
                     .setSuccess(true)
@@ -264,7 +267,8 @@ public class NotificationGrpcService extends NotificationServiceGrpc.Notificatio
             User currentUser = SecurityUtil.getCurrentUser();
             logger.info("gRPC DeleteNotification request for id: {}", request.getId());
 
-            notificationService.deleteNotification(UUID.fromString(request.getId()));
+            notificationService.deleteNotification(
+                    UUID.fromString(request.getId()), currentUser.getId());
 
             DeleteNotificationResponse response = DeleteNotificationResponse.newBuilder()
                     .setSuccess(true)

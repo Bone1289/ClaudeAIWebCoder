@@ -1,5 +1,7 @@
 package com.example.demo.config.security;
 
+import com.example.demo.application.ports.out.UserRepository;
+import com.example.demo.domain.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -22,6 +24,12 @@ public class JwtUtil {
 
     @Value("${jwt.expiration:86400000}") // Default: 24 hours in milliseconds
     private Long expiration;
+
+    private final UserRepository userRepository;
+
+    public JwtUtil(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Generate JWT token for user
@@ -108,5 +116,21 @@ public class JwtUtil {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    /**
+     * Generate JWT token from User object (convenience method for gRPC)
+     */
+    public String generateToken(User user) {
+        return generateToken(user.getId(), user.getEmail(), user.getRole().name());
+    }
+
+    /**
+     * Get User object from JWT token (for gRPC interceptor)
+     */
+    public User getUserFromToken(String token) {
+        UUID userId = getUserIdFromToken(token);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("User not found for token"));
     }
 }

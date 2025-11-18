@@ -137,7 +137,6 @@ public class CategoryGrpcService extends CategoryServiceGrpc.CategoryServiceImpl
                     UUID.fromString(request.getId()),
                     request.getName(),
                     request.getDescription(),
-                    TransactionCategory.CategoryType.valueOf(request.getType()),
                     request.getColor()
             );
 
