@@ -7,6 +7,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { NotificationBellComponent } from './components/notification-bell/notification-bell.component';
+import { GraphQLModule } from './graphql/graphql.module';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,8 @@ import { NotificationBellComponent } from './components/notification-bell/notifi
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    NotificationBellComponent
+    NotificationBellComponent,
+    GraphQLModule
   ],
   providers: [
     {

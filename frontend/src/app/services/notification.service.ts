@@ -1,8 +1,17 @@
 import { Injectable, NgZone } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, map } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { Apollo } from 'apollo-angular';
 import { environment } from '../../environments/environment';
+import {
+  GET_NOTIFICATIONS,
+  GET_UNREAD_NOTIFICATIONS,
+  GET_UNREAD_COUNT,
+  MARK_AS_READ,
+  MARK_ALL_AS_READ,
+  DELETE_NOTIFICATION,
+  DELETE_ALL_NOTIFICATIONS
+} from '../graphql/graphql.operations';
 
 export interface Notification {
   id: string;
@@ -18,24 +27,18 @@ export interface Notification {
 }
 
 export interface PagedNotifications {
-  content: Notification[];
-  totalElements: number;
+  notifications: Notification[];
+  currentPage: number;
   totalPages: number;
-  size: number;
-  number: number;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
+  totalItems: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
-  private apiUrl = `${environment.apiUrl}/notifications`;
   private sseUrl = `${environment.apiUrl}/notifications/stream`;
   private eventSource: EventSource | null = null;
   private reconnectAttempts = 0;
@@ -51,7 +54,7 @@ export class NotificationService {
   newNotification$ = this.newNotificationSubject.asObservable();
 
   constructor(
-    private http: HttpClient,
+    private apollo: Apollo,
     private ngZone: NgZone
   ) {
     // Start SSE connection for real-time updates
@@ -166,139 +169,171 @@ export class NotificationService {
   /**
    * Get all notifications for current user (paginated)
    */
-  getNotifications(page: number = 0, size: number = 20): Observable<ApiResponse<PagedNotifications>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
-
-    return this.http.get<ApiResponse<PagedNotifications>>(this.apiUrl, { params });
+  getNotifications(page: number = 0, size: number = 20): Observable<PagedNotifications> {
+    return this.apollo.query({
+      query: GET_NOTIFICATIONS,
+      variables: { page, size },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).notifications)
+    );
   }
 
   /**
    * Get unread notifications
    */
-  getUnreadNotifications(page: number = 0, size: number = 20): Observable<ApiResponse<PagedNotifications>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
-
-    return this.http.get<ApiResponse<PagedNotifications>>(`${this.apiUrl}/unread`, { params });
+  getUnreadNotifications(page: number = 0, size: number = 20): Observable<PagedNotifications> {
+    return this.apollo.query({
+      query: GET_UNREAD_NOTIFICATIONS,
+      variables: { page, size },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).unreadNotifications)
+    );
   }
 
   /**
    * Get read notifications
    */
-  getReadNotifications(page: number = 0, size: number = 20): Observable<ApiResponse<PagedNotifications>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
-
-    return this.http.get<ApiResponse<PagedNotifications>>(`${this.apiUrl}/read`, { params });
+  getReadNotifications(page: number = 0, size: number = 20): Observable<PagedNotifications> {
+    return this.apollo.query({
+      query: GET_NOTIFICATIONS,
+      variables: { page, size },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).readNotifications)
+    );
   }
 
   /**
    * Get recent notifications (last N days)
    */
-  getRecentNotifications(days: number = 7, page: number = 0, size: number = 20): Observable<ApiResponse<PagedNotifications>> {
-    const params = new HttpParams()
-      .set('days', days.toString())
-      .set('page', page.toString())
-      .set('size', size.toString());
-
-    return this.http.get<ApiResponse<PagedNotifications>>(`${this.apiUrl}/recent`, { params });
+  getRecentNotifications(days: number = 7, page: number = 0, size: number = 20): Observable<PagedNotifications> {
+    return this.apollo.query({
+      query: GET_NOTIFICATIONS,
+      variables: { days, page, size },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).recentNotifications)
+    );
   }
 
   /**
    * Get unread notification count
    */
-  getUnreadCount(): Observable<ApiResponse<number>> {
-    return this.http.get<ApiResponse<number>>(`${this.apiUrl}/unread-count`);
+  getUnreadCount(): Observable<number> {
+    return this.apollo.query({
+      query: GET_UNREAD_COUNT,
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).unreadCount)
+    );
   }
 
   /**
    * Get a specific notification by ID
    */
-  getNotification(id: string): Observable<ApiResponse<Notification>> {
-    return this.http.get<ApiResponse<Notification>>(`${this.apiUrl}/${id}`);
+  getNotification(id: string): Observable<Notification> {
+    return this.apollo.query({
+      query: GET_NOTIFICATIONS,
+      variables: { id },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => (result.data as any).notification)
+    );
   }
 
   /**
    * Mark notification as read
    */
-  markAsRead(id: string): Observable<ApiResponse<Notification>> {
-    return this.http.put<ApiResponse<Notification>>(`${this.apiUrl}/${id}/read`, {})
-      .pipe(
-        tap(() => {
-          this.refreshUnreadCount();
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  markAsRead(id: string): Observable<Notification> {
+    return this.apollo.mutate({
+      mutation: MARK_AS_READ,
+      variables: { id }
+    }).pipe(
+      map(result => (result.data as any).markNotificationAsRead),
+      tap(() => {
+        this.refreshUnreadCount();
+        this.notificationsUpdatedSubject.next();
+      })
+    );
   }
 
   /**
    * Mark notification as unread
    */
-  markAsUnread(id: string): Observable<ApiResponse<Notification>> {
-    return this.http.put<ApiResponse<Notification>>(`${this.apiUrl}/${id}/unread`, {})
-      .pipe(
-        tap(() => {
-          this.refreshUnreadCount();
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  markAsUnread(id: string): Observable<Notification> {
+    return this.apollo.mutate({
+      mutation: MARK_AS_READ,
+      variables: { id }
+    }).pipe(
+      map(result => (result.data as any).markNotificationAsUnread),
+      tap(() => {
+        this.refreshUnreadCount();
+        this.notificationsUpdatedSubject.next();
+      })
+    );
   }
 
   /**
    * Mark all notifications as read
    */
-  markAllAsRead(): Observable<ApiResponse<number>> {
-    return this.http.put<ApiResponse<number>>(`${this.apiUrl}/mark-all-read`, {})
-      .pipe(
-        tap(() => {
-          this.refreshUnreadCount();
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  markAllAsRead(): Observable<boolean> {
+    return this.apollo.mutate({
+      mutation: MARK_ALL_AS_READ
+    }).pipe(
+      map(result => (result.data as any).markAllNotificationsAsRead),
+      tap(() => {
+        this.refreshUnreadCount();
+        this.notificationsUpdatedSubject.next();
+      })
+    );
   }
 
   /**
    * Delete a notification
    */
-  deleteNotification(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`)
-      .pipe(
-        tap(() => {
-          this.refreshUnreadCount();
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  deleteNotification(id: string): Observable<boolean> {
+    return this.apollo.mutate({
+      mutation: DELETE_NOTIFICATION,
+      variables: { id }
+    }).pipe(
+      map(result => (result.data as any).deleteNotification),
+      tap(() => {
+        this.refreshUnreadCount();
+        this.notificationsUpdatedSubject.next();
+      })
+    );
   }
 
   /**
    * Delete all notifications
    */
-  deleteAllNotifications(): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/all`)
-      .pipe(
-        tap(() => {
-          this.refreshUnreadCount();
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  deleteAllNotifications(): Observable<boolean> {
+    return this.apollo.mutate({
+      mutation: DELETE_ALL_NOTIFICATIONS
+    }).pipe(
+      map(result => (result.data as any).deleteAllNotifications),
+      tap(() => {
+        this.refreshUnreadCount();
+        this.notificationsUpdatedSubject.next();
+      })
+    );
   }
 
   /**
    * Delete old read notifications (cleanup)
    */
-  cleanupOldNotifications(daysOld: number = 30): Observable<ApiResponse<number>> {
-    const params = new HttpParams().set('daysOld', daysOld.toString());
-
-    return this.http.delete<ApiResponse<number>>(`${this.apiUrl}/cleanup`, { params })
-      .pipe(
-        tap(() => {
-          this.notificationsUpdatedSubject.next();
-        })
-      );
+  cleanupOldNotifications(daysOld: number = 30): Observable<number> {
+    return this.apollo.mutate({
+      mutation: DELETE_ALL_NOTIFICATIONS,
+      variables: { daysOld }
+    }).pipe(
+      map(result => (result.data as any).cleanupOldNotifications),
+      tap(() => {
+        this.notificationsUpdatedSubject.next();
+      })
+    );
   }
 
   /**
@@ -306,10 +341,8 @@ export class NotificationService {
    */
   refreshUnreadCount(): void {
     this.getUnreadCount().subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.unreadCountSubject.next(response.data);
-        }
+      next: (count) => {
+        this.unreadCountSubject.next(count);
       },
       error: (error) => {
         console.error('Error refreshing unread count:', error);
