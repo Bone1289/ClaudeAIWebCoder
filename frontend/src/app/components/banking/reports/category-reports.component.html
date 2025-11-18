@@ -56,21 +56,21 @@
         <div class="card-icon">💰</div>
         <div class="card-content">
           <h3>Total {{ selectedType === transactionTypes.DEPOSIT ? 'Income' : 'Expenses' }}</h3>
-          <p class="amount">${{ getActiveReport()!.totalAmount.toFixed(2) }}</p>
+          <p class="amount">${{ getTotalAmount().toFixed(2) }}</p>
         </div>
       </div>
       <div class="summary-card">
         <div class="card-icon">📊</div>
         <div class="card-content">
           <h3>Total Transactions</h3>
-          <p class="count">{{ getActiveReport()!.totalTransactions }}</p>
+          <p class="count">{{ getTotalTransactions() }}</p>
         </div>
       </div>
       <div class="summary-card">
         <div class="card-icon">🏷</div>
         <div class="card-content">
           <h3>Categories</h3>
-          <p class="count">{{ getActiveReport()!.categories.length }}</p>
+          <p class="count">{{ getCategoryCount() }}</p>
         </div>
       </div>
     </div>
@@ -121,37 +121,37 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let category of getActiveReport()!.categories">
+          <tr *ngFor="let categoryReport of getActiveReport()">
             <td class="category-name">
-              <span class="category-badge" [style.background-color]="category.category.color">
-                {{ category.category.name }}
+              <span class="category-badge" style="background-color: #3498db">
+                {{ categoryReport.categoryName }}
               </span>
             </td>
-            <td class="amount">${{ category.amount.toFixed(2) }}</td>
-            <td class="count">{{ category.count }}</td>
+            <td class="amount">${{ categoryReport.totalAmount.toFixed(2) }}</td>
+            <td class="count">{{ categoryReport.transactionCount }}</td>
             <td class="percentage">
               <div class="percentage-bar">
-                <div class="percentage-fill" [style.width.%]="category.percentage" [style.background-color]="category.category.color"></div>
-                <span class="percentage-text">{{ category.percentage.toFixed(1) }}%</span>
+                <div class="percentage-fill" [style.width.%]="categoryReport.percentage" style="background-color: #3498db"></div>
+                <span class="percentage-text">{{ categoryReport.percentage.toFixed(1) }}%</span>
               </div>
             </td>
-            <td class="amount">${{ (category.amount / category.count).toFixed(2) }}</td>
+            <td class="amount">${{ (categoryReport.totalAmount / categoryReport.transactionCount).toFixed(2) }}</td>
           </tr>
         </tbody>
         <tfoot>
           <tr class="total-row">
             <td><strong>Total</strong></td>
-            <td class="amount"><strong>${{ getActiveReport()!.totalAmount.toFixed(2) }}</strong></td>
-            <td class="count"><strong>{{ getActiveReport()!.totalTransactions }}</strong></td>
+            <td class="amount"><strong>${{ getTotalAmount().toFixed(2) }}</strong></td>
+            <td class="count"><strong>{{ getTotalTransactions() }}</strong></td>
             <td class="percentage"><strong>100%</strong></td>
-            <td class="amount"><strong>${{ (getActiveReport()!.totalAmount / getActiveReport()!.totalTransactions).toFixed(2) }}</strong></td>
+            <td class="amount"><strong>${{ (getTotalAmount() / getTotalTransactions()).toFixed(2) }}</strong></td>
           </tr>
         </tfoot>
       </table>
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="getActiveReport()!.categories.length === 0" class="empty-state">
+    <div *ngIf="getCategoryCount() === 0" class="empty-state">
       <p>No {{ selectedType === transactionTypes.DEPOSIT ? 'income' : 'expense' }} transactions found.</p>
     </div>
   </div>

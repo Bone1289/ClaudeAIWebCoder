@@ -83,6 +83,20 @@ export class CategoryReportsComponent implements OnInit {
     return this.selectedType === TransactionType.DEPOSIT ? this.incomeReport : this.expenseReport;
   }
 
+  getTotalAmount(): number {
+    const reports = this.getActiveReport();
+    return reports.reduce((sum, report) => sum + report.totalAmount, 0);
+  }
+
+  getTotalTransactions(): number {
+    const reports = this.getActiveReport();
+    return reports.reduce((sum, report) => sum + report.transactionCount, 0);
+  }
+
+  getCategoryCount(): number {
+    return this.getActiveReport().length;
+  }
+
   getChartData(): { category: string; amount: number; percentage: number; color: string }[] {
     const report = this.getActiveReport();
     if (!report || report.length === 0) return [];
