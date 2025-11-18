@@ -22,7 +22,15 @@ export class AppComponent {
   }
 
   logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/auth/login']);
+      },
+      error: (error) => {
+        console.error('Logout failed:', error);
+        // Navigate to login anyway since localStorage is cleared
+        this.router.navigate(['/auth/login']);
+      }
+    });
   }
 }
