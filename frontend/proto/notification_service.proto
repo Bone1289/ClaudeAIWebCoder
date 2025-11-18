@@ -1,0 +1,156 @@
+syntax = "proto3";
+
+package com.example.demo.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.example.demo.grpc.notification";
+option java_outer_classname = "NotificationServiceProto";
+
+import "common.proto";
+import "google/protobuf/timestamp.proto";
+
+// Notification Service
+service NotificationService {
+  // CRUD Operations
+  rpc CreateNotification(CreateNotificationRequest) returns (CreateNotificationResponse);
+  rpc GetNotification(IdRequest) returns (GetNotificationResponse);
+  rpc GetAllNotifications(GetAllNotificationsRequest) returns (GetAllNotificationsResponse);
+  rpc GetUnreadNotifications(PaginationRequest) returns (GetUnreadNotificationsResponse);
+  rpc GetReadNotifications(PaginationRequest) returns (GetReadNotificationsResponse);
+  rpc GetRecentNotifications(GetRecentNotificationsRequest) returns (GetRecentNotificationsResponse);
+  rpc GetUnreadCount(Empty) returns (GetUnreadCountResponse);
+
+  // Update Operations
+  rpc MarkAsRead(IdRequest) returns (MarkAsReadResponse);
+  rpc MarkAsUnread(IdRequest) returns (MarkAsUnreadResponse);
+  rpc MarkAllAsRead(Empty) returns (MarkAllAsReadResponse);
+
+  // Delete Operations
+  rpc DeleteNotification(IdRequest) returns (DeleteNotificationResponse);
+  rpc CleanupOldNotifications(CleanupOldNotificationsRequest) returns (CleanupOldNotificationsResponse);
+  rpc DeleteAllNotifications(Empty) returns (DeleteAllNotificationsResponse);
+
+  // Real-time Streaming (replaces SSE)
+  rpc StreamNotifications(Empty) returns (stream NotificationStreamResponse);
+}
+
+// Notification Messages
+message NotificationResponse {
+  string id = 1;
+  string user_id = 2;
+  string type = 3; // TRANSACTION_COMPLETED, SECURITY_ALERT, ACCOUNT_CREATED, etc.
+  string channel = 4; // IN_APP, EMAIL, SMS
+  string title = 5;
+  string message = 6;
+  string priority = 7; // LOW, MEDIUM, HIGH, URGENT
+  bool read = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp read_at = 10;
+}
+
+message CreateNotificationRequest {
+  string user_id = 1; // Optional, defaults to current user
+  string type = 2;
+  string channel = 3;
+  string title = 4;
+  string message = 5;
+  string priority = 6;
+}
+
+message CreateNotificationResponse {
+  bool success = 1;
+  string message = 2;
+  NotificationResponse notification = 3;
+}
+
+message GetNotificationResponse {
+  bool success = 1;
+  string message = 2;
+  NotificationResponse notification = 3;
+}
+
+message GetAllNotificationsRequest {
+  PaginationRequest pagination = 1;
+}
+
+message GetAllNotificationsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated NotificationResponse notifications = 3;
+  PaginationMetadata pagination = 4;
+}
+
+message GetUnreadNotificationsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated NotificationResponse notifications = 3;
+  PaginationMetadata pagination = 4;
+}
+
+message GetReadNotificationsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated NotificationResponse notifications = 3;
+  PaginationMetadata pagination = 4;
+}
+
+message GetRecentNotificationsRequest {
+  int32 days = 1; // Default 7 days
+}
+
+message GetRecentNotificationsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated NotificationResponse notifications = 3;
+}
+
+message GetUnreadCountResponse {
+  bool success = 1;
+  string message = 2;
+  int64 count = 3;
+}
+
+message MarkAsReadResponse {
+  bool success = 1;
+  string message = 2;
+  NotificationResponse notification = 3;
+}
+
+message MarkAsUnreadResponse {
+  bool success = 1;
+  string message = 2;
+  NotificationResponse notification = 3;
+}
+
+message MarkAllAsReadResponse {
+  bool success = 1;
+  string message = 2;
+  int32 updated_count = 3;
+}
+
+message DeleteNotificationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CleanupOldNotificationsRequest {
+  int32 days_old = 1; // Delete notifications older than this many days
+}
+
+message CleanupOldNotificationsResponse {
+  bool success = 1;
+  string message = 2;
+  int32 deleted_count = 3;
+}
+
+message DeleteAllNotificationsResponse {
+  bool success = 1;
+  string message = 2;
+  int32 deleted_count = 3;
+}
+
+// Streaming Response for real-time notifications
+message NotificationStreamResponse {
+  NotificationResponse notification = 1;
+  string event_type = 2; // NEW, UPDATED, DELETED
+}

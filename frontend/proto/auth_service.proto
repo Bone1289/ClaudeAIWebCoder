@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package com.example.demo.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.example.demo.grpc.auth";
+option java_outer_classname = "AuthServiceProto";
+
+import "common.proto";
+
+// Authentication Service
+service AuthService {
+  // Register a new user
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
+
+  // Login and get JWT token
+  rpc Login(LoginRequest) returns (LoginResponse);
+
+  // Get current user profile (requires authentication)
+  rpc GetMe(Empty) returns (GetMeResponse);
+
+  // Logout (requires authentication)
+  rpc Logout(Empty) returns (LogoutResponse);
+}
+
+// Sign Up Request
+message SignUpRequest {
+  string email = 1;
+  string username = 2;
+  string password = 3;
+  string first_name = 4;
+  string last_name = 5;
+}
+
+// Sign Up Response
+message SignUpResponse {
+  bool success = 1;
+  string message = 2;
+  UserResponse user = 3;
+}
+
+// Login Request
+message LoginRequest {
+  string email_or_username = 1;
+  string password = 2;
+}
+
+// Login Response
+message LoginResponse {
+  bool success = 1;
+  string message = 2;
+  string token = 3; // JWT token
+  UserResponse user = 4;
+}
+
+// Get Me Response
+message GetMeResponse {
+  bool success = 1;
+  string message = 2;
+  UserResponse user = 3;
+}
+
+// Logout Response
+message LogoutResponse {
+  bool success = 1;
+  string message = 2;
+}

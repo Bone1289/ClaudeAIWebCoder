@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package com.example.demo.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.example.demo.grpc.common";
+option java_outer_classname = "CommonProto";
+
+import "google/protobuf/timestamp.proto";
+
+// Common response wrapper for all operations
+message ApiResponse {
+  bool success = 1;
+  string message = 2;
+  // The actual data is in specific response messages
+}
+
+// User information
+message UserResponse {
+  string id = 1;
+  string email = 2;
+  string username = 3;
+  string first_name = 4;
+  string last_name = 5;
+  string role = 6; // USER, ADMIN
+  string status = 7; // ACTIVE, SUSPENDED, LOCKED
+  google.protobuf.Timestamp created_at = 8;
+}
+
+// Pagination request
+message PaginationRequest {
+  int32 page = 1; // Page number (0-indexed)
+  int32 size = 2; // Page size
+  string sort_by = 3; // Field to sort by
+  string sort_direction = 4; // ASC or DESC
+}
+
+// Pagination response metadata
+message PaginationMetadata {
+  int32 current_page = 1;
+  int32 page_size = 2;
+  int64 total_elements = 3;
+  int32 total_pages = 4;
+  bool has_next = 5;
+  bool has_previous = 6;
+}
+
+// Empty request for operations that don't need parameters
+message Empty {
+}
+
+// Generic ID request
+message IdRequest {
+  string id = 1;
+}
+
+// Date range filter
+message DateRangeFilter {
+  google.protobuf.Timestamp start_date = 1;
+  google.protobuf.Timestamp end_date = 2;
+}
+
+// Error details for better error handling
+message ErrorDetail {
+  string code = 1;
+  string field = 2;
+  string message = 3;
+}
+
+// Standard error response
+message ErrorResponse {
+  string message = 1;
+  string error_code = 2;
+  repeated ErrorDetail details = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}

@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package com.example.demo.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.example.demo.grpc.category";
+option java_outer_classname = "CategoryServiceProto";
+
+import "common.proto";
+
+// Category Service
+service CategoryService {
+  // CRUD Operations
+  rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
+  rpc GetCategory(IdRequest) returns (GetCategoryResponse);
+  rpc GetAllCategories(GetAllCategoriesRequest) returns (GetAllCategoriesResponse);
+  rpc UpdateCategory(UpdateCategoryRequest) returns (UpdateCategoryResponse);
+  rpc DeleteCategory(IdRequest) returns (DeleteCategoryResponse);
+
+  // Status Operations
+  rpc ActivateCategory(IdRequest) returns (ActivateCategoryResponse);
+  rpc DeactivateCategory(IdRequest) returns (DeactivateCategoryResponse);
+}
+
+// Category Messages
+message CategoryResponse {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string type = 4; // INCOME, EXPENSE
+  string color = 5; // Hex color code
+  bool active = 6;
+}
+
+message CreateCategoryRequest {
+  string name = 1;
+  string description = 2;
+  string type = 3; // INCOME, EXPENSE
+  string color = 4;
+}
+
+message CreateCategoryResponse {
+  bool success = 1;
+  string message = 2;
+  CategoryResponse category = 3;
+}
+
+message GetCategoryResponse {
+  bool success = 1;
+  string message = 2;
+  CategoryResponse category = 3;
+}
+
+message GetAllCategoriesRequest {
+  bool active_only = 1; // Filter by active status
+  string type = 2; // Filter by type (INCOME/EXPENSE), empty means all
+}
+
+message GetAllCategoriesResponse {
+  bool success = 1;
+  string message = 2;
+  repeated CategoryResponse categories = 3;
+}
+
+message UpdateCategoryRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string type = 4;
+  string color = 5;
+}
+
+message UpdateCategoryResponse {
+  bool success = 1;
+  string message = 2;
+  CategoryResponse category = 3;
+}
+
+message DeleteCategoryResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ActivateCategoryResponse {
+  bool success = 1;
+  string message = 2;
+  CategoryResponse category = 3;
+}
+
+message DeactivateCategoryResponse {
+  bool success = 1;
+  string message = 2;
+  CategoryResponse category = 3;
+}
