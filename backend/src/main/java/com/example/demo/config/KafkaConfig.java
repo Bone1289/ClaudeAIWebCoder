@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.support.TaskExecutorAdapter;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
@@ -114,8 +116,9 @@ public class KafkaConfig {
      * Provides unlimited scalability for handling high-volume notification processing
      */
     @Bean
-    public Executor kafkaNotificationExecutor() {
-        Executor executor = Executors.newVirtualThreadPerTaskExecutor();
+    public AsyncTaskExecutor kafkaNotificationExecutor() {
+        Executor virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
+        AsyncTaskExecutor executor = new TaskExecutorAdapter(virtualThreadExecutor);
         log.info("Kafka notification executor initialized with Virtual Threads");
         return executor;
     }
@@ -172,8 +175,9 @@ public class KafkaConfig {
      * Provides unlimited scalability for handling high-volume email processing
      */
     @Bean
-    public Executor kafkaEmailExecutor() {
-        Executor executor = Executors.newVirtualThreadPerTaskExecutor();
+    public AsyncTaskExecutor kafkaEmailExecutor() {
+        Executor virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
+        AsyncTaskExecutor executor = new TaskExecutorAdapter(virtualThreadExecutor);
         log.info("Kafka email executor initialized with Virtual Threads");
         return executor;
     }
